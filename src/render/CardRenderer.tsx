@@ -25,7 +25,7 @@ export function CardRenderer({ definition, content, card, links, isEditing, onTr
       
       {/* Popups (e.g. Lead Capture) would be rendered here via portals or overlays */}
       {definition.popups?.map(popup => (
-        <div key={popup.id} className="ts-popup" hidden>
+        <div key={popup.key} className="ts-popup" hidden>
           <NodeRenderer node={popup.root} content={content} ctx={ctx} />
         </div>
       ))}
