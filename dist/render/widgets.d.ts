@@ -1,13 +1,14 @@
+import React from 'react';
 export declare const WIDGET_RENDERERS: {
-    PROFILE: boolean;
-    CONTACT_LINKS: boolean;
-    RICH_TEXT: boolean;
-    SERVICE_LIST: boolean;
-    GALLERY: boolean;
-    FAQ: boolean;
-    TESTIMONIALS: boolean;
-    BUSINESS_HOURS: boolean;
-    APPOINTMENT: boolean;
-    LEAD_FORM: boolean;
-    CTA_BUTTON: boolean;
+    PROFILE: (props: any) => React.JSX.Element;
+    CONTACT_LINKS: (props: any) => React.JSX.Element;
+    RICH_TEXT: (props: any) => React.JSX.Element;
+    SERVICE_LIST: (props: any) => React.JSX.Element;
+    GALLERY: (props: any) => React.JSX.Element;
+    FAQ: (props: any) => React.JSX.Element;
+    TESTIMONIALS: (props: any) => React.JSX.Element;
+    BUSINESS_HOURS: (props: any) => React.JSX.Element;
+    APPOINTMENT: (props: any) => React.JSX.Element;
+    LEAD_FORM: (props: any) => React.JSX.Element;
+    CTA_BUTTON: (props: any) => React.JSX.Element;
 };
