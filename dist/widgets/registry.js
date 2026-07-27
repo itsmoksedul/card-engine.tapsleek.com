@@ -1,0 +1,121 @@
+"use strict";
+/**
+ * Widget registry — the one file that grows when you add a widget.
+ *
+ * Everything else derives from here:
+ *   • the builder palette            (`manifest()` → GET /admin/widgets)
+ *   • content validation             (`schemaToZod(meta.contentSchema)`)
+ *   • publish-time template linting
+ *   • lazy content migration         (`migrations`)
+ *   • the generic widget test suite   (`previews`)
+ *
+ * A widget type is NEVER removed — a template somewhere still references it.
+ * Retire one with `meta.deprecated` instead: hidden from the palette, still
+ * renders, flagged as a warning on publish.
+ */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.WIDGET_TYPES = void 0;
+exports.getWidget = getWidget;
+exports.getWidgetMeta = getWidgetMeta;
+exports.hasWidget = hasWidget;
+exports.manifest = manifest;
+exports.paletteManifest = paletteManifest;
+exports.interactiveTypes = interactiveTypes;
+exports.derivedTypes = derivedTypes;
+exports.partKeys = partKeys;
+const Appointment = __importStar(require("./appointment"));
+const BusinessHours = __importStar(require("./business-hours"));
+const ContactLinks = __importStar(require("./contact-links"));
+const CtaButton = __importStar(require("./cta-button"));
+const Faq = __importStar(require("./faq"));
+const Gallery = __importStar(require("./gallery"));
+const LeadForm = __importStar(require("./lead-form"));
+const Profile = __importStar(require("./profile"));
+const RichText = __importStar(require("./rich-text"));
+const ServiceList = __importStar(require("./service-list"));
+const Testimonials = __importStar(require("./testimonials"));
+const MODULES = [
+    Profile,
+    ContactLinks,
+    RichText,
+    ServiceList,
+    Gallery,
+    Faq,
+    Testimonials,
+    BusinessHours,
+    Appointment,
+    LeadForm,
+    CtaButton,
+];
+const BY_TYPE = new Map(MODULES.map((m) => [m.meta.type, m]));
+/** Every registered type, in palette order. */
+exports.WIDGET_TYPES = MODULES.map((m) => m.meta.type);
+function getWidget(type) {
+    return BY_TYPE.get(type);
+}
+function getWidgetMeta(type) {
+    return BY_TYPE.get(type)?.meta;
+}
+function hasWidget(type) {
+    return BY_TYPE.has(type);
+}
+/**
+ * JSON-safe descriptor list. This is what the builder palette renders and what
+ * the backend validates against — one source of truth, so the two cannot drift.
+ */
+function manifest() {
+    return MODULES.map((m) => m.meta);
+}
+/** Palette listing: deprecated widgets are hidden from new placements. */
+function paletteManifest() {
+    return manifest().filter((m) => !m.deprecated);
+}
+/** Widget types that need client JS — used to keep static cards JS-free. */
+function interactiveTypes() {
+    return manifest()
+        .filter((m) => m.interactive)
+        .map((m) => m.type);
+}
+/** Widgets whose content is derived from card data rather than stored. */
+function derivedTypes() {
+    return manifest()
+        .filter((m) => m.derived)
+        .map((m) => m.type);
+}
+/** Every part key a widget declares — used to reject dead `partStyles`. */
+function partKeys(type) {
+    return getWidgetMeta(type)?.parts.map((p) => p.key) ?? [];
+}
