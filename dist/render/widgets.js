@@ -1,20 +1,35 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WIDGET_RENDERERS = void 0;
-const jsx_runtime_1 = require("react/jsx-runtime");
-// Shell components for all 11 widgets to prove the concept. 
-// In the future, these should be moved to individual files in `src/widgets/{type}/Render.tsx`
-const Placeholder = ({ type, cls }) => ((0, jsx_runtime_1.jsx)("div", { className: cls('root'), children: (0, jsx_runtime_1.jsxs)("span", { children: ["Placeholder for: ", type] }) }));
+const appointment_1 = require("./widgets/appointment");
+const business_hours_1 = require("./widgets/business-hours");
+const contact_links_1 = require("./widgets/contact-links");
+const cta_button_1 = require("./widgets/cta-button");
+const faq_1 = require("./widgets/faq");
+const gallery_1 = require("./widgets/gallery");
+const lead_form_1 = require("./widgets/lead-form");
+const profile_1 = require("./widgets/profile");
+const rich_text_1 = require("./widgets/rich-text");
+const service_list_1 = require("./widgets/service-list");
+const testimonials_1 = require("./widgets/testimonials");
+/**
+ * Widget renderers, keyed by type.
+ *
+ * Every one of these emits ONLY `cls('part')` class names and `data-*` hooks —
+ * no Tailwind, no inline styles, no colours. All appearance comes from the
+ * admin's `partStyles`, compiled to CSS. That is what lets a single widget
+ * component look completely different in every template.
+ */
 exports.WIDGET_RENDERERS = {
-    PROFILE: (props) => (0, jsx_runtime_1.jsx)(Placeholder, { type: "PROFILE", ...props }),
-    CONTACT_LINKS: (props) => (0, jsx_runtime_1.jsx)(Placeholder, { type: "CONTACT_LINKS", ...props }),
-    RICH_TEXT: (props) => (0, jsx_runtime_1.jsx)(Placeholder, { type: "RICH_TEXT", ...props }),
-    SERVICE_LIST: (props) => (0, jsx_runtime_1.jsx)(Placeholder, { type: "SERVICE_LIST", ...props }),
-    GALLERY: (props) => (0, jsx_runtime_1.jsx)(Placeholder, { type: "GALLERY", ...props }),
-    FAQ: (props) => (0, jsx_runtime_1.jsx)(Placeholder, { type: "FAQ", ...props }),
-    TESTIMONIALS: (props) => (0, jsx_runtime_1.jsx)(Placeholder, { type: "TESTIMONIALS", ...props }),
-    BUSINESS_HOURS: (props) => (0, jsx_runtime_1.jsx)(Placeholder, { type: "BUSINESS_HOURS", ...props }),
-    APPOINTMENT: (props) => (0, jsx_runtime_1.jsx)(Placeholder, { type: "APPOINTMENT", ...props }),
-    LEAD_FORM: (props) => (0, jsx_runtime_1.jsx)(Placeholder, { type: "LEAD_FORM", ...props }),
-    CTA_BUTTON: (props) => (0, jsx_runtime_1.jsx)(Placeholder, { type: "CTA_BUTTON", ...props }),
+    PROFILE: profile_1.ProfileRender,
+    CONTACT_LINKS: contact_links_1.ContactLinksRender,
+    RICH_TEXT: rich_text_1.RichTextRender,
+    SERVICE_LIST: service_list_1.ServiceListRender,
+    GALLERY: gallery_1.GalleryRender,
+    FAQ: faq_1.FaqRender,
+    TESTIMONIALS: testimonials_1.TestimonialsRender,
+    BUSINESS_HOURS: business_hours_1.BusinessHoursRender,
+    APPOINTMENT: appointment_1.AppointmentRender,
+    LEAD_FORM: lead_form_1.LeadFormRender,
+    CTA_BUTTON: cta_button_1.CtaButtonRender,
 };

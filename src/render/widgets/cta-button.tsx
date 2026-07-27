@@ -1,0 +1,29 @@
+import React from 'react';
+import { EmptyState, str, type WidgetRenderProps } from './shared';
+
+export function CtaButtonRender({ content, design, cls, ctx }: WidgetRenderProps) {
+  const c = (content ?? {}) as Record<string, unknown>;
+  const d = (design ?? {}) as Record<string, any>;
+  const label = str(c.label);
+
+  if (!label) return <EmptyState cls={cls} ctx={ctx} label="Button" />;
+
+  return (
+    <div className={cls('root')} data-full-width={d.fullWidth !== false ? 'true' : undefined}>
+      <a
+        className={cls('button')}
+        href={str(c.url) || '#'}
+        target={c.newTab ? '_blank' : undefined}
+        rel={c.newTab ? 'noreferrer' : undefined}
+        data-icon-position={d.iconPosition ?? 'left'}
+        onClick={() => ctx.track({ type: 'WIDGET_CLICK', part: 'button' })}
+      >
+        {d.showIcon !== false && str(c.icon) && (
+          <span className={cls('icon')} data-icon={str(c.icon)} aria-hidden />
+        )}
+        <span className={cls('label')}>{label}</span>
+      </a>
+      {str(c.caption) && <span className={cls('caption')}>{str(c.caption)}</span>}
+    </div>
+  );
+}

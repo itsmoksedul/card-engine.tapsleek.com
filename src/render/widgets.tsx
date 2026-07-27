@@ -1,24 +1,36 @@
-import React from 'react';
+import { AppointmentRender } from './widgets/appointment';
+import { BusinessHoursRender } from './widgets/business-hours';
+import { ContactLinksRender } from './widgets/contact-links';
+import { CtaButtonRender } from './widgets/cta-button';
+import { FaqRender } from './widgets/faq';
+import { GalleryRender } from './widgets/gallery';
+import { LeadFormRender } from './widgets/lead-form';
+import { ProfileRender } from './widgets/profile';
+import { RichTextRender } from './widgets/rich-text';
+import { ServiceListRender } from './widgets/service-list';
+import { TestimonialsRender } from './widgets/testimonials';
 
-// Shell components for all 11 widgets to prove the concept. 
-// In the future, these should be moved to individual files in `src/widgets/{type}/Render.tsx`
-
-const Placeholder = ({ type, cls }: any) => (
-  <div className={cls('root')}>
-    <span>Placeholder for: {type}</span>
-  </div>
-);
-
+/**
+ * Widget renderers, keyed by type.
+ *
+ * Every one of these emits ONLY `cls('part')` class names and `data-*` hooks —
+ * no Tailwind, no inline styles, no colours. All appearance comes from the
+ * admin's `partStyles`, compiled to CSS. That is what lets a single widget
+ * component look completely different in every template.
+ */
 export const WIDGET_RENDERERS = {
-  PROFILE: (props: any) => <Placeholder type="PROFILE" {...props} />,
-  CONTACT_LINKS: (props: any) => <Placeholder type="CONTACT_LINKS" {...props} />,
-  RICH_TEXT: (props: any) => <Placeholder type="RICH_TEXT" {...props} />,
-  SERVICE_LIST: (props: any) => <Placeholder type="SERVICE_LIST" {...props} />,
-  GALLERY: (props: any) => <Placeholder type="GALLERY" {...props} />,
-  FAQ: (props: any) => <Placeholder type="FAQ" {...props} />,
-  TESTIMONIALS: (props: any) => <Placeholder type="TESTIMONIALS" {...props} />,
-  BUSINESS_HOURS: (props: any) => <Placeholder type="BUSINESS_HOURS" {...props} />,
-  APPOINTMENT: (props: any) => <Placeholder type="APPOINTMENT" {...props} />,
-  LEAD_FORM: (props: any) => <Placeholder type="LEAD_FORM" {...props} />,
-  CTA_BUTTON: (props: any) => <Placeholder type="CTA_BUTTON" {...props} />,
+  PROFILE: ProfileRender,
+  CONTACT_LINKS: ContactLinksRender,
+  RICH_TEXT: RichTextRender,
+  SERVICE_LIST: ServiceListRender,
+  GALLERY: GalleryRender,
+  FAQ: FaqRender,
+  TESTIMONIALS: TestimonialsRender,
+  BUSINESS_HOURS: BusinessHoursRender,
+  APPOINTMENT: AppointmentRender,
+  LEAD_FORM: LeadFormRender,
+  CTA_BUTTON: CtaButtonRender,
 };
+
+export type WidgetRendererType = keyof typeof WIDGET_RENDERERS;
+export type { WidgetRenderProps } from './widgets/shared';
