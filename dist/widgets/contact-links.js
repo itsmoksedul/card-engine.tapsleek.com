@@ -10,12 +10,12 @@ exports.meta = {
     contentVersion: 1,
     derived: true,
     parts: [
-        { key: 'root', label: 'Container' },
-        { key: 'list', label: 'List' },
-        { key: 'item', label: 'Button' },
-        { key: 'icon', label: 'Icon' },
-        { key: 'label', label: 'Label' },
-        { key: 'value', label: 'Value' },
+        { key: 'root', label: 'Container', kind: 'container' },
+        { key: 'list', label: 'List', kind: 'list' },
+        { key: 'item', label: 'Button', kind: 'button' },
+        { key: 'icon', label: 'Icon', kind: 'icon' },
+        { key: 'label', label: 'Label', kind: 'text' },
+        { key: 'value', label: 'Value', kind: 'text' },
     ],
     designSchema: [
         {

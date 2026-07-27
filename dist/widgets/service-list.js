@@ -10,17 +10,17 @@ exports.meta = {
     contentVersion: 2,
     interactive: true, // carousel layout needs client JS
     parts: [
-        { key: 'root', label: 'Container' },
-        { key: 'header', label: 'Header' },
-        { key: 'title', label: 'Section title' },
-        { key: 'description', label: 'Section description' },
-        { key: 'list', label: 'List' },
-        { key: 'item', label: 'Item card' },
-        { key: 'itemMedia', label: 'Item image', visibleIf: { key: 'showMedia', equals: true } },
-        { key: 'itemTitle', label: 'Item title' },
-        { key: 'itemDesc', label: 'Item description', visibleIf: { key: 'showDesc', equals: true } },
-        { key: 'itemPrice', label: 'Item price' },
-        { key: 'itemLink', label: 'Item link' },
+        { key: 'root', label: 'Container', kind: 'container' },
+        { key: 'header', label: 'Header', kind: 'container' },
+        { key: 'title', label: 'Section title', kind: 'text' },
+        { key: 'description', label: 'Section description', kind: 'text' },
+        { key: 'list', label: 'List', kind: 'list' },
+        { key: 'item', label: 'Item card', kind: 'container' },
+        { key: 'itemMedia', label: 'Item image', kind: 'image', visibleIf: { key: 'showMedia', equals: true } },
+        { key: 'itemTitle', label: 'Item title', kind: 'text' },
+        { key: 'itemDesc', label: 'Item description', kind: 'text', visibleIf: { key: 'showDesc', equals: true } },
+        { key: 'itemPrice', label: 'Item price', kind: 'text' },
+        { key: 'itemLink', label: 'Item link', kind: 'text' },
     ],
     designSchema: [
         {

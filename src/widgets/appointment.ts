@@ -19,11 +19,11 @@ export const meta: WidgetModule['meta'] = {
   interactive: true,
   references: [{ path: 'profileId', entity: 'appointmentProfile', as: 'profile' }],
   parts: [
-    { key: 'root', label: 'Container' },
-    { key: 'title', label: 'Title' },
-    { key: 'description', label: 'Description' },
-    { key: 'meta', label: 'Duration row' },
-    { key: 'button', label: 'Book button' },
+    { key: 'root', label: 'Container', kind: 'container' },
+    { key: 'title', label: 'Title', kind: 'text' },
+    { key: 'description', label: 'Description', kind: 'text' },
+    { key: 'meta', label: 'Duration row', kind: 'text' },
+    { key: 'button', label: 'Book button', kind: 'button' },
   ],
   designSchema: [
     {

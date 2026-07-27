@@ -27,9 +27,33 @@ export type WidgetGroup =
 
 export type WidgetTier = 'FREE' | 'PRO';
 
+/**
+ * What a part physically IS, so an editor can offer only the controls that
+ * apply to it. Typography on an `<img>` is noise; `object-fit` on a heading is
+ * noise. The widget knows the answer, so it declares it here rather than every
+ * editor guessing from the part's name.
+ */
+export type WidgetPartKind =
+  /** Box that lays out other parts — flex/grid controls matter. */
+  | 'container'
+  /** Repeating collection — same as container, named apart for clarity. */
+  | 'list'
+  /** Runs of text — typography matters. */
+  | 'text'
+  /** `<img>` — sizing and object-fit matter, typography does not. */
+  | 'image'
+  /** Glyph — colour and size matter. */
+  | 'icon'
+  /** Clickable — layout, typography and interaction states all matter. */
+  | 'button'
+  /** Form control — typography and border matter. */
+  | 'input';
+
 export interface WidgetPart {
   key: string;
   label: string;
+  /** Drives which style controls an editor shows. Defaults to `container`. */
+  kind?: WidgetPartKind;
   /** Marks a part that only exists for certain design values. */
   visibleIf?: { key: string; equals: unknown };
 }

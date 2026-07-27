@@ -9,11 +9,11 @@ exports.meta = {
     description: 'A single call-to-action button.',
     contentVersion: 1,
     parts: [
-        { key: 'root', label: 'Container' },
-        { key: 'button', label: 'Button' },
-        { key: 'icon', label: 'Icon' },
-        { key: 'label', label: 'Label' },
-        { key: 'caption', label: 'Caption' },
+        { key: 'root', label: 'Container', kind: 'container' },
+        { key: 'button', label: 'Button', kind: 'button' },
+        { key: 'icon', label: 'Icon', kind: 'icon' },
+        { key: 'label', label: 'Label', kind: 'text' },
+        { key: 'caption', label: 'Caption', kind: 'text' },
     ],
     designSchema: [
         { key: 'fullWidth', type: 'boolean', label: 'Full width' },

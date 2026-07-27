@@ -8,9 +8,9 @@ export const meta: WidgetModule['meta'] = {
   description: 'A heading and a block of formatted text.',
   contentVersion: 1,
   parts: [
-    { key: 'root', label: 'Container' },
-    { key: 'title', label: 'Title' },
-    { key: 'body', label: 'Body' },
+    { key: 'root', label: 'Container', kind: 'container' },
+    { key: 'title', label: 'Title', kind: 'text' },
+    { key: 'body', label: 'Body', kind: 'text' },
   ],
   designSchema: [
     { key: 'showTitle', type: 'boolean', label: 'Show title' },

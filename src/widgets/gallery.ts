@@ -9,12 +9,12 @@ export const meta: WidgetModule['meta'] = {
   contentVersion: 1,
   interactive: true,
   parts: [
-    { key: 'root', label: 'Container' },
-    { key: 'title', label: 'Title' },
-    { key: 'list', label: 'Grid' },
-    { key: 'item', label: 'Image wrapper' },
-    { key: 'image', label: 'Image' },
-    { key: 'caption', label: 'Caption' },
+    { key: 'root', label: 'Container', kind: 'container' },
+    { key: 'title', label: 'Title', kind: 'text' },
+    { key: 'list', label: 'Grid', kind: 'list' },
+    { key: 'item', label: 'Image wrapper', kind: 'container' },
+    { key: 'image', label: 'Image', kind: 'image' },
+    { key: 'caption', label: 'Caption', kind: 'text' },
   ],
   designSchema: [
     {
