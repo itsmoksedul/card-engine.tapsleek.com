@@ -55,6 +55,66 @@ exports.meta = {
             ],
         },
     ],
+    defaultPartStyles: {
+        root: {
+            base: { display: 'flex', flexDirection: 'column', gap: '{space.3}' },
+        },
+        title: {
+            base: {
+                fontFamily: '{font.heading}',
+                fontSize: '{size.lg}',
+                fontWeight: 700,
+                color: '{color.text}',
+            },
+        },
+        list: { base: { display: 'flex', flexDirection: 'column', gap: '{space.3}' } },
+        item: {
+            base: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '{space.2}',
+                padding: { all: '{space.4}' },
+                background: { kind: 'color', color: '{color.surface}' },
+                border: { width: '1px', style: 'solid', color: '{color.border}' },
+                borderRadius: { all: '{radius.lg}' },
+            },
+        },
+        mark: {
+            base: { fontSize: '{size.2xl}', lineHeight: 1, color: '{color.primary}', opacity: 0.35 },
+        },
+        quote: {
+            base: {
+                fontSize: '{size.base}',
+                fontStyle: 'italic',
+                lineHeight: 1.6,
+                color: '{color.text}',
+            },
+        },
+        stars: {
+            base: { display: 'flex', gap: '{space.1}', color: '{color.primary}' },
+        },
+        caption: {
+            base: {
+                display: 'flex',
+                alignItems: 'center',
+                gap: '{space.2}',
+                margin: { t: '{space.1}' },
+            },
+        },
+        avatar: {
+            base: {
+                width: '36px',
+                height: '36px',
+                flexShrink: 0,
+                objectFit: 'cover',
+                borderRadius: { all: '{radius.full}' },
+            },
+        },
+        author: {
+            base: { fontSize: '{size.sm}', fontWeight: 600, color: '{color.text}' },
+        },
+        role: { base: { fontSize: '{size.xs}', color: '{color.muted}' } },
+    },
     defaultDesign: { layout: 'stack', showAvatar: true, showRating: true, quoteMark: 'icon' },
     defaultContent: {
         title: 'What clients say',

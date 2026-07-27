@@ -51,6 +51,58 @@ exports.meta = {
         },
         { key: 'note', type: 'text', label: 'Note', max: 120 },
     ],
+    defaultPartStyles: {
+        root: {
+            base: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '{space.3}',
+                padding: { all: '{space.4}' },
+                background: { kind: 'color', color: '{color.surface}' },
+                borderRadius: { all: '{radius.lg}' },
+            },
+        },
+        title: {
+            base: {
+                fontFamily: '{font.heading}',
+                fontSize: '{size.lg}',
+                fontWeight: 700,
+                color: '{color.text}',
+            },
+        },
+        badge: {
+            base: {
+                alignSelf: 'flex-start',
+                padding: { t: '{space.1}', r: '{space.3}', b: '{space.1}', l: '{space.3}' },
+                background: { kind: 'color', color: '{color.bg}' },
+                color: '{color.primary}',
+                borderRadius: { all: '{radius.full}' },
+                fontSize: '{size.xs}',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.4px',
+            },
+        },
+        list: { base: { display: 'flex', flexDirection: 'column' } },
+        row: {
+            base: {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '{space.4}',
+                padding: { t: '{space.2}', b: '{space.2}' },
+                border: {
+                    sides: { b: { width: '1px', style: 'solid', color: '{color.border}' } },
+                },
+                fontSize: '{size.sm}',
+            },
+        },
+        day: { base: { color: '{color.muted}', fontWeight: 500 } },
+        time: { base: { color: '{color.text}', fontWeight: 600 } },
+        note: {
+            base: { fontSize: '{size.xs}', color: '{color.muted}', lineHeight: 1.5 },
+        },
+    },
     defaultDesign: { showBadge: true, highlightToday: true, timeFormat: '12h' },
     defaultContent: {
         title: 'Opening hours',

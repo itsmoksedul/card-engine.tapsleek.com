@@ -34,6 +34,60 @@ exports.meta = {
         { key: 'profileId', type: 'reference', label: 'Appointment profile', entity: 'appointmentProfile', required: true },
         { key: 'buttonLabel', type: 'text', label: 'Button text', max: 40 },
     ],
+    defaultPartStyles: {
+        root: {
+            base: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '{space.2}',
+                padding: { all: '{space.4}' },
+                background: { kind: 'color', color: '{color.surface}' },
+                border: { width: '1px', style: 'solid', color: '{color.border}' },
+                borderRadius: { all: '{radius.lg}' },
+            },
+        },
+        title: {
+            base: {
+                fontFamily: '{font.heading}',
+                fontSize: '{size.lg}',
+                fontWeight: 700,
+                color: '{color.text}',
+            },
+        },
+        description: {
+            base: { fontSize: '{size.sm}', lineHeight: 1.55, color: '{color.muted}' },
+        },
+        meta: {
+            base: {
+                alignSelf: 'flex-start',
+                padding: { t: '{space.1}', r: '{space.3}', b: '{space.1}', l: '{space.3}' },
+                background: { kind: 'color', color: '{color.bg}' },
+                color: '{color.primary}',
+                borderRadius: { all: '{radius.full}' },
+                fontSize: '{size.xs}',
+                fontWeight: 600,
+            },
+        },
+        button: {
+            base: {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '{space.2}',
+                width: '100%',
+                margin: { t: '{space.2}' },
+                padding: { t: '{space.3}', r: '{space.4}', b: '{space.3}', l: '{space.4}' },
+                background: { kind: 'color', color: '{color.primary}' },
+                color: '{color.onPrimary}',
+                borderRadius: { all: '{radius.md}' },
+                fontSize: '{size.sm}',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: { property: ['opacity'], duration: 150, easing: 'ease' },
+            },
+            hover: { opacity: 0.9 },
+        },
+    },
     defaultDesign: { mode: 'button', showDuration: true },
     defaultContent: { title: 'Book a meeting', description: '', profileId: null, buttonLabel: 'Choose a time' },
 };

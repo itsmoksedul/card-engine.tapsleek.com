@@ -14,6 +14,7 @@
  * manifest has to survive JSON.stringify.
  */
 import type { FieldSchema } from './field';
+import type { StyleSet } from './style';
 export type WidgetGroup = 'identity' | 'contact' | 'content' | 'media' | 'business' | 'utility';
 export type WidgetTier = 'FREE' | 'PRO';
 export interface WidgetPart {
@@ -56,6 +57,21 @@ export interface WidgetMeta<C extends Record<string, unknown> = Record<string, u
     contentVersion: number;
     /** Named inner elements the admin can style → `.n<id> .p-<part>`. */
     parts: WidgetPart[];
+    /**
+     * Starting look, copied onto the node when the widget is placed.
+     *
+     * The `Render` components emit class names and nothing else — no Tailwind, no
+     * inline styles — so a widget with no part styles renders as raw stacked
+     * HTML. That is correct for the engine (it's what lets one widget look
+     * completely different across templates) but wrong as a STARTING POINT: an
+     * admin who drops a Profile and sees unstyled boxes reasonably concludes the
+     * builder is broken.
+     *
+     * So the meta ships a default. It is COPIED, not referenced — once on the
+     * node it is ordinary `partStyles` the admin edits or deletes freely, and
+     * changing this table later never mutates an existing template.
+     */
+    defaultPartStyles?: Record<string, StyleSet>;
     /** Design knobs the admin sets; any key can be unlocked via node.userOptions. */
     designSchema: FieldSchema[];
     /** Content the user edits. Generates the entire editor form. */

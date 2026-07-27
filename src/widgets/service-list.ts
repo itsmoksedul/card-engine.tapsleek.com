@@ -67,6 +67,56 @@ export const meta: WidgetModule['meta'] = {
       ],
     },
   ],
+  defaultPartStyles: {
+    root: { base: { display: 'flex', flexDirection: 'column', gap: '{space.3}' } },
+    header: { base: { display: 'flex', flexDirection: 'column', gap: '{space.1}' } },
+    title: {
+      base: {
+        fontFamily: '{font.heading}',
+        fontSize: '{size.lg}',
+        fontWeight: 700,
+        color: '{color.text}',
+      },
+    },
+    description: {
+      base: { fontSize: '{size.sm}', lineHeight: 1.55, color: '{color.muted}' },
+    },
+    list: { base: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '{space.3}' } },
+    item: {
+      base: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '{space.1}',
+        padding: { all: '{space.3}' },
+        background: { kind: 'color', color: '{color.surface}' },
+        border: { width: '1px', style: 'solid', color: '{color.border}' },
+        borderRadius: { all: '{radius.md}' },
+        transition: { property: ['box-shadow', 'transform'], duration: 150, easing: 'ease' },
+      },
+      hover: { boxShadow: '{shadow.md}', transform: { translateY: '-2px' } },
+    },
+    itemMedia: {
+      base: {
+        width: '100%',
+        aspectRatio: '4/3',
+        objectFit: 'cover',
+        borderRadius: { all: '{radius.sm}' },
+        margin: { b: '{space.2}' },
+      },
+    },
+    itemTitle: {
+      base: { fontSize: '{size.sm}', fontWeight: 600, color: '{color.text}' },
+    },
+    itemDesc: {
+      base: { fontSize: '{size.xs}', lineHeight: 1.5, color: '{color.muted}', lineClamp: 3 },
+    },
+    itemPrice: {
+      base: { fontSize: '{size.sm}', fontWeight: 700, color: '{color.primary}' },
+    },
+    itemLink: {
+      base: { fontSize: '{size.xs}', fontWeight: 600, color: '{color.primary}' },
+    },
+  },
   defaultDesign: {
     layout: 'grid-2',
     showMedia: true,

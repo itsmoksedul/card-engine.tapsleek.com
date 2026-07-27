@@ -33,6 +33,39 @@ export const meta: WidgetModule['meta'] = {
     { key: 'caption', type: 'text', label: 'Caption', max: 80 },
     { key: 'newTab', type: 'boolean', label: 'Open in a new tab' },
   ],
+  defaultPartStyles: {
+    root: {
+      base: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '{space.2}' },
+    },
+    button: {
+      base: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '{space.2}',
+        width: '100%',
+        padding: { t: '{space.4}', r: '{space.5}', b: '{space.4}', l: '{space.5}' },
+        background: { kind: 'color', color: '{color.primary}' },
+        color: '{color.onPrimary}',
+        borderRadius: { all: '{radius.md}' },
+        fontSize: '{size.base}',
+        fontWeight: 600,
+        boxShadow: '{shadow.sm}',
+        cursor: 'pointer',
+        transition: { property: ['opacity', 'transform'], duration: 150, easing: 'ease' },
+      },
+      hover: { opacity: 0.9, transform: { translateY: '-1px' } },
+    },
+    icon: {
+      base: { display: 'flex', alignItems: 'center', flexShrink: 0 },
+    },
+    // Inherits everything from the button; declared so the part shows as
+    // styled in the inspector and has an obvious place to override.
+    label: { base: { fontWeight: 600 } },
+    caption: {
+      base: { fontSize: '{size.xs}', color: '{color.muted}', textAlign: 'center' },
+    },
+  },
   defaultDesign: { fullWidth: true, showIcon: true, iconPosition: 'left' },
   defaultContent: { label: 'Book a call', url: '', icon: 'Calendar', caption: '', newTab: true },
 };

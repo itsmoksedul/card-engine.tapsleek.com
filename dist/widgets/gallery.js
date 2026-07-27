@@ -51,6 +51,48 @@ exports.meta = {
             ],
         },
     ],
+    defaultPartStyles: {
+        root: {
+            base: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '{space.3}',
+                padding: { all: '{space.4}' },
+                background: { kind: 'color', color: '{color.surface}' },
+                borderRadius: { all: '{radius.lg}' },
+            },
+        },
+        title: {
+            base: {
+                fontFamily: '{font.heading}',
+                fontSize: '{size.lg}',
+                fontWeight: 700,
+                color: '{color.text}',
+            },
+        },
+        list: {
+            base: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '{space.2}' },
+        },
+        item: {
+            base: { position: 'relative', overflow: 'hidden', borderRadius: { all: '{radius.md}' } },
+        },
+        image: {
+            base: {
+                width: '100%',
+                aspectRatio: '1/1',
+                objectFit: 'cover',
+                transition: { property: ['transform'], duration: 250, easing: 'ease' },
+            },
+            hover: { transform: { scale: 1.04 } },
+        },
+        caption: {
+            base: {
+                padding: { t: '{space.2}' },
+                fontSize: '{size.xs}',
+                color: '{color.muted}',
+            },
+        },
+    },
     defaultDesign: { layout: 'grid-2', ratio: '1/1', showCaption: false, lightbox: true },
     defaultContent: { title: 'Gallery', items: [] },
 };

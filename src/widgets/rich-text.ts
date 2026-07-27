@@ -26,6 +26,29 @@ export const meta: WidgetModule['meta'] = {
     { key: 'title', type: 'text', label: 'Title', max: 80 },
     { key: 'body', type: 'richtext', label: 'Text', max: 4000, toolbar: ['b', 'i', 'link', 'ul', 'ol'] },
   ],
+  defaultPartStyles: {
+    root: {
+      base: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '{space.2}',
+        padding: { all: '{space.4}' },
+        background: { kind: 'color', color: '{color.surface}' },
+        borderRadius: { all: '{radius.lg}' },
+      },
+    },
+    title: {
+      base: {
+        fontFamily: '{font.heading}',
+        fontSize: '{size.lg}',
+        fontWeight: 700,
+        color: '{color.text}',
+      },
+    },
+    body: {
+      base: { fontSize: '{size.base}', lineHeight: 1.6, color: '{color.muted}' },
+    },
+  },
   defaultDesign: { showTitle: true, align: 'left' },
   defaultContent: { title: 'About', body: '<p>Tell people what you do.</p>' },
 };
