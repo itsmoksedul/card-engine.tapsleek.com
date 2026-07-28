@@ -22,10 +22,10 @@ export type StyleValue = string | number;
  *   • `md` is Tablet and `sm` is Mobile — each OVERRIDES the desktop base
  *     *below* its threshold via a `max-width` media query.
  */
-export type Breakpoint = 'base' | 'sm' | 'md';
-export type StyleState = 'hover' | 'active' | 'focus';
+export type Breakpoint = "base" | "sm" | "md";
+export type StyleState = "hover" | "active" | "focus";
 /** Breakpoint max-widths, in px. `base` (Desktop) is unconditional. */
-export declare const BREAKPOINTS: Record<Exclude<Breakpoint, 'base'>, number>;
+export declare const BREAKPOINTS: Record<Exclude<Breakpoint, "base">, number>;
 /**
  * Order the compiler emits layers in. Desktop base first, then each override in
  * DESCENDING max-width (Tablet before Mobile) so the narrower breakpoint wins by
@@ -33,7 +33,7 @@ export declare const BREAKPOINTS: Record<Exclude<Breakpoint, 'base'>, number>;
  */
 export declare const BREAKPOINT_ORDER: Breakpoint[];
 /** `max-width` media condition per override breakpoint. */
-export declare const BREAKPOINT_MEDIA: Record<Exclude<Breakpoint, 'base'>, string>;
+export declare const BREAKPOINT_MEDIA: Record<Exclude<Breakpoint, "base">, string>;
 export declare const BREAKPOINT_KEYS: Breakpoint[];
 export declare const STATE_KEYS: StyleState[];
 /** Per-side box value. Omitted sides are simply not emitted. */
@@ -55,31 +55,31 @@ export interface Corners4 {
 }
 export interface BorderValue {
     width?: StyleValue;
-    style?: 'solid' | 'dashed' | 'dotted' | 'none';
+    style?: "solid" | "dashed" | "dotted" | "none";
     color?: StyleValue;
     /** Per-side override; when present, `width/style/color` act as the default. */
-    sides?: Partial<Record<'t' | 'r' | 'b' | 'l', {
+    sides?: Partial<Record<"t" | "r" | "b" | "l", {
         width?: StyleValue;
         style?: string;
         color?: StyleValue;
     }>>;
 }
 export type BackgroundValue = {
-    kind: 'color';
+    kind: "color";
     color: StyleValue;
 } | {
-    kind: 'gradient';
+    kind: "gradient";
     angle?: number;
     stops: {
         color: StyleValue;
         at?: StyleValue;
     }[];
 } | {
-    kind: 'image';
+    kind: "image";
     url: string;
-    size?: 'cover' | 'contain' | 'auto';
+    size?: "cover" | "contain" | "auto";
     position?: string;
-    repeat?: 'no-repeat' | 'repeat' | 'repeat-x' | 'repeat-y';
+    repeat?: "no-repeat" | "repeat" | "repeat-x" | "repeat-y";
     /** Optional colour painted underneath the image. */
     color?: StyleValue;
 };
@@ -105,9 +105,9 @@ export interface TransformValue {
     rotate?: number;
 }
 export interface StyleProps {
-    display?: 'flex' | 'grid' | 'block' | 'inline-flex' | 'inline-block' | 'none' | 'contents';
-    flexDirection?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
-    flexWrap?: 'nowrap' | 'wrap' | 'wrap-reverse';
+    display?: "flex" | "grid" | "block" | "inline-flex" | "inline-block" | "none" | "contents";
+    flexDirection?: "row" | "column" | "row-reverse" | "column-reverse";
+    flexWrap?: "nowrap" | "wrap" | "wrap-reverse";
     justifyContent?: string;
     alignItems?: string;
     alignSelf?: string;
@@ -121,18 +121,18 @@ export interface StyleProps {
     gridTemplateRows?: string;
     gridColumn?: string;
     gridRow?: string;
-    gridAutoFlow?: 'row' | 'column' | 'dense' | 'row dense' | 'column dense';
+    gridAutoFlow?: "row" | "column" | "dense" | "row dense" | "column dense";
     order?: number;
-    position?: 'static' | 'relative' | 'absolute' | 'sticky' | 'fixed';
+    position?: "static" | "relative" | "absolute" | "sticky" | "fixed";
     top?: StyleValue;
     right?: StyleValue;
     bottom?: StyleValue;
     left?: StyleValue;
     zIndex?: number;
-    overflow?: 'visible' | 'hidden' | 'auto' | 'scroll' | 'clip';
-    overflowX?: 'visible' | 'hidden' | 'auto' | 'scroll' | 'clip';
-    overflowY?: 'visible' | 'hidden' | 'auto' | 'scroll' | 'clip';
-    isolation?: 'auto' | 'isolate';
+    overflow?: "visible" | "hidden" | "auto" | "scroll" | "clip";
+    overflowX?: "visible" | "hidden" | "auto" | "scroll" | "clip";
+    overflowY?: "visible" | "hidden" | "auto" | "scroll" | "clip";
+    isolation?: "auto" | "isolate";
     width?: StyleValue;
     minWidth?: StyleValue;
     maxWidth?: StyleValue;
@@ -145,14 +145,14 @@ export interface StyleProps {
     fontFamily?: StyleValue;
     fontSize?: StyleValue;
     fontWeight?: number;
-    fontStyle?: 'normal' | 'italic';
+    fontStyle?: "normal" | "italic";
     lineHeight?: StyleValue;
     letterSpacing?: StyleValue;
-    textAlign?: 'left' | 'center' | 'right' | 'justify';
-    textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
-    textDecoration?: 'none' | 'underline' | 'line-through';
-    whiteSpace?: 'normal' | 'nowrap' | 'pre-line' | 'pre-wrap';
-    wordBreak?: 'normal' | 'break-word' | 'break-all';
+    textAlign?: "left" | "center" | "right" | "justify";
+    textTransform?: "none" | "uppercase" | "lowercase" | "capitalize";
+    textDecoration?: "none" | "underline" | "line-through";
+    whiteSpace?: "normal" | "nowrap" | "pre-line" | "pre-wrap";
+    wordBreak?: "normal" | "break-word" | "break-all";
     /** Compiles to the `-webkit-line-clamp` trio. */
     lineClamp?: number;
     color?: StyleValue;
@@ -165,14 +165,14 @@ export interface StyleProps {
     filter?: string;
     mixBlendMode?: string;
     clipPath?: string;
-    objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
+    objectFit?: "cover" | "contain" | "fill" | "none" | "scale-down";
     objectPosition?: string;
     transition?: TransitionValue;
     transform?: TransformValue;
     transformOrigin?: string;
-    cursor?: 'auto' | 'pointer' | 'default' | 'not-allowed';
-    pointerEvents?: 'auto' | 'none';
-    userSelect?: 'auto' | 'none' | 'text';
+    cursor?: "auto" | "pointer" | "default" | "not-allowed";
+    pointerEvents?: "auto" | "none";
+    userSelect?: "auto" | "none" | "text";
 }
 export type StylePropKey = keyof StyleProps;
 /**

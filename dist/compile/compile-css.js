@@ -153,11 +153,15 @@ function compileCss(def, options = {}) {
     else {
         // Desktop-first cascade: Tablet (wider max-width) first, Mobile last.
         const mdCss = dedupe(md).map((r) => rule(r.selector, r.decls, pretty)).join(nl);
-        if (mdCss)
+        if (mdCss) {
             body.push(`@media ${style_1.BREAKPOINT_MEDIA.md}{${nl}${mdCss}${nl}}`);
+            body.push(`@container ${style_1.BREAKPOINT_MEDIA.md}{${nl}${mdCss}${nl}}`);
+        }
         const smCss = dedupe(sm).map((r) => rule(r.selector, r.decls, pretty)).join(nl);
-        if (smCss)
+        if (smCss) {
             body.push(`@media ${style_1.BREAKPOINT_MEDIA.sm}{${nl}${smCss}${nl}}`);
+            body.push(`@container ${style_1.BREAKPOINT_MEDIA.sm}{${nl}${smCss}${nl}}`);
+        }
     }
     body.push(...dedupe(states).map((r) => rule(r.selector, r.decls, pretty)));
     out.push(`@layer ts-template{${nl}${body.filter(Boolean).join(nl)}${nl}}`);

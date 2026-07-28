@@ -16,7 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EMPTY_STYLE_SET = exports.STATE_KEYS = exports.BREAKPOINT_KEYS = exports.BREAKPOINT_MEDIA = exports.BREAKPOINT_ORDER = exports.BREAKPOINTS = void 0;
 /** Breakpoint max-widths, in px. `base` (Desktop) is unconditional. */
 exports.BREAKPOINTS = {
-    sm: 380, // Mobile   — overrides below 380px
+    sm: 480, // Mobile   — overrides below 480px (covers all mobile devices)
     md: 768, // Tablet   — overrides below 768px
 };
 /**
@@ -24,12 +24,12 @@ exports.BREAKPOINTS = {
  * DESCENDING max-width (Tablet before Mobile) so the narrower breakpoint wins by
  * source order — both media queries carry equal specificity.
  */
-exports.BREAKPOINT_ORDER = ['base', 'md', 'sm'];
+exports.BREAKPOINT_ORDER = ["base", "md", "sm"];
 /** `max-width` media condition per override breakpoint. */
 exports.BREAKPOINT_MEDIA = {
     md: `(max-width:${exports.BREAKPOINTS.md}px)`,
     sm: `(max-width:${exports.BREAKPOINTS.sm}px)`,
 };
-exports.BREAKPOINT_KEYS = ['base', 'sm', 'md'];
-exports.STATE_KEYS = ['hover', 'active', 'focus'];
+exports.BREAKPOINT_KEYS = ["base", "sm", "md"];
+exports.STATE_KEYS = ["hover", "active", "focus"];
 exports.EMPTY_STYLE_SET = Object.freeze({ base: {} });
