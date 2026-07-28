@@ -6,8 +6,8 @@
  * bindings instead (see `Binding` in types/node.ts); this widget exists for the
  * common case where they just want the standard block with design control.
  */
-import type { WidgetModule } from '../types/widget';
-export declare const meta: WidgetModule['meta'];
+import type { WidgetModule } from "../types/widget";
+export declare const meta: WidgetModule["meta"];
 export declare const previews: {
     empty: {};
     typical: {};
