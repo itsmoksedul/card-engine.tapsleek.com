@@ -1,4 +1,5 @@
 import React from 'react';
+import { RenderIcon } from './icon-helper';
 import { EmptyState, str, type WidgetRenderProps } from './shared';
 
 export function IconBoxRender({ content, design, cls, ctx }: WidgetRenderProps) {
@@ -11,7 +12,7 @@ export function IconBoxRender({ content, design, cls, ctx }: WidgetRenderProps) 
 
   const inner = (
     <>
-      {icon && <span className={cls('icon')} data-icon={icon} aria-hidden />}
+      {icon && <RenderIcon name={icon} className={cls('icon')} />}
       {title && <div className={cls('title')}>{title}</div>}
       {d.showDescription !== false && str(c.description) && (
         <div className={cls('description')}>{str(c.description)}</div>

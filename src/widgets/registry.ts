@@ -17,7 +17,9 @@ import type { AnyWidgetMeta, WidgetMigrations, WidgetPreviews } from '../types/w
 
 import * as Appointment from './appointment';
 import * as BusinessHours from './business-hours';
+import * as ConnectButtons from './connect-buttons';
 import * as ContactLinks from './contact-links';
+import * as Copyright from './copyright';
 import * as CtaButton from './cta-button';
 import * as Description from './description';
 import * as Divider from './divider';
@@ -51,7 +53,10 @@ export interface RegisteredWidget {
 
 const MODULES: RegisteredWidget[] = [
   Profile,
+  ConnectButtons,
   ContactLinks,
+  LeadForm,
+  Copyright,
   Title,
   Description,
   RichText,
@@ -63,7 +68,6 @@ const MODULES: RegisteredWidget[] = [
   Testimonials,
   BusinessHours,
   Appointment,
-  LeadForm,
   CtaButton,
   Icon,
   SocialIcons,

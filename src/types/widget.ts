@@ -18,6 +18,8 @@ import type { FieldSchema } from './field';
 import type { StyleSet } from './style';
 
 export type WidgetGroup =
+  | 'system'
+  | 'blocks'
   | 'identity'
   | 'contact'
   | 'content'

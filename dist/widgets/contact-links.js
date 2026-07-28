@@ -3,10 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.previews = exports.meta = void 0;
 exports.meta = {
     type: 'CONTACT_LINKS',
-    label: 'Contact Buttons',
+    label: 'Link Buttons',
     iconName: 'Link2',
-    group: 'contact',
-    description: 'The links from the card’s Links tab.',
+    group: 'system',
+    description: 'Custom action & link buttons list.',
     contentVersion: 1,
     derived: true,
     parts: [

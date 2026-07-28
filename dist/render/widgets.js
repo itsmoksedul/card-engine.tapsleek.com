@@ -3,7 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WIDGET_RENDERERS = void 0;
 const appointment_1 = require("./widgets/appointment");
 const business_hours_1 = require("./widgets/business-hours");
+const connect_buttons_1 = require("./widgets/connect-buttons");
 const contact_links_1 = require("./widgets/contact-links");
+const copyright_1 = require("./widgets/copyright");
 const cta_button_1 = require("./widgets/cta-button");
 const description_1 = require("./widgets/description");
 const divider_1 = require("./widgets/divider");
@@ -38,7 +40,9 @@ const video_gallery_1 = require("./widgets/video-gallery");
  */
 exports.WIDGET_RENDERERS = {
     PROFILE: profile_1.ProfileRender,
+    CONNECT_BUTTONS: connect_buttons_1.ConnectButtonsRender,
     CONTACT_LINKS: contact_links_1.ContactLinksRender,
+    COPYRIGHT: copyright_1.CopyrightRender,
     TITLE: title_1.TitleRender,
     DESCRIPTION: description_1.DescriptionRender,
     RICH_TEXT: rich_text_1.RichTextRender,

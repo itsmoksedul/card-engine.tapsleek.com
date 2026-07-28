@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContactLinksRender = ContactLinksRender;
 const jsx_runtime_1 = require("react/jsx-runtime");
+const icon_helper_1 = require("./icon-helper");
 const shared_1 = require("./shared");
 /**
  * CONTACT_LINKS — renders the card's CardLink rows.
@@ -20,5 +21,5 @@ function ContactLinksRender({ design, cls, ctx }) {
     links = links.slice(0, max);
     if (!links.length)
         return (0, jsx_runtime_1.jsx)(shared_1.EmptyState, { cls: cls, ctx: ctx, label: "No links yet" });
-    return ((0, jsx_runtime_1.jsx)("div", { className: cls('root'), "data-layout": d.layout ?? 'stack', children: (0, jsx_runtime_1.jsx)("div", { className: cls('list'), children: links.map((link) => ((0, jsx_runtime_1.jsxs)("a", { className: cls('item'), "data-link-id": link.id, "data-link-type": link.type, href: link.value || '#', target: "_blank", rel: "noreferrer", onClick: () => ctx.track({ type: 'LINK_CLICK', linkId: link.id }), children: [d.showIcon !== false && (0, jsx_runtime_1.jsx)("span", { className: cls('icon'), "data-icon": link.type, "aria-hidden": true }), (0, jsx_runtime_1.jsx)("span", { className: cls('label'), children: link.label || link.type }), d.showValue && (0, jsx_runtime_1.jsx)("span", { className: cls('value'), children: link.value })] }, link.id))) }) }));
+    return ((0, jsx_runtime_1.jsx)("div", { className: cls('root'), "data-layout": d.layout ?? 'stack', children: (0, jsx_runtime_1.jsx)("div", { className: cls('list'), children: links.map((link) => ((0, jsx_runtime_1.jsxs)("a", { className: cls('item'), "data-link-id": link.id, "data-link-type": link.type, href: link.value || '#', target: "_blank", rel: "noreferrer", onClick: () => ctx.track({ type: 'LINK_CLICK', linkId: link.id }), children: [d.showIcon !== false && (0, jsx_runtime_1.jsx)(icon_helper_1.RenderIcon, { name: link.type || link.icon, className: cls('icon') }), (0, jsx_runtime_1.jsx)("span", { className: cls('label'), children: link.label || link.type }), d.showValue && (0, jsx_runtime_1.jsx)("span", { className: cls('value'), children: link.value })] }, link.id))) }) }));
 }

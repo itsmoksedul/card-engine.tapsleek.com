@@ -1,4 +1,5 @@
 import React from 'react';
+import { RenderIcon } from './icon-helper';
 import { asArray, EmptyState, type WidgetRenderProps } from './shared';
 
 /**
@@ -30,7 +31,7 @@ export function SocialIconsRender({ design, content, cls, ctx }: WidgetRenderPro
             rel="noreferrer"
             aria-label={profile.platform}
           >
-            <span className={cls('icon')} data-icon={profile.platform} aria-hidden />
+            <RenderIcon name={profile.platform} className={cls('icon')} />
           </a>
         ))}
       </div>

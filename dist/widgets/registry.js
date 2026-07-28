@@ -58,7 +58,9 @@ exports.derivedTypes = derivedTypes;
 exports.partKeys = partKeys;
 const Appointment = __importStar(require("./appointment"));
 const BusinessHours = __importStar(require("./business-hours"));
+const ConnectButtons = __importStar(require("./connect-buttons"));
 const ContactLinks = __importStar(require("./contact-links"));
+const Copyright = __importStar(require("./copyright"));
 const CtaButton = __importStar(require("./cta-button"));
 const Description = __importStar(require("./description"));
 const Divider = __importStar(require("./divider"));
@@ -85,7 +87,10 @@ const Video = __importStar(require("./video"));
 const VideoGallery = __importStar(require("./video-gallery"));
 const MODULES = [
     Profile,
+    ConnectButtons,
     ContactLinks,
+    LeadForm,
+    Copyright,
     Title,
     Description,
     RichText,
@@ -97,7 +102,6 @@ const MODULES = [
     Testimonials,
     BusinessHours,
     Appointment,
-    LeadForm,
     CtaButton,
     Icon,
     SocialIcons,

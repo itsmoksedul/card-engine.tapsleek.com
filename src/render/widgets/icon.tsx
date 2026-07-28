@@ -1,4 +1,5 @@
 import React from 'react';
+import { RenderIcon } from './icon-helper';
 import { EmptyState, str, type WidgetRenderProps } from './shared';
 
 export function IconRender({ content, design, cls, ctx }: WidgetRenderProps) {
@@ -8,7 +9,7 @@ export function IconRender({ content, design, cls, ctx }: WidgetRenderProps) {
 
   if (!icon) return <EmptyState cls={cls} ctx={ctx} label="Icon" />;
 
-  const glyph = <span className={cls('icon')} data-icon={icon} aria-hidden />;
+  const glyph = <RenderIcon name={icon} className={cls('icon')} />;
   const link = str(c.link);
 
   return (

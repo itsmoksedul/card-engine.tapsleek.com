@@ -5,8 +5,8 @@ exports.meta = {
     type: 'PROFILE',
     label: 'Profile',
     iconName: 'User',
-    group: 'identity',
-    description: 'Avatar, name, title and bio pulled from General Info.',
+    group: 'system',
+    description: 'Avatar, cover photo, name, title and bio pulled from General Info.',
     contentVersion: 1,
     derived: true,
     parts: [
@@ -18,8 +18,6 @@ exports.meta = {
         { key: 'subtitle', label: 'Job title / company', kind: 'text', parentKey: 'root' },
         { key: 'bio', label: 'Bio', kind: 'text', parentKey: 'root' },
         { key: 'location', label: 'Location', kind: 'text', parentKey: 'root' },
-        { key: 'actions', label: 'Action row', kind: 'list', parentKey: 'root' },
-        { key: 'action', label: 'Action button', kind: 'button', parentKey: 'actions' },
     ],
     designSchema: [
         { key: 'showCover', type: 'boolean', label: 'Show cover photo' },
@@ -34,23 +32,8 @@ exports.meta = {
                 { value: 'left', label: 'Left' },
             ],
         },
-        {
-            key: 'actions', type: 'select', label: 'Action buttons', multiple: true,
-            options: [
-                { value: 'vcard', label: 'Save contact' },
-                { value: 'share', label: 'Share' },
-                { value: 'qr', label: 'QR code' },
-            ],
-        },
     ],
     contentSchema: [],
-    /**
-     * The DOM here is FLAT — cover, avatar, name and bio are all siblings, with
-     * no inner wrapper to hang padding on. So the root stays edge-to-edge (which
-     * is what lets the cover photo bleed full-width) and each text part carries
-     * its own inline padding. That avoids negative-margin tricks, which the value
-     * serializer would reject anyway: `-{space.4}` is not a valid token ref.
-     */
     defaultPartStyles: {
         root: {
             base: {
@@ -76,7 +59,6 @@ exports.meta = {
                 borderRadius: { all: '{radius.full}' },
                 border: { width: '3px', style: 'solid', color: '{color.surface}' },
                 boxShadow: '{shadow.md}',
-                // Overlaps the cover — the look every v1 template hand-rolled.
                 margin: { t: '-56px', b: '{space.1}' },
             },
         },
@@ -116,35 +98,6 @@ exports.meta = {
                 padding: { r: '{space.4}', l: '{space.4}' },
             },
         },
-        actions: {
-            base: {
-                display: 'flex',
-                flexWrap: 'wrap',
-                justifyContent: 'center',
-                gap: '{space.2}',
-                width: '100%',
-                padding: { t: '{space.2}', r: '{space.4}', b: '0', l: '{space.4}' },
-            },
-        },
-        action: {
-            base: {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '{space.2}',
-                flexGrow: 1,
-                width: '100%',
-                padding: { t: '{space.3}', r: '{space.4}', b: '{space.3}', l: '{space.4}' },
-                background: { kind: 'color', color: '{color.primary}' },
-                color: '{color.onPrimary}',
-                borderRadius: { all: '{radius.md}' },
-                fontSize: '{size.sm}',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: { property: ['opacity'], duration: 150, easing: 'ease' },
-            },
-            hover: { opacity: 0.88 },
-        },
     },
     defaultDesign: {
         showCover: true,
@@ -153,7 +106,6 @@ exports.meta = {
         showBio: true,
         showLocation: false,
         align: 'center',
-        actions: ['vcard'],
     },
     defaultContent: {},
 };

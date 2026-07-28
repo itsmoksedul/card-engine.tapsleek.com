@@ -15,7 +15,7 @@
  */
 import type { FieldSchema } from './field';
 import type { StyleSet } from './style';
-export type WidgetGroup = 'identity' | 'contact' | 'content' | 'media' | 'business' | 'utility';
+export type WidgetGroup = 'system' | 'blocks' | 'identity' | 'contact' | 'content' | 'media' | 'business' | 'utility';
 export type WidgetTier = 'FREE' | 'PRO';
 /**
  * What a part physically IS, so an editor can offer only the controls that

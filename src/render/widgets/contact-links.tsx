@@ -1,4 +1,5 @@
 import React from 'react';
+import { RenderIcon } from './icon-helper';
 import { asArray, EmptyState, type WidgetRenderProps } from './shared';
 
 /**
@@ -33,7 +34,7 @@ export function ContactLinksRender({ design, cls, ctx }: WidgetRenderProps) {
             rel="noreferrer"
             onClick={() => ctx.track({ type: 'LINK_CLICK', linkId: link.id })}
           >
-            {d.showIcon !== false && <span className={cls('icon')} data-icon={link.type} aria-hidden />}
+            {d.showIcon !== false && <RenderIcon name={link.type || link.icon} className={cls('icon')} />}
             <span className={cls('label')}>{link.label || link.type}</span>
             {d.showValue && <span className={cls('value')}>{link.value}</span>}
           </a>

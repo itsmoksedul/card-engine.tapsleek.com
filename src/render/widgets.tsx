@@ -1,6 +1,8 @@
 import { AppointmentRender } from './widgets/appointment';
 import { BusinessHoursRender } from './widgets/business-hours';
+import { ConnectButtonsRender } from './widgets/connect-buttons';
 import { ContactLinksRender } from './widgets/contact-links';
+import { CopyrightRender } from './widgets/copyright';
 import { CtaButtonRender } from './widgets/cta-button';
 import { DescriptionRender } from './widgets/description';
 import { DividerRender } from './widgets/divider';
@@ -36,7 +38,9 @@ import { VideoGalleryRender } from './widgets/video-gallery';
  */
 export const WIDGET_RENDERERS = {
   PROFILE: ProfileRender,
+  CONNECT_BUTTONS: ConnectButtonsRender,
   CONTACT_LINKS: ContactLinksRender,
+  COPYRIGHT: CopyrightRender,
   TITLE: TitleRender,
   DESCRIPTION: DescriptionRender,
   RICH_TEXT: RichTextRender,

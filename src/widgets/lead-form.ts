@@ -14,7 +14,7 @@ export const meta: WidgetModule['meta'] = {
   type: 'LEAD_FORM',
   label: 'Contact Form',
   iconName: 'Mail',
-  group: 'contact',
+  group: 'system',
   description: 'Collect names, emails and messages straight into Contacts.',
   contentVersion: 1,
   interactive: true,
