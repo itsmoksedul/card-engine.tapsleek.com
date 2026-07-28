@@ -43,7 +43,10 @@ Object.defineProperty(exports, "len", { enumerable: true, get: function () { ret
 const DEFAULT_SCOPE = 'ts-card';
 function compileCss(def, options = {}) {
     const pretty = options.pretty ?? false;
-    const scope = options.scope ?? DEFAULT_SCOPE;
+    // Tolerate a caller passing a selector-style scope (".ts-card-abc"): the
+    // compiler builds `.${scope}`, so a leading dot would produce an unmatchable
+    // `..ts-card-abc`. Strip it so both `"ts-card"` and `".ts-card"` work.
+    const scope = (options.scope ?? DEFAULT_SCOPE).replace(/^\.+/, '');
     const warnings = [];
     const emptyNodes = [];
     const base = [];
