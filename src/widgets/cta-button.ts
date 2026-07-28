@@ -9,10 +9,10 @@ export const meta: WidgetModule['meta'] = {
   contentVersion: 1,
   parts: [
     { key: 'root', label: 'Container', kind: 'container' },
-    { key: 'button', label: 'Button', kind: 'button' },
-    { key: 'icon', label: 'Icon', kind: 'icon' },
-    { key: 'label', label: 'Label', kind: 'text' },
-    { key: 'caption', label: 'Caption', kind: 'text' },
+    { key: 'button', label: 'Button', kind: 'button', parentKey: 'root' },
+    { key: 'icon', label: 'Icon', kind: 'icon', parentKey: 'button' },
+    { key: 'label', label: 'Label', kind: 'text', parentKey: 'button' },
+    { key: 'caption', label: 'Caption', kind: 'text', parentKey: 'root' },
   ],
   designSchema: [
     { key: 'fullWidth', type: 'boolean', label: 'Full width' },

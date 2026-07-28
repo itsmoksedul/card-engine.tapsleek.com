@@ -43,6 +43,8 @@ export interface WidgetPart {
     label: string;
     /** Drives which style controls an editor shows. Defaults to `container`. */
     kind?: WidgetPartKind;
+    /** Key of the parent part if nested inside another part. */
+    parentKey?: string;
     /** Marks a part that only exists for certain design values. */
     visibleIf?: {
         key: string;

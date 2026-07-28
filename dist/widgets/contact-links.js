@@ -11,11 +11,11 @@ exports.meta = {
     derived: true,
     parts: [
         { key: 'root', label: 'Container', kind: 'container' },
-        { key: 'list', label: 'List', kind: 'list' },
-        { key: 'item', label: 'Button', kind: 'button' },
-        { key: 'icon', label: 'Icon', kind: 'icon' },
-        { key: 'label', label: 'Label', kind: 'text' },
-        { key: 'value', label: 'Value', kind: 'text' },
+        { key: 'list', label: 'List', kind: 'list', parentKey: 'root' },
+        { key: 'item', label: 'Button', kind: 'button', parentKey: 'list' },
+        { key: 'icon', label: 'Icon', kind: 'icon', parentKey: 'item' },
+        { key: 'label', label: 'Label', kind: 'text', parentKey: 'item' },
+        { key: 'value', label: 'Value', kind: 'text', parentKey: 'item' },
     ],
     designSchema: [
         {
