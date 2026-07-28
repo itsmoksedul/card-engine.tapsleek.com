@@ -24,8 +24,10 @@ export function ProfileRender({ design, cls, ctx }: WidgetRenderProps) {
 
       {name && <div className={cls('name')}>{name}</div>}
       {subtitle && <div className={cls('subtitle')}>{subtitle}</div>}
+      {d.showLocation !== false && card.location && (
+        <div className={cls('location')}>{card.location}</div>
+      )}
       {d.showBio !== false && card.bio && <p className={cls('bio')}>{card.bio}</p>}
-      {d.showLocation && card.location && <div className={cls('location')}>{card.location}</div>}
     </div>
   );
 }

@@ -111,7 +111,7 @@ export const meta: WidgetModule['meta'] = {
     showAvatar: true,
     showLogo: true,
     showBio: true,
-    showLocation: false,
+    showLocation: true,
     align: 'center',
   },
   defaultContent: {},

@@ -203,18 +203,52 @@ function WidgetRenderer({
 
   // If rendering a user card (not editing template in builder) and blocks array is passed:
   if (!ctx.isEditing && Array.isArray(ctx.blocks)) {
-    const isSystemWidget = ['PROFILE', 'CONNECT_BUTTONS', 'HEADER', 'NAV'].includes(node.widget);
-    if (!isSystemWidget) {
+    const w = node.widget?.toUpperCase() || '';
+
+    // Primary card widgets are driven by card data (links, profile, vcard, etc.):
+    const isCoreWidget = [
+      'PROFILE',
+      'CONNECT_BUTTONS',
+      'HEADER',
+      'NAV',
+      'LINK_BUTTONS',
+      'CUSTOM_LINKS',
+      'LINKS',
+      'SOCIAL_ICONS',
+      'SOCIAL_LINKS',
+      'SOCIAL',
+      'COPYRIGHT',
+    ].includes(w);
+
+    if (isCoreWidget) {
+      // LINK_BUTTONS / LINKS check if user has links or blocks
+      if (['LINK_BUTTONS', 'CUSTOM_LINKS', 'LINKS'].includes(w)) {
+        const hasLinks = Array.isArray(ctx.links) && ctx.links.length > 0;
+        const hasBlock = ctx.blocks.some(
+          (b) => b.type === 'LINKS' || b.type === 'LINK_BUTTONS' || b.widget === 'LINKS'
+        );
+        if (!hasLinks && !hasBlock) return null;
+      }
+      // SOCIAL_ICONS check if user has social links or blocks
+      else if (['SOCIAL_ICONS', 'SOCIAL_LINKS', 'SOCIAL'].includes(w)) {
+        const hasSocialLinks =
+          Array.isArray(ctx.links) &&
+          ctx.links.some(
+            (l) =>
+              l.group === 'social' ||
+              ['instagram', 'facebook', 'twitter', 'x', 'linkedin', 'youtube', 'tiktok', 'github', 'whatsapp', 'telegram', 'discord', 'pinterest'].some(
+                (platform) => (l.type || l.title || l.url || '').toLowerCase().includes(platform)
+              )
+          );
+        const hasBlock = ctx.blocks.some(
+          (b) => b.type === 'SOCIAL' || b.type === 'SOCIAL_ICONS' || b.widget === 'SOCIAL'
+        );
+        if (!hasSocialLinks && !hasBlock) return null;
+      }
+    } else {
+      // Optional block widgets (FAQ, Gallery, Contact Form, Video, Custom HTML, etc.)
       const hasBlock = ctx.blocks.some(
-        (b) =>
-          b.type === node.widget ||
-          b.widget === node.widget ||
-          b.type === node.key ||
-          b.widget === node.key ||
-          (node.widget === 'SOCIAL_ICONS' &&
-            (b.type === 'SOCIAL' || b.type === 'SOCIAL_ICONS' || b.widget === 'SOCIAL')) ||
-          (node.widget === 'LINK_BUTTONS' &&
-            (b.type === 'LINKS' || b.type === 'LINK_BUTTONS' || b.widget === 'LINKS'))
+        (b) => b.type === node.widget || b.widget === node.widget || b.type === node.key || b.widget === node.key
       );
 
       if (!hasBlock) {
