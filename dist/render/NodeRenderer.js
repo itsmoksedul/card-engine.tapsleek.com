@@ -153,6 +153,8 @@ function WidgetRenderer({ node, content, ctx, }) {
             'CONNECT_BUTTONS',
             'HEADER',
             'NAV',
+            'CONTACT_LINKS',
+            'CONTACT_BUTTONS',
             'LINK_BUTTONS',
             'CUSTOM_LINKS',
             'LINKS',
@@ -162,10 +164,14 @@ function WidgetRenderer({ node, content, ctx, }) {
             'COPYRIGHT',
         ].includes(w);
         if (isCoreWidget) {
-            // LINK_BUTTONS / LINKS check if user has links or blocks
-            if (['LINK_BUTTONS', 'CUSTOM_LINKS', 'LINKS'].includes(w)) {
+            // CONTACT_LINKS / LINK_BUTTONS / LINKS check if user has links or blocks
+            if (['CONTACT_LINKS', 'CONTACT_BUTTONS', 'LINK_BUTTONS', 'CUSTOM_LINKS', 'LINKS'].includes(w)) {
                 const hasLinks = Array.isArray(ctx.links) && ctx.links.length > 0;
-                const hasBlock = ctx.blocks.some((b) => b.type === 'LINKS' || b.type === 'LINK_BUTTONS' || b.widget === 'LINKS');
+                const hasBlock = ctx.blocks.some((b) => b.type === 'LINKS' ||
+                    b.type === 'LINK_BUTTONS' ||
+                    b.type === 'CONTACT_LINKS' ||
+                    b.widget === 'LINKS' ||
+                    b.widget === 'CONTACT_LINKS');
                 if (!hasLinks && !hasBlock)
                     return null;
             }
