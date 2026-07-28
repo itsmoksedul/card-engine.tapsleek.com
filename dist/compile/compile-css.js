@@ -171,14 +171,60 @@ function compileCss(def, options = {}) {
     };
 }
 // ─── Pieces ──────────────────────────────────────────────────────────────────
+const DEFAULT_TOKENS = {
+    color: {
+        primary: '#6366f1',
+        surface: '#ffffff',
+        bg: '#f8fafc',
+        text: '#0f172a',
+        muted: '#64748b',
+        border: '#e2e8f0',
+        onPrimary: '#ffffff',
+    },
+    space: {
+        '1': '4px',
+        '2': '8px',
+        '3': '12px',
+        '4': '16px',
+        '5': '20px',
+        '6': '24px',
+        '8': '32px',
+    },
+    radius: {
+        none: '0px',
+        sm: '4px',
+        md: '8px',
+        lg: '16px',
+        full: '9999px',
+    },
+    font: {
+        heading: 'Inter, sans-serif',
+        body: 'Inter, sans-serif',
+    },
+    size: {
+        xs: '12px',
+        sm: '14px',
+        base: '16px',
+        lg: '18px',
+        xl: '20px',
+        '2xl': '24px',
+    },
+    shadow: {
+        none: 'none',
+        sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+        md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+        lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+    },
+};
 /** Token table → CSS custom properties. Invalid literals are dropped + warned. */
 function compileTokens(def, warnings) {
     const decls = [];
     const tokens = def.tokens ?? {};
     for (const group of definition_1.TOKEN_GROUPS) {
-        const table = tokens[group];
-        if (!table || typeof table !== 'object')
-            continue;
+        const table = {
+            ...DEFAULT_TOKENS[group],
+            ...(tokens[group] ?? {}),
+        };
         for (const [name, raw] of Object.entries(table)) {
             if (!value_1.IDENT_RE.test(name)) {
                 warnings.push(`token ${group}.${name}: invalid name, dropped`);
@@ -307,7 +353,7 @@ function resetCss(scope, pretty) {
     const nl = pretty ? '\n' : '';
     const rules = [
         `.${scope} *,.${scope} *::before,.${scope} *::after{box-sizing:border-box}`,
-        `.${scope}{-webkit-font-smoothing:antialiased;text-size-adjust:100%}`,
+        `.${scope}{-webkit-font-smoothing:antialiased;text-size-adjust:100%;color:var(--c-text, #0f172a)}`,
         `.${scope} img,.${scope} video{display:block;max-width:100%;height:auto}`,
         `.${scope} a{color:inherit;text-decoration:none}`,
         `.${scope} button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}`,
