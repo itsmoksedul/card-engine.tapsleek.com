@@ -3,3 +3,4 @@ export * from './field';
 export * from './node';
 export * from './definition';
 export * from './widget';
+export * from './block';

@@ -15,10 +15,25 @@
 export type TokenRef = string;
 /** A literal CSS value or a token reference. Validated per-property. */
 export type StyleValue = string | number;
+/**
+ * Breakpoints are DESKTOP-FIRST:
+ *   • `base` is Desktop — unconditional, applies at every width, and is the
+ *     layer an admin designs in first. Everything cascades down from it.
+ *   • `md` is Tablet and `sm` is Mobile — each OVERRIDES the desktop base
+ *     *below* its threshold via a `max-width` media query.
+ */
 export type Breakpoint = 'base' | 'sm' | 'md';
 export type StyleState = 'hover' | 'active' | 'focus';
-/** Breakpoint min-widths, in px. `base` is unconditional. */
+/** Breakpoint max-widths, in px. `base` (Desktop) is unconditional. */
 export declare const BREAKPOINTS: Record<Exclude<Breakpoint, 'base'>, number>;
+/**
+ * Order the compiler emits layers in. Desktop base first, then each override in
+ * DESCENDING max-width (Tablet before Mobile) so the narrower breakpoint wins by
+ * source order — both media queries carry equal specificity.
+ */
+export declare const BREAKPOINT_ORDER: Breakpoint[];
+/** `max-width` media condition per override breakpoint. */
+export declare const BREAKPOINT_MEDIA: Record<Exclude<Breakpoint, 'base'>, string>;
 export declare const BREAKPOINT_KEYS: Breakpoint[];
 export declare const STATE_KEYS: StyleState[];
 /** Per-side box value. Omitted sides are simply not emitted. */
@@ -161,8 +176,8 @@ export interface StyleProps {
 }
 export type StylePropKey = keyof StyleProps;
 /**
- * A node's full style: one base layer, optional breakpoint layers (min-width,
- * mobile-first) and optional interaction states.
+ * A node's full style: one desktop `base` layer, optional smaller-breakpoint
+ * override layers (`max-width`, desktop-first) and optional interaction states.
  */
 export interface StyleSet {
     base?: StyleProps;

@@ -19,13 +19,29 @@ import * as Appointment from './appointment';
 import * as BusinessHours from './business-hours';
 import * as ContactLinks from './contact-links';
 import * as CtaButton from './cta-button';
+import * as Description from './description';
+import * as Divider from './divider';
+import * as Embed from './embed';
 import * as Faq from './faq';
 import * as Gallery from './gallery';
+import * as Icon from './icon';
+import * as IconBox from './icon-box';
+import * as ImageWidget from './image';
 import * as LeadForm from './lead-form';
+import * as MapWidget from './map';
+import * as PriceList from './price-list';
 import * as Profile from './profile';
 import * as RichText from './rich-text';
 import * as ServiceList from './service-list';
+import * as SocialIcons from './social-icons';
+import * as Spacer from './spacer';
+import * as Stats from './stats';
+import * as Team from './team';
 import * as Testimonials from './testimonials';
+import * as Timeline from './timeline';
+import * as Title from './title';
+import * as Video from './video';
+import * as VideoGallery from './video-gallery';
 
 export interface RegisteredWidget {
   meta: AnyWidgetMeta;
@@ -36,7 +52,11 @@ export interface RegisteredWidget {
 const MODULES: RegisteredWidget[] = [
   Profile,
   ContactLinks,
+  Title,
+  Description,
   RichText,
+  ImageWidget,
+  IconBox,
   ServiceList,
   Gallery,
   Faq,
@@ -45,6 +65,18 @@ const MODULES: RegisteredWidget[] = [
   Appointment,
   LeadForm,
   CtaButton,
+  Icon,
+  SocialIcons,
+  Video,
+  VideoGallery,
+  Embed,
+  MapWidget,
+  Stats,
+  Timeline,
+  PriceList,
+  Team,
+  Spacer,
+  Divider,
 ] as RegisteredWidget[];
 
 const BY_TYPE = new Map<string, RegisteredWidget>(MODULES.map((m) => [m.meta.type, m]));

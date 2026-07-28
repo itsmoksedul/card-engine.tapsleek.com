@@ -8,7 +8,8 @@
  */
 
 import { buildArtifact, definitionFingerprint, stableStringify } from './compile/artifact';
-import { compileCss, compileTokenOverrides } from './compile/compile-css';
+import { compileCss, compileTokenOverrides, compileCardTheme } from './compile/compile-css';
+import { resolveBlockDesign, blockClass, userBlockTypes } from './blocks/resolve-design';
 import { declarationsFor } from './compile/declarations';
 import { safeUrl, utf8Bytes } from './compile/value';
 import { migrateCardContent, migrateWidgetContent, VERSION_KEY } from './content/migrate';
@@ -123,11 +124,41 @@ describe('compileCss', () => {
     expect(leaked).toEqual([]);
   });
 
-  it('puts breakpoint rules in a min-width media query', () => {
+  it('puts breakpoint overrides in a desktop-first max-width media query', () => {
     const { css } = compileCss(fixture());
-    expect(css).toContain('@media (min-width:768px)');
-    const md = css.slice(css.indexOf('@media (min-width:768px)'));
+    expect(css).toContain('@media (max-width:768px)');
+    // The desktop base (column) precedes the Tablet override (row).
+    expect(css.indexOf('flex-direction:column')).toBeLessThan(
+      css.indexOf('@media (max-width:768px)'),
+    );
+    const md = css.slice(css.indexOf('@media (max-width:768px)'));
     expect(md).toContain('flex-direction:row');
+  });
+
+  it('orders overrides Tablet-before-Mobile so the narrower one wins', () => {
+    const def = fixture();
+    (def.root.children![0] as ElementNode).style = {
+      base: { gap: '{space.2}' },
+      md: { gap: '{space.3}' },
+      sm: { gap: '{space.4}' },
+    };
+    const { css } = compileCss(def);
+    // Mobile (max-width:380px) must appear AFTER Tablet (max-width:768px).
+    expect(css.indexOf('@media (max-width:768px)')).toBeLessThan(
+      css.indexOf('@media (max-width:380px)'),
+    );
+  });
+
+  it('flattenTo collapses the cascade to one breakpoint, no media queries', () => {
+    const def = fixture();
+    // Desktop only: no override at all.
+    const desktop = compileCss(def, { flattenTo: 'base' }).css;
+    expect(desktop).not.toContain('@media');
+    expect(desktop).not.toContain('flex-direction:row');
+    // Tablet preview: the md override is inlined, still no media query.
+    const tablet = compileCss(def, { flattenTo: 'md' }).css;
+    expect(tablet).not.toContain('@media');
+    expect(tablet).toContain('flex-direction:row');
   });
 
   it('emits widget part styles and their hover state', () => {
@@ -158,7 +189,7 @@ describe('compileCss', () => {
     const def = fixture();
     (def.root.children![0] as ElementNode).hidden = { md: true };
     const { css } = compileCss(def);
-    const md = css.slice(css.indexOf('@media (min-width:768px)'));
+    const md = css.slice(css.indexOf('@media (max-width:768px)'));
     expect(md).toContain('display:none');
   });
 
@@ -733,5 +764,91 @@ describe('declarationsFor', () => {
 
   it('ignores properties outside the whitelist', () => {
     expect(declarationsFor({ content: '"x"' } as never)).toEqual([]);
+  });
+});
+
+// ─── v2.1 — Blocks + Theme ────────────────────────────────────────────────────
+
+describe('blocks: resolveBlockDesign', () => {
+  it('uses the template instance design + partStyles when present', () => {
+    const d = resolveBlockDesign(fixture(), 'SERVICE_LIST');
+    // fixture()'s SERVICE_LIST has partStyles.item / .list and design.layout
+    expect(d.partStyles.item).toBeTruthy();
+    expect(d.partStyles.list).toBeTruthy();
+    expect(d.design.layout).toBe('grid-2');
+  });
+
+  it('falls back to the widget meta default for a type the template never used', () => {
+    const d = resolveBlockDesign(fixture(), 'FAQ');
+    expect(typeof d.design).toBe('object');
+    // FAQ ships defaultPartStyles in its meta, so a block is never raw HTML
+    expect(Object.keys(d.partStyles).length).toBeGreaterThan(0);
+  });
+
+  it('blockClass is a safe, type-scoped class', () => {
+    expect(blockClass('SERVICE_LIST')).toBe('tsb-SERVICE_LIST');
+    expect(blockClass('a b;{}')).toBe('tsb-ab');
+  });
+});
+
+describe('blocks: userBlockTypes', () => {
+  it('excludes derived identity widgets and the lead form', () => {
+    const list = userBlockTypes(manifest());
+    expect(list).not.toContain('PROFILE');
+    expect(list).not.toContain('CONTACT_LINKS');
+    expect(list).not.toContain('LEAD_FORM');
+    expect(list).toContain('SERVICE_LIST');
+    expect(list).toContain('FAQ');
+  });
+});
+
+describe('compileCss: block presets (emitBlockPresets)', () => {
+  it('default omits block presets — the pre-2.1 artifact is unchanged', () => {
+    expect(compileCss(fixture()).css).not.toContain('.tsb-');
+  });
+
+  it('"template" emits .tsb-<type> for the types the template uses', () => {
+    const { css } = compileCss(fixture(), { emitBlockPresets: 'template' });
+    expect(css).toContain('.tsb-SERVICE_LIST .p-item');
+    expect(css).not.toContain('.tsb-FAQ'); // FAQ isn't in the fixture
+  });
+
+  it('"all" also covers types the template never used', () => {
+    const { css } = compileCss(fixture(), { emitBlockPresets: 'all' });
+    expect(css).toContain('.tsb-SERVICE_LIST');
+    expect(css).toContain('.tsb-FAQ');
+  });
+
+  it('block presets follow the desktop-first cascade (max-width)', () => {
+    const def = fixture();
+    (def.root.children![1] as WidgetNode).partStyles = {
+      item: { base: { padding: { all: '16px' } }, md: { padding: { all: '8px' } } },
+    };
+    const { css } = compileCss(def, { emitBlockPresets: 'template' });
+    expect(css).toContain('@media (max-width:768px)');
+  });
+});
+
+describe('compileCardTheme', () => {
+  it('maps colours, font, radius and density onto override vars', () => {
+    const css = compileCardTheme(
+      { colors: { primary: '#E11D48', text: '#000000' }, fontFamily: 'Poppins', radius: 20, density: 24 },
+      'ts-card-abc',
+    );
+    expect(css).toContain('@layer ts-override');
+    expect(css).toContain('--c-primary:#E11D48');
+    expect(css).toContain('--f-heading:Poppins');
+    expect(css).toContain('--r-md:20px');
+    expect(css).toContain('--sp-4:24px');
+  });
+
+  it('drops hostile / invalid values', () => {
+    const css = compileCardTheme({ colors: { primary: 'red; } body{display:none}' } }, 'ts-card-abc');
+    expect(css).not.toContain('display:none');
+  });
+
+  it('returns empty string for an empty theme', () => {
+    expect(compileCardTheme({}, 'ts-card-abc')).toBe('');
+    expect(compileCardTheme(null, 'ts-card-abc')).toBe('');
   });
 });

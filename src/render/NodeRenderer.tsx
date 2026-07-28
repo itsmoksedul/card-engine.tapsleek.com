@@ -1,4 +1,5 @@
 import React from 'react';
+import DOMPurify from 'isomorphic-dompurify';
 import type { ElementNode, Node, SlotNode, WidgetNode } from '../types/node';
 import { resolveBinding } from './resolveBinding';
 import { WIDGET_RENDERERS } from './widgets';
@@ -7,6 +8,7 @@ export interface RenderCtx {
   card: any;
   links: any[];
   isEditing?: boolean;
+  gatedWidgetKeys?: string[];
   track: (event: any) => void;
 }
 
@@ -107,8 +109,8 @@ function ElementRenderer({
       break;
     }
     case 'richtext': {
-      // Sanitised server-side on write.
-      dom.dangerouslySetInnerHTML = { __html: bound ?? props.html ?? '' };
+      const rawHtml = bound ?? props.html ?? '';
+      dom.dangerouslySetInnerHTML = { __html: DOMPurify.sanitize(String(rawHtml)) };
       break;
     }
     case 'button':
@@ -158,6 +160,30 @@ function ElementRenderer({
  * `n<id>`, a node-level `background` painted itself onto every inner element of
  * the widget, and `.n<id> .p-root` could never match at all.
  */
+function GatedWidgetUpsell({ node, ctx }: { node: WidgetNode; ctx: RenderCtx }) {
+  return (
+    <div
+      className={`n${node.id} ts-gated-upsell`}
+      data-node-id={ctx.isEditing ? node.id : undefined}
+      data-gated="true"
+      style={{
+        padding: '16px',
+        borderRadius: '8px',
+        border: '1px dashed #cbd5e1',
+        background: '#f8fafc',
+        textAlign: 'center',
+      }}
+    >
+      <div style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        Pro Feature
+      </div>
+      <div style={{ fontSize: '13px', color: '#334155', marginTop: '4px' }}>
+        {node.label || node.widget} is locked on current plan
+      </div>
+    </div>
+  );
+}
+
 function WidgetRenderer({
   node,
   content,
@@ -167,6 +193,13 @@ function WidgetRenderer({
   content: any;
   ctx: RenderCtx;
 }) {
+  const isGated =
+    ctx.gatedWidgetKeys?.includes(node.key) || ctx.gatedWidgetKeys?.includes(node.widget);
+
+  if (isGated && !ctx.isEditing) {
+    return <GatedWidgetUpsell node={node} ctx={ctx} />;
+  }
+
   const Widget = WIDGET_RENDERERS[node.widget as keyof typeof WIDGET_RENDERERS] as any;
 
   if (!Widget) {

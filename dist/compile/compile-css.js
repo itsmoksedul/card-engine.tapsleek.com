@@ -12,18 +12,30 @@
  *   3. `@layer ts-override`  — left empty here; the card's inline token
  *                              overrides are injected into it at render time
  *
- * Within `ts-template`, source order is: tokens → base → `sm` → `md`.
+ * Breakpoints are DESKTOP-FIRST. Within `ts-template`, source order is:
+ * tokens → `base` (Desktop) → `md` (Tablet, `max-width`) → `sm` (Mobile,
+ * `max-width`). Desktop is unconditional; each smaller breakpoint overrides it
+ * below its threshold, and because the two override media queries share the same
+ * specificity the narrower one (Mobile) must come LAST to win.
  * Interaction states carry an extra pseudo-class, so they outrank every
  * breakpoint rule by specificity and their position is irrelevant.
+ *
+ * `options.flattenTo` collapses the cascade for a SINGLE breakpoint into plain,
+ * media-query-free rules — used by the in-page admin canvas so a Tablet/Mobile
+ * override is visible on a wide desktop editor window (where a `max-width` query
+ * would never match). It never touches the published artifact.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.len = exports.cssValue = void 0;
 exports.compileCss = compileCss;
 exports.compileTokenOverrides = compileTokenOverrides;
+exports.compileCardTheme = compileCardTheme;
 exports.collectNodeIds = collectNodeIds;
 const style_1 = require("../types/style");
 const definition_1 = require("../types/definition");
 const node_1 = require("../types/node");
+const resolve_design_1 = require("../blocks/resolve-design");
+const registry_1 = require("../widgets/registry");
 const declarations_1 = require("./declarations");
 const value_1 = require("./value");
 Object.defineProperty(exports, "cssValue", { enumerable: true, get: function () { return value_1.cssValue; } });
@@ -95,6 +107,18 @@ function compileCss(def, options = {}) {
             }
         });
     }
+    // ── 3.5 Block presets (v2.1) ───────────────────────────────────────────
+    // Per widget TYPE, so any block a user composes is styled by this template.
+    if (options.emitBlockPresets) {
+        const types = options.emitBlockPresets === 'all' ? registry_1.WIDGET_TYPES : templateWidgetTypes(def);
+        for (const type of types) {
+            const { partStyles } = (0, resolve_design_1.resolveBlockDesign)(def, type);
+            if (!partStyles || !Object.keys(partStyles).length)
+                continue;
+            const sel = `.${scope} .${(0, resolve_design_1.blockClass)(type)}`;
+            compilePartStyles(partStyles, sel, bucket, states, warnings);
+        }
+    }
     // ── 4. Popup chrome ────────────────────────────────────────────────────
     for (const popup of def.popups ?? []) {
         const key = cssSafeAttr(popup.key);
@@ -113,13 +137,25 @@ function compileCss(def, options = {}) {
         out.push(fonts.faces);
     const body = [];
     body.push(rule(`.${scope}`, [...tokenDecls, ...frameDecls], pretty));
+    // Desktop base — always unconditional, always first.
     body.push(...dedupe(base).map((r) => rule(r.selector, r.decls, pretty)));
-    const smCss = dedupe(sm).map((r) => rule(r.selector, r.decls, pretty)).join(nl);
-    if (smCss)
-        body.push(`@media (min-width:${style_1.BREAKPOINTS.sm}px){${nl}${smCss}${nl}}`);
-    const mdCss = dedupe(md).map((r) => rule(r.selector, r.decls, pretty)).join(nl);
-    if (mdCss)
-        body.push(`@media (min-width:${style_1.BREAKPOINTS.md}px){${nl}${mdCss}${nl}}`);
+    if (options.flattenTo) {
+        // Preview mode: pour the applicable override layers straight into the
+        // cascade with no media wrapper, Tablet before Mobile so the narrower wins.
+        const active = options.flattenTo === 'sm' ? ['md', 'sm'] : options.flattenTo === 'md' ? ['md'] : [];
+        for (const bp of active) {
+            body.push(...dedupe(bucket[bp]).map((r) => rule(r.selector, r.decls, pretty)));
+        }
+    }
+    else {
+        // Desktop-first cascade: Tablet (wider max-width) first, Mobile last.
+        const mdCss = dedupe(md).map((r) => rule(r.selector, r.decls, pretty)).join(nl);
+        if (mdCss)
+            body.push(`@media ${style_1.BREAKPOINT_MEDIA.md}{${nl}${mdCss}${nl}}`);
+        const smCss = dedupe(sm).map((r) => rule(r.selector, r.decls, pretty)).join(nl);
+        if (smCss)
+            body.push(`@media ${style_1.BREAKPOINT_MEDIA.sm}{${nl}${smCss}${nl}}`);
+    }
     body.push(...dedupe(states).map((r) => rule(r.selector, r.decls, pretty)));
     out.push(`@layer ts-template{${nl}${body.filter(Boolean).join(nl)}${nl}}`);
     const css = out.filter(Boolean).join(nl);
@@ -354,6 +390,57 @@ function compileTokenOverrides(overrides, cardScopeClass, allow) {
     if (!decls.length)
         return '';
     return `@layer ts-override{.${cardScopeClass}{${decls.join(';')}}}`;
+}
+/**
+ * v2.1 — a card owner's global Theme → inline override, scoped to the card.
+ *
+ * Maps the user-facing knobs onto the template's design tokens, so the whole
+ * card recolours/retypes/re-spaces without the immutable template artifact
+ * changing. Emitted in the `ts-override` layer at render time, exactly like
+ * `compileTokenOverrides`. `fontWeight` and `layout` are applied at render (a
+ * root class), not here.
+ */
+function compileCardTheme(theme, cardScopeClass) {
+    if (!theme || !value_1.IDENT_RE.test(cardScopeClass))
+        return '';
+    const decls = [];
+    for (const [name, raw] of Object.entries(theme.colors ?? {})) {
+        if (!value_1.IDENT_RE.test(name))
+            continue;
+        const v = validateTokenLiteral('color', raw);
+        if (v !== null)
+            decls.push(`${definition_1.TOKEN_PREFIX.color}${name}:${v}`);
+    }
+    if (theme.fontFamily) {
+        const v = validateTokenLiteral('font', theme.fontFamily);
+        if (v !== null)
+            decls.push(`${definition_1.TOKEN_PREFIX.font}heading:${v}`, `${definition_1.TOKEN_PREFIX.font}body:${v}`);
+    }
+    if (theme.radius != null) {
+        const v = validateTokenLiteral('radius', `${theme.radius}px`);
+        if (v !== null)
+            for (const key of ['sm', 'md', 'lg'])
+                decls.push(`${definition_1.TOKEN_PREFIX.radius}${key}:${v}`);
+    }
+    if (theme.density != null) {
+        const v = validateTokenLiteral('space', `${theme.density}px`);
+        if (v !== null)
+            decls.push(`${definition_1.TOKEN_PREFIX.space}4:${v}`);
+    }
+    if (!decls.length)
+        return '';
+    return `@layer ts-override{.${cardScopeClass}{${decls.join(';')}}}`;
+}
+/** Distinct widget types placed in the template tree, in first-seen order. */
+function templateWidgetTypes(def) {
+    const seen = new Set();
+    for (const root of (0, definition_1.definitionRoots)(def)) {
+        (0, node_1.walkTreeOrder)(root, (n) => {
+            if ((0, node_1.isWidget)(n))
+                seen.add(n.widget);
+        });
+    }
+    return [...seen];
 }
 /** Nodes referenced by the tree, for lint + dead-CSS detection. */
 function collectNodeIds(def) {

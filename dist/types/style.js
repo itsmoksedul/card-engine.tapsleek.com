@@ -13,11 +13,22 @@
  * NestJS backend, the Next.js frontends and (eventually) the Expo app.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EMPTY_STYLE_SET = exports.STATE_KEYS = exports.BREAKPOINT_KEYS = exports.BREAKPOINTS = void 0;
-/** Breakpoint min-widths, in px. `base` is unconditional. */
+exports.EMPTY_STYLE_SET = exports.STATE_KEYS = exports.BREAKPOINT_KEYS = exports.BREAKPOINT_MEDIA = exports.BREAKPOINT_ORDER = exports.BREAKPOINTS = void 0;
+/** Breakpoint max-widths, in px. `base` (Desktop) is unconditional. */
 exports.BREAKPOINTS = {
-    sm: 380,
-    md: 768,
+    sm: 380, // Mobile   — overrides below 380px
+    md: 768, // Tablet   — overrides below 768px
+};
+/**
+ * Order the compiler emits layers in. Desktop base first, then each override in
+ * DESCENDING max-width (Tablet before Mobile) so the narrower breakpoint wins by
+ * source order — both media queries carry equal specificity.
+ */
+exports.BREAKPOINT_ORDER = ['base', 'md', 'sm'];
+/** `max-width` media condition per override breakpoint. */
+exports.BREAKPOINT_MEDIA = {
+    md: `(max-width:${exports.BREAKPOINTS.md}px)`,
+    sm: `(max-width:${exports.BREAKPOINTS.sm}px)`,
 };
 exports.BREAKPOINT_KEYS = ['base', 'sm', 'md'];
 exports.STATE_KEYS = ['hover', 'active', 'focus'];

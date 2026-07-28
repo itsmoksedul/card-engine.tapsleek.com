@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.NodeRenderer = NodeRenderer;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = __importDefault(require("react"));
+const isomorphic_dompurify_1 = __importDefault(require("isomorphic-dompurify"));
 const resolveBinding_1 = require("./resolveBinding");
 const widgets_1 = require("./widgets");
 function NodeRenderer({ node, content, ctx }) {
@@ -88,8 +89,8 @@ function ElementRenderer({ node, content, ctx, }) {
             break;
         }
         case 'richtext': {
-            // Sanitised server-side on write.
-            dom.dangerouslySetInnerHTML = { __html: bound ?? props.html ?? '' };
+            const rawHtml = bound ?? props.html ?? '';
+            dom.dangerouslySetInnerHTML = { __html: isomorphic_dompurify_1.default.sanitize(String(rawHtml)) };
             break;
         }
         case 'button':
@@ -129,7 +130,20 @@ function ElementRenderer({ node, content, ctx, }) {
  * `n<id>`, a node-level `background` painted itself onto every inner element of
  * the widget, and `.n<id> .p-root` could never match at all.
  */
+function GatedWidgetUpsell({ node, ctx }) {
+    return ((0, jsx_runtime_1.jsxs)("div", { className: `n${node.id} ts-gated-upsell`, "data-node-id": ctx.isEditing ? node.id : undefined, "data-gated": "true", style: {
+            padding: '16px',
+            borderRadius: '8px',
+            border: '1px dashed #cbd5e1',
+            background: '#f8fafc',
+            textAlign: 'center',
+        }, children: [(0, jsx_runtime_1.jsx)("div", { style: { fontSize: '11px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }, children: "Pro Feature" }), (0, jsx_runtime_1.jsxs)("div", { style: { fontSize: '13px', color: '#334155', marginTop: '4px' }, children: [node.label || node.widget, " is locked on current plan"] })] }));
+}
 function WidgetRenderer({ node, content, ctx, }) {
+    const isGated = ctx.gatedWidgetKeys?.includes(node.key) || ctx.gatedWidgetKeys?.includes(node.widget);
+    if (isGated && !ctx.isEditing) {
+        return (0, jsx_runtime_1.jsx)(GatedWidgetUpsell, { node: node, ctx: ctx });
+    }
     const Widget = widgets_1.WIDGET_RENDERERS[node.widget];
     if (!Widget) {
         return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, children: ctx.isEditing ? `Unknown widget: ${node.widget}` : null }));

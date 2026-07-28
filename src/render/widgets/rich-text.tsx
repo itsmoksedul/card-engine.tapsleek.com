@@ -1,4 +1,5 @@
 import React from 'react';
+import DOMPurify from 'isomorphic-dompurify';
 import { EmptyState, str, type WidgetRenderProps } from './shared';
 
 export function RichTextRender({ content, design, cls, ctx }: WidgetRenderProps) {
@@ -12,8 +13,12 @@ export function RichTextRender({ content, design, cls, ctx }: WidgetRenderProps)
   return (
     <div className={cls('root')} data-align={d.align ?? 'left'}>
       {d.showTitle !== false && title && <h2 className={cls('title')}>{title}</h2>}
-      {/* Sanitised server-side on write — never trust this at render time. */}
-      {body && <div className={cls('body')} dangerouslySetInnerHTML={{ __html: body }} />}
+      {body && (
+        <div
+          className={cls('body')}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(body) }}
+        />
+      )}
     </div>
   );
 }

@@ -11,14 +11,24 @@
  *   3. `@layer ts-override`  — left empty here; the card's inline token
  *                              overrides are injected into it at render time
  *
- * Within `ts-template`, source order is: tokens → base → `sm` → `md`.
+ * Breakpoints are DESKTOP-FIRST. Within `ts-template`, source order is:
+ * tokens → `base` (Desktop) → `md` (Tablet, `max-width`) → `sm` (Mobile,
+ * `max-width`). Desktop is unconditional; each smaller breakpoint overrides it
+ * below its threshold, and because the two override media queries share the same
+ * specificity the narrower one (Mobile) must come LAST to win.
  * Interaction states carry an extra pseudo-class, so they outrank every
  * breakpoint rule by specificity and their position is irrelevant.
+ *
+ * `options.flattenTo` collapses the cascade for a SINGLE breakpoint into plain,
+ * media-query-free rules — used by the in-page admin canvas so a Tablet/Mobile
+ * override is visible on a wide desktop editor window (where a `max-width` query
+ * would never match). It never touches the published artifact.
  */
 
 import {
-  BREAKPOINTS,
+  BREAKPOINT_MEDIA,
   STATE_KEYS,
+  type Breakpoint,
   type StyleProps,
   type StyleSet,
 } from '../types/style';
@@ -30,6 +40,9 @@ import {
   type TokenGroup,
 } from '../types/definition';
 import { isElement, isSlot, isWidget, walkTreeOrder, type Node } from '../types/node';
+import type { CardTheme } from '../types/block';
+import { resolveBlockDesign, blockClass } from '../blocks/resolve-design';
+import { WIDGET_TYPES } from '../widgets/registry';
 import { declarationsFor, serializeDecls, type Decl } from './declarations';
 import { color, cssValue, IDENT_RE, len, safeUrl, utf8Bytes, VALUE_RE } from './value';
 
@@ -42,6 +55,21 @@ export interface CompileOptions {
   emitFonts?: boolean;
   /** Base URL for self-hosted font files. */
   fontBaseUrl?: string;
+  /**
+   * Preview a single breakpoint by flattening the desktop-first cascade into
+   * media-query-free rules. `base` = Desktop only; `md` = Desktop + Tablet;
+   * `sm` = Desktop + Tablet + Mobile. Admin-canvas only — omit for the real
+   * artifact, which always ships the full `max-width` cascade.
+   */
+  flattenTo?: Breakpoint;
+  /**
+   * v2.1 — also emit per-widget-TYPE preset classes (`.tsb-<type>`) so a user's
+   * composed blocks are styled by this template. `'template'` = only the widget
+   * types used in the template; `'all'` = every registered type (so a block of a
+   * type the template never used still renders styled). Omit for the pre-2.1
+   * template-only stylesheet.
+   */
+  emitBlockPresets?: 'template' | 'all';
 }
 
 export interface CompileResult {
@@ -139,6 +167,19 @@ export function compileCss(
     });
   }
 
+  // ── 3.5 Block presets (v2.1) ───────────────────────────────────────────
+  // Per widget TYPE, so any block a user composes is styled by this template.
+  if (options.emitBlockPresets) {
+    const types =
+      options.emitBlockPresets === 'all' ? WIDGET_TYPES : templateWidgetTypes(def);
+    for (const type of types) {
+      const { partStyles } = resolveBlockDesign(def, type);
+      if (!partStyles || !Object.keys(partStyles).length) continue;
+      const sel = `.${scope} .${blockClass(type)}`;
+      compilePartStyles(partStyles, sel, bucket, states, warnings);
+    }
+  }
+
   // ── 4. Popup chrome ────────────────────────────────────────────────────
   for (const popup of def.popups ?? []) {
     const key = cssSafeAttr(popup.key);
@@ -160,13 +201,25 @@ export function compileCss(
 
   const body: string[] = [];
   body.push(rule(`.${scope}`, [...tokenDecls, ...frameDecls], pretty));
+  // Desktop base — always unconditional, always first.
   body.push(...dedupe(base).map((r) => rule(r.selector, r.decls, pretty)));
 
-  const smCss = dedupe(sm).map((r) => rule(r.selector, r.decls, pretty)).join(nl);
-  if (smCss) body.push(`@media (min-width:${BREAKPOINTS.sm}px){${nl}${smCss}${nl}}`);
+  if (options.flattenTo) {
+    // Preview mode: pour the applicable override layers straight into the
+    // cascade with no media wrapper, Tablet before Mobile so the narrower wins.
+    const active: Exclude<Breakpoint, 'base'>[] =
+      options.flattenTo === 'sm' ? ['md', 'sm'] : options.flattenTo === 'md' ? ['md'] : [];
+    for (const bp of active) {
+      body.push(...dedupe(bucket[bp]).map((r) => rule(r.selector, r.decls, pretty)));
+    }
+  } else {
+    // Desktop-first cascade: Tablet (wider max-width) first, Mobile last.
+    const mdCss = dedupe(md).map((r) => rule(r.selector, r.decls, pretty)).join(nl);
+    if (mdCss) body.push(`@media ${BREAKPOINT_MEDIA.md}{${nl}${mdCss}${nl}}`);
 
-  const mdCss = dedupe(md).map((r) => rule(r.selector, r.decls, pretty)).join(nl);
-  if (mdCss) body.push(`@media (min-width:${BREAKPOINTS.md}px){${nl}${mdCss}${nl}}`);
+    const smCss = dedupe(sm).map((r) => rule(r.selector, r.decls, pretty)).join(nl);
+    if (smCss) body.push(`@media ${BREAKPOINT_MEDIA.sm}{${nl}${smCss}${nl}}`);
+  }
 
   body.push(...dedupe(states).map((r) => rule(r.selector, r.decls, pretty)));
 
@@ -439,6 +492,59 @@ export function compileTokenOverrides(
 
   if (!decls.length) return '';
   return `@layer ts-override{.${cardScopeClass}{${decls.join(';')}}}`;
+}
+
+/**
+ * v2.1 — a card owner's global Theme → inline override, scoped to the card.
+ *
+ * Maps the user-facing knobs onto the template's design tokens, so the whole
+ * card recolours/retypes/re-spaces without the immutable template artifact
+ * changing. Emitted in the `ts-override` layer at render time, exactly like
+ * `compileTokenOverrides`. `fontWeight` and `layout` are applied at render (a
+ * root class), not here.
+ */
+export function compileCardTheme(
+  theme: CardTheme | null | undefined,
+  cardScopeClass: string,
+): string {
+  if (!theme || !IDENT_RE.test(cardScopeClass)) return '';
+  const decls: string[] = [];
+
+  for (const [name, raw] of Object.entries(theme.colors ?? {})) {
+    if (!IDENT_RE.test(name)) continue;
+    const v = validateTokenLiteral('color', raw);
+    if (v !== null) decls.push(`${TOKEN_PREFIX.color}${name}:${v}`);
+  }
+
+  if (theme.fontFamily) {
+    const v = validateTokenLiteral('font', theme.fontFamily);
+    if (v !== null) decls.push(`${TOKEN_PREFIX.font}heading:${v}`, `${TOKEN_PREFIX.font}body:${v}`);
+  }
+
+  if (theme.radius != null) {
+    const v = validateTokenLiteral('radius', `${theme.radius}px`);
+    if (v !== null)
+      for (const key of ['sm', 'md', 'lg']) decls.push(`${TOKEN_PREFIX.radius}${key}:${v}`);
+  }
+
+  if (theme.density != null) {
+    const v = validateTokenLiteral('space', `${theme.density}px`);
+    if (v !== null) decls.push(`${TOKEN_PREFIX.space}4:${v}`);
+  }
+
+  if (!decls.length) return '';
+  return `@layer ts-override{.${cardScopeClass}{${decls.join(';')}}}`;
+}
+
+/** Distinct widget types placed in the template tree, in first-seen order. */
+function templateWidgetTypes(def: TemplateDefinition): string[] {
+  const seen = new Set<string>();
+  for (const root of definitionRoots(def)) {
+    walkTreeOrder(root, (n) => {
+      if (isWidget(n)) seen.add(n.widget);
+    });
+  }
+  return [...seen];
 }
 
 /** Nodes referenced by the tree, for lint + dead-CSS detection. */

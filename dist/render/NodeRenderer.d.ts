@@ -4,6 +4,7 @@ export interface RenderCtx {
     card: any;
     links: any[];
     isEditing?: boolean;
+    gatedWidgetKeys?: string[];
     track: (event: any) => void;
 }
 export interface NodeRendererProps {

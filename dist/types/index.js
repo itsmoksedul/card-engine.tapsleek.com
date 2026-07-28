@@ -19,3 +19,4 @@ __exportStar(require("./field"), exports);
 __exportStar(require("./node"), exports);
 __exportStar(require("./definition"), exports);
 __exportStar(require("./widget"), exports);
+__exportStar(require("./block"), exports);
