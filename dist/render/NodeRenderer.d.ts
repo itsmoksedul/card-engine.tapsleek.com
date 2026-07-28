@@ -3,6 +3,7 @@ import type { Node } from '../types/node';
 export interface RenderCtx {
     card: any;
     links: any[];
+    blocks?: any[];
     isEditing?: boolean;
     gatedWidgetKeys?: string[];
     track: (event: any) => void;

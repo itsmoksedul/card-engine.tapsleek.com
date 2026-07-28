@@ -144,6 +144,23 @@ function WidgetRenderer({ node, content, ctx, }) {
     if (isGated && !ctx.isEditing) {
         return (0, jsx_runtime_1.jsx)(GatedWidgetUpsell, { node: node, ctx: ctx });
     }
+    // If rendering a user card (not editing template in builder) and blocks array is passed:
+    if (!ctx.isEditing && Array.isArray(ctx.blocks)) {
+        const isSystemWidget = ['PROFILE', 'CONNECT_BUTTONS', 'HEADER', 'NAV'].includes(node.widget);
+        if (!isSystemWidget) {
+            const hasBlock = ctx.blocks.some((b) => b.type === node.widget ||
+                b.widget === node.widget ||
+                b.type === node.key ||
+                b.widget === node.key ||
+                (node.widget === 'SOCIAL_ICONS' &&
+                    (b.type === 'SOCIAL' || b.type === 'SOCIAL_ICONS' || b.widget === 'SOCIAL')) ||
+                (node.widget === 'LINK_BUTTONS' &&
+                    (b.type === 'LINKS' || b.type === 'LINK_BUTTONS' || b.widget === 'LINKS')));
+            if (!hasBlock) {
+                return null;
+            }
+        }
+    }
     const Widget = widgets_1.WIDGET_RENDERERS[node.widget];
     if (!Widget) {
         return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, children: ctx.isEditing ? `Unknown widget: ${node.widget}` : null }));

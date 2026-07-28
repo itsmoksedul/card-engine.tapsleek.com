@@ -38,6 +38,7 @@ export function CardRenderer({
   const ctx: RenderCtx = {
     card,
     links,
+    blocks,
     isEditing,
     gatedWidgetKeys,
     track: onTrack || (() => {}),

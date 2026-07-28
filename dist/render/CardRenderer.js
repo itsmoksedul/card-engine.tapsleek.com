@@ -8,6 +8,7 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
     const ctx = {
         card,
         links,
+        blocks,
         isEditing,
         gatedWidgetKeys,
         track: onTrack || (() => { }),
