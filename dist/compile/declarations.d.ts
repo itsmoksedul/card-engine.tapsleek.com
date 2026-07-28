@@ -6,7 +6,7 @@
  * engine means adding a row here AND to the `StyleProps` interface AND to the
  * validator — three deliberate edits, never an accident.
  */
-import type { StyleProps, StylePropKey } from '../types/style';
+import type { StylePropKey, StyleProps } from "../types/style";
 export type Decl = [property: string, value: string];
 type Emitter = (value: any) => Decl[];
 export declare const EMITTERS: Partial<Record<StylePropKey, Emitter>>;

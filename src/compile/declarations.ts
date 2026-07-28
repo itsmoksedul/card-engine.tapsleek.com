@@ -7,7 +7,7 @@
  * validator — three deliberate edits, never an accident.
  */
 
-import type { StyleProps, StylePropKey } from '../types/style';
+import type { StylePropKey, StyleProps } from "../types/style";
 import {
   background,
   border,
@@ -21,7 +21,7 @@ import {
   transform,
   transition,
   VALUE_RE,
-} from './value';
+} from "./value";
 
 export type Decl = [property: string, value: string];
 
@@ -38,123 +38,178 @@ function simple(prop: string, kind: keyof typeof VALUE_RE): Emitter {
 /** Keyword property restricted to an explicit set. */
 function enumProp(prop: string, allowed: readonly string[]): Emitter {
   const set = new Set(allowed);
-  return (v) => (typeof v === 'string' && set.has(v) ? [[prop, v]] : []);
+  return (v) => (typeof v === "string" && set.has(v) ? [[prop, v]] : []);
 }
 
 /** Integer property with bounds. */
 function int(prop: string, min: number, max: number): Emitter {
   return (v) =>
-    Number.isFinite(v) ? [[prop, String(Math.round(clamp(v as number, min, max)))]] : [];
+    Number.isFinite(v)
+      ? [[prop, String(Math.round(clamp(v as number, min, max)))]]
+      : [];
 }
 
 const ALIGN = [
-  'flex-start',
-  'flex-end',
-  'center',
-  'space-between',
-  'space-around',
-  'space-evenly',
-  'stretch',
-  'baseline',
-  'start',
-  'end',
-  'normal',
-  'auto',
+  "flex-start",
+  "flex-end",
+  "center",
+  "space-between",
+  "space-around",
+  "space-evenly",
+  "stretch",
+  "baseline",
+  "start",
+  "end",
+  "normal",
+  "auto",
 ] as const;
 
 export const EMITTERS: Partial<Record<StylePropKey, Emitter>> = {
   // ── layout ───────────────────────────────────────────────────────────────
-  display: enumProp('display', [
-    'flex',
-    'grid',
-    'block',
-    'inline-flex',
-    'inline-block',
-    'none',
-    'contents',
+  display: enumProp("display", [
+    "flex",
+    "grid",
+    "block",
+    "inline-flex",
+    "inline-block",
+    "none",
+    "contents",
   ]),
-  flexDirection: enumProp('flex-direction', ['row', 'column', 'row-reverse', 'column-reverse']),
-  flexWrap: enumProp('flex-wrap', ['nowrap', 'wrap', 'wrap-reverse']),
-  justifyContent: enumProp('justify-content', ALIGN),
-  alignItems: enumProp('align-items', ALIGN),
-  alignSelf: enumProp('align-self', ALIGN),
-  gap: simple('gap', 'length'),
-  rowGap: simple('row-gap', 'length'),
-  columnGap: simple('column-gap', 'length'),
-  flexGrow: int('flex-grow', 0, 100),
-  flexShrink: int('flex-shrink', 0, 100),
-  flexBasis: simple('flex-basis', 'length'),
-  gridTemplateColumns: simple('grid-template-columns', 'gridTemplate'),
-  gridTemplateRows: simple('grid-template-rows', 'gridTemplate'),
-  gridColumn: simple('grid-column', 'gridTemplate'),
-  gridRow: simple('grid-row', 'gridTemplate'),
-  gridAutoFlow: enumProp('grid-auto-flow', [
-    'row',
-    'column',
-    'dense',
-    'row dense',
-    'column dense',
+  flexDirection: enumProp("flex-direction", [
+    "row",
+    "column",
+    "row-reverse",
+    "column-reverse",
   ]),
-  order: int('order', -50, 50),
+  flexWrap: enumProp("flex-wrap", ["nowrap", "wrap", "wrap-reverse"]),
+  justifyContent: enumProp("justify-content", ALIGN),
+  alignItems: enumProp("align-items", ALIGN),
+  alignSelf: enumProp("align-self", ALIGN),
+  gap: simple("gap", "length"),
+  rowGap: simple("row-gap", "length"),
+  columnGap: simple("column-gap", "length"),
+  flexGrow: int("flex-grow", 0, 100),
+  flexShrink: int("flex-shrink", 0, 100),
+  flexBasis: simple("flex-basis", "length"),
+  gridTemplateColumns: simple("grid-template-columns", "gridTemplate"),
+  gridTemplateRows: simple("grid-template-rows", "gridTemplate"),
+  gridColumn: simple("grid-column", "gridTemplate"),
+  gridRow: simple("grid-row", "gridTemplate"),
+  gridAutoFlow: enumProp("grid-auto-flow", [
+    "row",
+    "column",
+    "dense",
+    "row dense",
+    "column dense",
+  ]),
+  order: int("order", -50, 50),
 
   // ── positioning ──────────────────────────────────────────────────────────
-  position: enumProp('position', ['static', 'relative', 'absolute', 'sticky', 'fixed']),
-  top: simple('top', 'length'),
-  right: simple('right', 'length'),
-  bottom: simple('bottom', 'length'),
-  left: simple('left', 'length'),
-  zIndex: int('z-index', -50, 9999),
-  overflow: enumProp('overflow', ['visible', 'hidden', 'auto', 'scroll', 'clip']),
-  overflowX: enumProp('overflow-x', ['visible', 'hidden', 'auto', 'scroll', 'clip']),
-  overflowY: enumProp('overflow-y', ['visible', 'hidden', 'auto', 'scroll', 'clip']),
-  isolation: enumProp('isolation', ['auto', 'isolate']),
+  position: enumProp("position", [
+    "static",
+    "relative",
+    "absolute",
+    "sticky",
+    "fixed",
+  ]),
+  top: simple("top", "length"),
+  right: simple("right", "length"),
+  bottom: simple("bottom", "length"),
+  left: simple("left", "length"),
+  zIndex: int("z-index", -50, 9999),
+  overflow: (v) => {
+    if (v === "hidden") {
+      return [
+        ["overflow", "hidden"],
+        ["isolation", "isolate"],
+      ];
+    }
+    const fn = enumProp("overflow", [
+      "visible",
+      "hidden",
+      "auto",
+      "scroll",
+      "clip",
+    ]);
+    return fn(v);
+  },
+  overflowX: enumProp("overflow-x", [
+    "visible",
+    "hidden",
+    "auto",
+    "scroll",
+    "clip",
+  ]),
+  overflowY: enumProp("overflow-y", [
+    "visible",
+    "hidden",
+    "auto",
+    "scroll",
+    "clip",
+  ]),
+  isolation: enumProp("isolation", ["auto", "isolate"]),
 
   // ── box model ────────────────────────────────────────────────────────────
-  width: simple('width', 'length'),
-  minWidth: simple('min-width', 'length'),
-  maxWidth: simple('max-width', 'length'),
-  height: simple('height', 'length'),
-  minHeight: simple('min-height', 'length'),
-  maxHeight: simple('max-height', 'length'),
-  aspectRatio: simple('aspect-ratio', 'aspectRatio'),
+  width: simple("width", "length"),
+  minWidth: simple("min-width", "length"),
+  maxWidth: simple("max-width", "length"),
+  height: simple("height", "length"),
+  minHeight: simple("min-height", "length"),
+  maxHeight: simple("max-height", "length"),
+  aspectRatio: simple("aspect-ratio", "aspectRatio"),
   padding: (v) => {
     const out = box4(v);
-    return out ? [['padding', out]] : [];
+    return out ? [["padding", out]] : [];
   },
   margin: (v) => {
     const out = box4(v);
-    return out ? [['margin', out]] : [];
+    return out ? [["margin", out]] : [];
   },
 
   // ── typography ───────────────────────────────────────────────────────────
-  fontFamily: simple('font-family', 'fontFamily'),
-  fontSize: simple('font-size', 'length'),
-  fontWeight: int('font-weight', 100, 900),
-  fontStyle: enumProp('font-style', ['normal', 'italic']),
+  fontFamily: simple("font-family", "fontFamily"),
+  fontSize: simple("font-size", "length"),
+  fontWeight: int("font-weight", 100, 900),
+  fontStyle: enumProp("font-style", ["normal", "italic"]),
   lineHeight: (v) => {
     // Unitless line-height is the good default; lengths still allowed.
-    if (typeof v === 'number') return [['line-height', String(clamp(v, 0, 10))]];
-    const out = cssValue(v, 'length');
-    return out ? [['line-height', out]] : [];
+    if (typeof v === "number")
+      return [["line-height", String(clamp(v, 0, 10))]];
+    const out = cssValue(v, "length");
+    return out ? [["line-height", out]] : [];
   },
-  letterSpacing: simple('letter-spacing', 'length'),
-  textAlign: enumProp('text-align', ['left', 'center', 'right', 'justify']),
-  textTransform: enumProp('text-transform', ['none', 'uppercase', 'lowercase', 'capitalize']),
-  textDecoration: enumProp('text-decoration', ['none', 'underline', 'line-through']),
-  whiteSpace: enumProp('white-space', ['normal', 'nowrap', 'pre-line', 'pre-wrap']),
-  wordBreak: enumProp('word-break', ['normal', 'break-word', 'break-all']),
+  letterSpacing: simple("letter-spacing", "length"),
+  textAlign: enumProp("text-align", ["left", "center", "right", "justify"]),
+  textTransform: enumProp("text-transform", [
+    "none",
+    "uppercase",
+    "lowercase",
+    "capitalize",
+  ]),
+  textDecoration: enumProp("text-decoration", [
+    "none",
+    "underline",
+    "line-through",
+  ]),
+  whiteSpace: enumProp("white-space", [
+    "normal",
+    "nowrap",
+    "pre-line",
+    "pre-wrap",
+  ]),
+  wordBreak: enumProp("word-break", ["normal", "break-word", "break-all"]),
   lineClamp: (v) =>
     Number.isFinite(v) && (v as number) > 0
       ? [
-          ['display', '-webkit-box'],
-          ['-webkit-line-clamp', String(Math.round(clamp(v as number, 1, 20)))],
-          ['-webkit-box-orient', 'vertical'],
-          ['overflow', 'hidden'],
+          ["display", "-webkit-box"],
+          ["-webkit-line-clamp", String(Math.round(clamp(v as number, 1, 20)))],
+          ["-webkit-box-orient", "vertical"],
+          ["overflow", "hidden"],
         ]
       : [],
   color: (v) => {
     const c = color(v);
-    return c ? [['color', c]] : [];
+    return c ? [["color", c]] : [];
   },
 
   // ── decoration ───────────────────────────────────────────────────────────
@@ -162,58 +217,65 @@ export const EMITTERS: Partial<Record<StylePropKey, Emitter>> = {
   border: (v) => border(v),
   borderRadius: (v) => {
     const out = corners4(v);
-    return out ? [['border-radius', out]] : [];
+    return out ? [["border-radius", out]] : [];
   },
   boxShadow: (v) => {
     const out = shadow(v);
-    return out ? [['box-shadow', out]] : [];
+    return out ? [["box-shadow", out]] : [];
   },
   opacity: (v) =>
-    Number.isFinite(v) ? [['opacity', String(clamp(v as number, 0, 1))]] : [],
+    Number.isFinite(v) ? [["opacity", String(clamp(v as number, 0, 1))]] : [],
   backdropBlur: (v) => {
     const out = len(v);
-    return out ? [['backdrop-filter', `blur(${out})`]] : [];
+    return out ? [["backdrop-filter", `blur(${out})`]] : [];
   },
   filter: (v) =>
-    typeof v === 'string' && /^[a-z0-9()%.,\s-]+$/i.test(v) && v.length < 120
-      ? [['filter', v]]
+    typeof v === "string" && /^[a-z0-9()%.,\s-]+$/i.test(v) && v.length < 120
+      ? [["filter", v]]
       : [],
-  mixBlendMode: enumProp('mix-blend-mode', [
-    'normal',
-    'multiply',
-    'screen',
-    'overlay',
-    'darken',
-    'lighten',
-    'soft-light',
-    'hard-light',
-    'difference',
-    'luminosity',
+  mixBlendMode: enumProp("mix-blend-mode", [
+    "normal",
+    "multiply",
+    "screen",
+    "overlay",
+    "darken",
+    "lighten",
+    "soft-light",
+    "hard-light",
+    "difference",
+    "luminosity",
   ]),
   clipPath: (v) =>
-    typeof v === 'string' && /^(polygon|circle|ellipse|inset)\([\d\s%.,a-z-]+\)$/i.test(v)
-      ? [['clip-path', v]]
+    typeof v === "string" &&
+    /^(polygon|circle|ellipse|inset)\([\d\s%.,a-z-]+\)$/i.test(v)
+      ? [["clip-path", v]]
       : [],
 
   // ── media ────────────────────────────────────────────────────────────────
-  objectFit: enumProp('object-fit', ['cover', 'contain', 'fill', 'none', 'scale-down']),
-  objectPosition: simple('object-position', 'position'),
+  objectFit: enumProp("object-fit", [
+    "cover",
+    "contain",
+    "fill",
+    "none",
+    "scale-down",
+  ]),
+  objectPosition: simple("object-position", "position"),
 
   // ── motion ───────────────────────────────────────────────────────────────
   transition: (v) => {
     const out = transition(v);
-    return out ? [['transition', out]] : [];
+    return out ? [["transition", out]] : [];
   },
   transform: (v) => {
     const out = transform(v);
-    return out ? [['transform', out]] : [];
+    return out ? [["transform", out]] : [];
   },
-  transformOrigin: simple('transform-origin', 'position'),
+  transformOrigin: simple("transform-origin", "position"),
 
   // ── interaction ──────────────────────────────────────────────────────────
-  cursor: enumProp('cursor', ['auto', 'pointer', 'default', 'not-allowed']),
-  pointerEvents: enumProp('pointer-events', ['auto', 'none']),
-  userSelect: enumProp('user-select', ['auto', 'none', 'text']),
+  cursor: enumProp("cursor", ["auto", "pointer", "default", "not-allowed"]),
+  pointerEvents: enumProp("pointer-events", ["auto", "none"]),
+  userSelect: enumProp("user-select", ["auto", "none", "text"]),
 };
 
 /** Every property the engine can emit. Used by the validator as the whitelist. */
@@ -225,11 +287,11 @@ export const ALLOWED_STYLE_PROPS = Object.keys(EMITTERS) as StylePropKey[];
  * the content hash only changes when the design actually changes.
  */
 export function declarationsFor(props: StyleProps | undefined): Decl[] {
-  if (!props || typeof props !== 'object') return [];
+  if (!props || typeof props !== "object") return [];
   const out: Decl[] = [];
   for (const key of ALLOWED_STYLE_PROPS) {
     const value = (props as Record<string, unknown>)[key];
-    if (value === undefined || value === null || value === '') continue;
+    if (value === undefined || value === null || value === "") continue;
     const emit = EMITTERS[key];
     if (!emit) continue;
     for (const decl of emit(value)) out.push(decl);
@@ -239,8 +301,8 @@ export function declarationsFor(props: StyleProps | undefined): Decl[] {
 
 /** `[["color","red"]]` → `color:red` */
 export function serializeDecls(decls: Decl[], pretty = false): string {
-  if (!decls.length) return '';
+  if (!decls.length) return "";
   return pretty
-    ? decls.map(([p, v]) => `  ${p}: ${v};`).join('\n')
-    : decls.map(([p, v]) => `${p}:${v}`).join(';');
+    ? decls.map(([p, v]) => `  ${p}: ${v};`).join("\n")
+    : decls.map(([p, v]) => `${p}:${v}`).join(";");
 }
