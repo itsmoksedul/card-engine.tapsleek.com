@@ -13,7 +13,10 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
         track: onTrack || (() => { }),
     };
     // ── User card: render the composed blocks inside the template's root frame ──
-    if (blocks) {
+    // Only when there ARE blocks. An empty array must fall through to the template
+    // design (below) — otherwise a freshly created card, whose `blocks` is `[]`,
+    // renders an empty frame instead of the template's Profile/identity widgets.
+    if (blocks && blocks.length > 0) {
         const rootId = definition.root.id;
         return ((0, jsx_runtime_1.jsxs)("div", { className: "ts-card", style: themeRootStyle(theme), children: [(0, jsx_runtime_1.jsx)("div", { className: `n${rootId}`, "data-node-id": isEditing ? rootId : undefined, children: blocks
                         .filter((b) => !b.hidden)

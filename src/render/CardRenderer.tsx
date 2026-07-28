@@ -44,7 +44,10 @@ export function CardRenderer({
   };
 
   // ── User card: render the composed blocks inside the template's root frame ──
-  if (blocks) {
+  // Only when there ARE blocks. An empty array must fall through to the template
+  // design (below) — otherwise a freshly created card, whose `blocks` is `[]`,
+  // renders an empty frame instead of the template's Profile/identity widgets.
+  if (blocks && blocks.length > 0) {
     const rootId = definition.root.id;
     return (
       <div className="ts-card" style={themeRootStyle(theme)}>
