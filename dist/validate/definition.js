@@ -619,11 +619,10 @@ function validateWidget(node, path, ctx) {
     }
     // layout
     if (node.layout !== undefined) {
-        if (!(0, node_1.isElement)(node.layout) ||
-            node.layout.tag !== "frame") {
+        if (!(0, node_1.isElement)(node.layout)) {
             errors.push({
                 path: `${path}.layout`,
-                message: 'must be an element node with tag "frame"',
+                message: "must be an element node",
             });
         }
         else {

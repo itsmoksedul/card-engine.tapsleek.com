@@ -756,13 +756,10 @@ function validateWidget(
 
   // layout
   if (node.layout !== undefined) {
-    if (
-      !isElement(node.layout) ||
-      (node.layout as { tag?: string }).tag !== "frame"
-    ) {
+    if (!isElement(node.layout)) {
       errors.push({
         path: `${path}.layout`,
-        message: 'must be an element node with tag "frame"',
+        message: "must be an element node",
       });
     } else {
       // Layout node ids only need to be unique WITHIN the widget's own subtree.
