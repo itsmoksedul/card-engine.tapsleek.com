@@ -9,7 +9,7 @@
  * Errors block the write. Warnings don't — they surface in the builder so an
  * admin can see dead part styles or an unreachable node before publishing.
  */
-import { type TemplateDefinition } from '../types/definition';
+import { type TemplateDefinition } from "../types/definition";
 export interface Issue {
     path: string;
     message: string;

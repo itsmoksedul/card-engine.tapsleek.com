@@ -4,7 +4,7 @@ import type { BlockInstance } from '../types/block';
 import { resolveBlockDesign, blockClass } from '../blocks/resolve-design';
 import { getWidgetMeta } from '../widgets/registry';
 import { WIDGET_RENDERERS } from './widgets';
-import type { RenderCtx } from './NodeRenderer';
+import { NodeRenderer, type RenderCtx } from './NodeRenderer';
 
 /**
  * One user-composed block (v2.1).
@@ -25,9 +25,25 @@ export function BlockRenderer({
   ctx: RenderCtx;
 }) {
   const Widget = WIDGET_RENDERERS[block.widget as keyof typeof WIDGET_RENDERERS] as any;
-  const { design } = resolveBlockDesign(definition, block.widget);
+  const { design, layout } = resolveBlockDesign(definition, block.widget);
   const meta = getWidgetMeta(block.widget);
   const content = (block.content as Record<string, unknown>) ?? meta?.defaultContent ?? {};
+
+  if (layout) {
+    return (
+      <div
+        className={blockClass(block.widget)}
+        data-widget={block.widget}
+        data-block-id={ctx.isEditing ? block.id : undefined}
+      >
+        <NodeRenderer
+          node={layout}
+          content={{ [block.id]: content }}
+          ctx={{ ...ctx, selfData: content }}
+        />
+      </div>
+    );
+  }
 
   if (!Widget) {
     return (

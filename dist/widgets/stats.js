@@ -8,13 +8,68 @@ exports.meta = {
     group: 'business',
     description: 'A grid of numeric statistics or achievements.',
     contentVersion: 1,
-    parts: [
-        { key: 'root', label: 'Container', kind: 'container' },
-        { key: 'list', label: 'Grid/List', kind: 'list' },
-        { key: 'item', label: 'Stat Item', kind: 'container' },
-        { key: 'value', label: 'Value (e.g. 10K+)', kind: 'text' },
-        { key: 'label', label: 'Label', kind: 'text' },
-    ],
+    defaultLayout: {
+        id: 'root',
+        kind: 'element',
+        tag: 'stack',
+        style: {
+            base: {
+                padding: { all: '{space.4}' },
+                background: { kind: 'color', color: '{color.surface}' },
+                borderRadius: { all: '{radius.lg}' },
+            },
+        },
+        children: [
+            {
+                id: 'list',
+                kind: 'element',
+                tag: 'grid',
+                style: {
+                    base: { display: 'grid', gap: '{space.4}', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))' },
+                },
+                children: [
+                    {
+                        id: 'item',
+                        kind: 'element',
+                        tag: 'stack',
+                        repeat: { source: 'self', path: 'items' },
+                        style: {
+                            base: { display: 'flex', flexDirection: 'column', gap: '{space.1}', alignItems: 'center', textAlign: 'center' },
+                        },
+                        children: [
+                            {
+                                id: 'value',
+                                kind: 'element',
+                                tag: 'text',
+                                bind: { source: 'self', path: 'value' },
+                                style: {
+                                    base: {
+                                        fontSize: '{size.2xl}',
+                                        fontWeight: 700,
+                                        color: '{color.primary}',
+                                        lineHeight: 1,
+                                    },
+                                },
+                            },
+                            {
+                                id: 'label',
+                                kind: 'element',
+                                tag: 'text',
+                                bind: { source: 'self', path: 'label' },
+                                style: {
+                                    base: {
+                                        fontSize: '{size.sm}',
+                                        color: '{color.muted}',
+                                        fontWeight: 500,
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    },
     designSchema: [
         {
             key: 'layout', type: 'select', label: 'Layout',
@@ -43,43 +98,6 @@ exports.meta = {
             ]
         }
     ],
-    defaultPartStyles: {
-        root: {
-            base: {
-                padding: { all: '{space.4}' },
-                background: { kind: 'color', color: '{color.surface}' },
-                borderRadius: { all: '{radius.lg}' }
-            }
-        },
-        list: {
-            base: {
-                display: 'grid',
-                gap: '{space.4}'
-            }
-        },
-        item: {
-            base: {
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '{space.1}'
-            }
-        },
-        value: {
-            base: {
-                fontSize: '{size.2xl}',
-                fontWeight: 700,
-                color: '{color.primary}',
-                lineHeight: 1
-            }
-        },
-        label: {
-            base: {
-                fontSize: '{size.sm}',
-                color: '{color.muted}',
-                fontWeight: 500
-            }
-        }
-    },
     defaultDesign: { layout: 'grid-2', align: 'center', showBorders: false },
     defaultContent: {
         items: [

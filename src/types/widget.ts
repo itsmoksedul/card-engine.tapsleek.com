@@ -14,21 +14,21 @@
  * manifest has to survive JSON.stringify.
  */
 
-import type { FieldSchema } from './field';
-import type { ElementNode } from './node';
-import type { StyleSet } from './style';
+import type { FieldSchema } from "./field";
+import type { ElementNode } from "./node";
+import type { StyleSet } from "./style";
 
 export type WidgetGroup =
-  | 'system'
-  | 'blocks'
-  | 'identity'
-  | 'contact'
-  | 'content'
-  | 'media'
-  | 'business'
-  | 'utility';
+  | "system"
+  | "blocks"
+  | "identity"
+  | "contact"
+  | "content"
+  | "media"
+  | "business"
+  | "utility";
 
-export type WidgetTier = 'FREE' | 'PRO';
+export type WidgetTier = "FREE" | "PRO";
 
 /**
  * What a part physically IS, so an editor can offer only the controls that
@@ -38,19 +38,19 @@ export type WidgetTier = 'FREE' | 'PRO';
  */
 export type WidgetPartKind =
   /** Box that lays out other parts — flex/grid controls matter. */
-  | 'container'
+  | "container"
   /** Repeating collection — same as container, named apart for clarity. */
-  | 'list'
+  | "list"
   /** Runs of text — typography matters. */
-  | 'text'
+  | "text"
   /** `<img>` — sizing and object-fit matter, typography does not. */
-  | 'image'
+  | "image"
   /** Glyph — colour and size matter. */
-  | 'icon'
+  | "icon"
   /** Clickable — layout, typography and interaction states all matter. */
-  | 'button'
+  | "button"
   /** Form control — typography and border matter. */
-  | 'input';
+  | "input";
 
 export interface WidgetPart {
   key: string;
@@ -76,7 +76,7 @@ export interface WidgetDeprecation {
 export interface WidgetReferenceSpec {
   /** Dot path into content, e.g. "profileId" or "items[].productId". */
   path: string;
-  entity: 'appointmentProfile' | 'cardLink' | 'product';
+  entity: "appointmentProfile" | "cardLink" | "product";
   /** Key the resolved object is attached under, e.g. "profile". */
   as: string;
 }
@@ -100,7 +100,7 @@ export interface WidgetMeta<
   contentVersion: number;
 
   /** Named inner elements the admin can style → `.n<id> .p-<part>`. */
-  parts: WidgetPart[];
+  parts?: WidgetPart[];
 
   /**
    * Starting look, copied onto the node when the widget is placed.
@@ -119,7 +119,7 @@ export interface WidgetMeta<
   defaultPartStyles?: Record<string, StyleSet>;
 
   /** Design knobs the admin sets; any key can be unlocked via node.userOptions. */
-  designSchema: FieldSchema[];
+  designSchema?: FieldSchema[];
 
   /** Content the user edits. Generates the entire editor form. */
   contentSchema: FieldSchema[];
@@ -148,7 +148,10 @@ export interface WidgetMeta<
 }
 
 /** Any widget meta, for registry-level code that doesn't care about generics. */
-export type AnyWidgetMeta = WidgetMeta<Record<string, unknown>, Record<string, unknown>>;
+export type AnyWidgetMeta = WidgetMeta<
+  Record<string, unknown>,
+  Record<string, unknown>
+>;
 
 /** Content migrations, keyed by the target contentVersion. Forward-only. */
 export type WidgetMigrations = Record<number, (content: any) => any>;

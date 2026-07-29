@@ -10,7 +10,7 @@ exports.resolveBinding = resolveBinding;
  * with `hideIfEmpty` silently deletes the owner's name from every template
  * that binds it.
  */
-function resolveBinding(binding, card, content) {
+function resolveBinding(binding, card, content, selfData) {
     if (!binding)
         return undefined;
     if (binding.source === 'card') {
@@ -30,7 +30,7 @@ function resolveBinding(binding, card, content) {
         return result;
     }
     if (binding.source === 'self') {
-        let result = content;
+        let result = selfData !== undefined ? selfData : content;
         for (const part of binding.path.split('.')) {
             if (result == null)
                 break;

@@ -32,6 +32,8 @@ exports.VOID_TAGS = [
     'button',
     'divider',
     'spacer',
+    'embed',
+    'video',
 ];
 exports.CARD_FIELDS = [
     'fullName',

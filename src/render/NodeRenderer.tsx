@@ -1,8 +1,9 @@
-import React from 'react';
-import DOMPurify from 'isomorphic-dompurify';
-import type { ElementNode, Node, SlotNode, WidgetNode } from '../types/node';
-import { resolveBinding } from './resolveBinding';
-import { WIDGET_RENDERERS } from './widgets';
+import DOMPurify from "isomorphic-dompurify";
+import React from "react";
+import type { ElementNode, Node, SlotNode, WidgetNode } from "../types/node";
+import { getWidgetMeta } from "../widgets";
+import { resolveBinding } from "./resolveBinding";
+import { WIDGET_RENDERERS } from "./widgets";
 
 export interface RenderCtx {
   card: any;
@@ -11,6 +12,7 @@ export interface RenderCtx {
   isEditing?: boolean;
   gatedWidgetKeys?: string[];
   track: (event: any) => void;
+  selfData?: any;
 }
 
 export interface NodeRendererProps {
@@ -20,26 +22,31 @@ export interface NodeRendererProps {
 }
 
 export function NodeRenderer({ node, content, ctx }: NodeRendererProps) {
-  if (node.kind === 'element') return <ElementRenderer node={node} content={content} ctx={ctx} />;
-  if (node.kind === 'widget') return <WidgetRenderer node={node} content={content} ctx={ctx} />;
-  if (node.kind === 'slot') return <SlotRenderer node={node} content={content} ctx={ctx} />;
+  if (node.kind === "element")
+    return <ElementRenderer node={node} content={content} ctx={ctx} />;
+  if (node.kind === "widget")
+    return <WidgetRenderer node={node} content={content} ctx={ctx} />;
+  if (node.kind === "slot")
+    return <SlotRenderer node={node} content={content} ctx={ctx} />;
   return null;
 }
 
 // ─── Elements ────────────────────────────────────────────────────────────────
 
 const TAG_MAP: Record<string, string> = {
-  frame: 'div',
-  stack: 'div',
-  grid: 'div',
-  text: 'p',
-  richtext: 'div',
-  image: 'img',
-  icon: 'span',
-  button: 'button',
-  link: 'a',
-  divider: 'hr',
-  spacer: 'div',
+  frame: "div",
+  stack: "div",
+  grid: "div",
+  text: "p",
+  richtext: "div",
+  image: "img",
+  icon: "span",
+  button: "button",
+  link: "a",
+  divider: "hr",
+  spacer: "div",
+  embed: "div",
+  video: "div",
 };
 
 /**
@@ -50,8 +57,23 @@ const TAG_MAP: Record<string, string> = {
  * `<img fit="cover">` — invalid HTML plus a console warning per node.
  */
 const ENGINE_PROPS = new Set([
-  'text', 'html', 'level', 'as', 'fit', 'ratio', 'action', 'popup',
-  'label', 'name', 'size', 'icon', 'loading',
+  "text",
+  "html",
+  "level",
+  "as",
+  "fit",
+  "ratio",
+  "action",
+  "popup",
+  "label",
+  "name",
+  "size",
+  "icon",
+  "loading",
+  "url",
+  "controls",
+  "autoplay",
+  "loop",
 ]);
 
 function ElementRenderer({
@@ -63,7 +85,25 @@ function ElementRenderer({
   content: any;
   ctx: RenderCtx;
 }) {
-  const bound = resolveBinding(node.bind, ctx.card, content);
+  if (node.repeat) {
+    const items = resolveBinding(node.repeat, ctx.card, content, ctx.selfData);
+    if (!Array.isArray(items)) return null;
+
+    return (
+      <React.Fragment>
+        {items.map((item, index) => (
+          <ElementRenderer
+            key={item.id ?? index}
+            node={{ ...node, repeat: undefined }}
+            content={content}
+            ctx={{ ...ctx, selfData: item }}
+          />
+        ))}
+      </React.Fragment>
+    );
+  }
+
+  const bound = resolveBinding(node.bind, ctx.card, content, ctx.selfData);
   const props = (node.props ?? {}) as Record<string, any>;
 
   // A bound node that resolves empty disappears entirely — that's what stops an
@@ -71,13 +111,13 @@ function ElementRenderer({
   if (node.hideIfEmpty && isEmpty(bound)) return null;
 
   const tag =
-    node.tag === 'frame'
-      ? (props.as as string) || 'div'
-      : node.tag === 'heading'
+    node.tag === "frame"
+      ? (props.as as string) || "div"
+      : node.tag === "heading"
         ? `h${clampLevel(props.level)}`
-        : TAG_MAP[node.tag] || 'div';
+        : TAG_MAP[node.tag] || "div";
 
-  const dom: Record<string, any> = { className: `n${node.id}` };
+  const dom: Record<string, any> = { className: `n${node.id} p-${node.id}` };
 
   // Only forward attributes the DOM actually understands.
   for (const [key, value] of Object.entries(props)) {
@@ -85,52 +125,117 @@ function ElementRenderer({
     dom[key] = value;
   }
 
-  if (ctx.isEditing) dom['data-node-id'] = node.id;
+  if (ctx.isEditing) dom["data-node-id"] = node.id;
   if (node.a11y?.role) dom.role = node.a11y.role;
-  if (node.a11y?.label) dom['aria-label'] = node.a11y.label;
+  if (node.a11y?.label) dom["aria-label"] = node.a11y.label;
 
   let children: React.ReactNode = null;
 
   switch (node.tag) {
-    case 'image': {
-      dom.src = bound ?? props.src ?? '';
-      dom.alt = props.alt ?? '';
-      dom.loading = props.loading ?? 'lazy';
-      if (!dom.src) return ctx.isEditing ? <span {...dom} data-empty="true" /> : null;
+    case "image": {
+      dom.src = bound ?? props.src ?? "";
+      dom.alt = props.alt ?? "";
+      dom.loading = props.loading ?? "lazy";
+      if (!dom.src)
+        return ctx.isEditing ? <span {...dom} data-empty="true" /> : null;
       break;
     }
-    case 'icon': {
-      dom['data-icon'] = props.name ?? '';
-      dom['aria-hidden'] = true;
-      break;
-    }
-    case 'heading':
-    case 'text': {
-      children = bound ?? props.text ?? '';
-      break;
-    }
-    case 'richtext': {
-      const rawHtml = bound ?? props.html ?? '';
-      dom.dangerouslySetInnerHTML = { __html: DOMPurify.sanitize(String(rawHtml)) };
-      break;
-    }
-    case 'button':
-    case 'link': {
-      const action = (props.action as string) || 'link';
-      dom['data-action'] = action;
-      if (action === 'link') {
-        const href = bound ?? props.href;
-        if (node.tag === 'link') dom.href = href || '#';
-        else if (href) dom.onClick = () => window.open(String(href), props.target || '_self');
-      } else if (action === 'popup') {
-        dom['data-popup'] = props.popup ?? '';
+    case "icon": {
+      dom["data-icon"] = props.name ?? "";
+      dom["aria-hidden"] = true;
+      if (props.strokeWidth) {
+        dom.style = { ...dom.style, strokeWidth: props.strokeWidth };
       }
-      if (node.tag === 'button') dom.type = 'button';
+      break;
+    }
+    case "heading":
+    case "text": {
+      children = bound ?? props.text ?? "";
+      break;
+    }
+    case "richtext": {
+      const rawHtml = bound ?? props.html ?? "";
+      dom.dangerouslySetInnerHTML = {
+        __html: DOMPurify.sanitize(String(rawHtml)),
+      };
+      break;
+    }
+    case "embed": {
+      const rawHtml = bound ?? props.html ?? "";
+      dom.dangerouslySetInnerHTML = {
+        __html: DOMPurify.sanitize(String(rawHtml), {
+          ADD_TAGS: ["iframe"],
+          ADD_ATTR: [
+            "allow",
+            "allowfullscreen",
+            "frameborder",
+            "scrolling",
+            "src",
+            "width",
+            "height",
+          ],
+        }),
+      };
+      break;
+    }
+    case "video": {
+      const url = bound ?? props.url ?? "";
+      if (!url) break;
+      // Very basic YouTube detection for embed mapping
+      if (url.includes("youtube.com/watch") || url.includes("youtu.be/")) {
+        const vid = url.includes("v=")
+          ? new URL(url).searchParams.get("v")
+          : url.split("/").pop();
+        const src = `https://www.youtube.com/embed/${vid}`;
+        children = (
+          <iframe
+            src={src}
+            style={{ width: "100%", height: "100%", border: 0 }}
+            allowFullScreen
+          />
+        );
+      } else if (url.includes("vimeo.com/")) {
+        const vid = url.split("/").pop();
+        const src = `https://player.vimeo.com/video/${vid}`;
+        children = (
+          <iframe
+            src={src}
+            style={{ width: "100%", height: "100%", border: 0 }}
+            allowFullScreen
+          />
+        );
+      } else {
+        children = (
+          <video
+            src={url}
+            controls={props.controls}
+            autoPlay={props.autoplay}
+            loop={props.loop}
+            style={{ width: "100%", height: "100%" }}
+          />
+        );
+      }
+      break;
+    }
+    case "button":
+    case "link": {
+      const action = (props.action as string) || "link";
+      dom["data-action"] = action;
+      if (action === "link") {
+        const href = bound ?? props.href;
+        if (node.tag === "link") dom.href = href || "#";
+        else if (href)
+          dom.onClick = () =>
+            window.open(String(href), props.target || "_self");
+      } else if (action === "popup") {
+        dom["data-popup"] = props.popup ?? "";
+      }
+      if (node.tag === "button") dom.type = "button";
       children = props.label ?? null;
       break;
     }
-    case 'divider':
-    case 'spacer':
+    case "divider":
+    case "spacer":
       // Void — never given children, so React doesn't complain about hr/img.
       return React.createElement(tag, dom);
     default:
@@ -140,11 +245,16 @@ function ElementRenderer({
   return React.createElement(
     tag,
     dom,
-    node.tag === 'richtext' ? undefined : (
+    node.tag === "richtext" ? undefined : (
       <>
         {children}
         {node.children?.map((child) => (
-          <NodeRenderer key={child.id} node={child} content={content} ctx={ctx} />
+          <NodeRenderer
+            key={child.id}
+            node={child}
+            content={content}
+            ctx={ctx}
+          />
         ))}
       </>
     ),
@@ -161,24 +271,38 @@ function ElementRenderer({
  * `n<id>`, a node-level `background` painted itself onto every inner element of
  * the widget, and `.n<id> .p-root` could never match at all.
  */
-function GatedWidgetUpsell({ node, ctx }: { node: WidgetNode; ctx: RenderCtx }) {
+function GatedWidgetUpsell({
+  node,
+  ctx,
+}: {
+  node: WidgetNode;
+  ctx: RenderCtx;
+}) {
   return (
     <div
       className={`n${node.id} ts-gated-upsell`}
       data-node-id={ctx.isEditing ? node.id : undefined}
       data-gated="true"
       style={{
-        padding: '16px',
-        borderRadius: '8px',
-        border: '1px dashed #cbd5e1',
-        background: '#f8fafc',
-        textAlign: 'center',
+        padding: "16px",
+        borderRadius: "8px",
+        border: "1px dashed #cbd5e1",
+        background: "#f8fafc",
+        textAlign: "center",
       }}
     >
-      <div style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+      <div
+        style={{
+          fontSize: "11px",
+          fontWeight: 600,
+          color: "#64748b",
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+        }}
+      >
         Pro Feature
       </div>
-      <div style={{ fontSize: '13px', color: '#334155', marginTop: '4px' }}>
+      <div style={{ fontSize: "13px", color: "#334155", marginTop: "4px" }}>
         {node.label || node.widget} is locked on current plan
       </div>
     </div>
@@ -195,7 +319,8 @@ function WidgetRenderer({
   ctx: RenderCtx;
 }) {
   const isGated =
-    ctx.gatedWidgetKeys?.includes(node.key) || ctx.gatedWidgetKeys?.includes(node.widget);
+    ctx.gatedWidgetKeys?.includes(node.key) ||
+    ctx.gatedWidgetKeys?.includes(node.widget);
 
   if (isGated && !ctx.isEditing) {
     return <GatedWidgetUpsell node={node} ctx={ctx} />;
@@ -203,59 +328,89 @@ function WidgetRenderer({
 
   // If rendering a user card (not editing template in builder) and blocks array is passed:
   if (!ctx.isEditing && Array.isArray(ctx.blocks)) {
-    const w = node.widget?.toUpperCase() || '';
+    const w = node.widget?.toUpperCase() || "";
 
     // Primary card widgets are driven by card data (links, profile, vcard, etc.):
     const isCoreWidget = [
-      'PROFILE',
-      'CONNECT_BUTTONS',
-      'HEADER',
-      'NAV',
-      'CONTACT_LINKS',
-      'CONTACT_BUTTONS',
-      'LINK_BUTTONS',
-      'CUSTOM_LINKS',
-      'LINKS',
-      'SOCIAL_ICONS',
-      'SOCIAL_LINKS',
-      'SOCIAL',
-      'COPYRIGHT',
+      "PROFILE",
+      "CONNECT_BUTTONS",
+      "HEADER",
+      "NAV",
+      "CONTACT_LINKS",
+      "CONTACT_BUTTONS",
+      "LINK_BUTTONS",
+      "CUSTOM_LINKS",
+      "LINKS",
+      "SOCIAL_ICONS",
+      "SOCIAL_LINKS",
+      "SOCIAL",
+      "COPYRIGHT",
     ].includes(w);
 
     if (isCoreWidget) {
       // CONTACT_LINKS / LINK_BUTTONS / LINKS check if user has links or blocks
-      if (['CONTACT_LINKS', 'CONTACT_BUTTONS', 'LINK_BUTTONS', 'CUSTOM_LINKS', 'LINKS'].includes(w)) {
+      if (
+        [
+          "CONTACT_LINKS",
+          "CONTACT_BUTTONS",
+          "LINK_BUTTONS",
+          "CUSTOM_LINKS",
+          "LINKS",
+        ].includes(w)
+      ) {
         const hasLinks = Array.isArray(ctx.links) && ctx.links.length > 0;
         const hasBlock = ctx.blocks.some(
           (b) =>
-            b.type === 'LINKS' ||
-            b.type === 'LINK_BUTTONS' ||
-            b.type === 'CONTACT_LINKS' ||
-            b.widget === 'LINKS' ||
-            b.widget === 'CONTACT_LINKS'
+            b.type === "LINKS" ||
+            b.type === "LINK_BUTTONS" ||
+            b.type === "CONTACT_LINKS" ||
+            b.widget === "LINKS" ||
+            b.widget === "CONTACT_LINKS",
         );
         if (!hasLinks && !hasBlock) return null;
       }
       // SOCIAL_ICONS check if user has social links or blocks
-      else if (['SOCIAL_ICONS', 'SOCIAL_LINKS', 'SOCIAL'].includes(w)) {
+      else if (["SOCIAL_ICONS", "SOCIAL_LINKS", "SOCIAL"].includes(w)) {
         const hasSocialLinks =
           Array.isArray(ctx.links) &&
           ctx.links.some(
             (l) =>
-              l.group === 'social' ||
-              ['instagram', 'facebook', 'twitter', 'x', 'linkedin', 'youtube', 'tiktok', 'github', 'whatsapp', 'telegram', 'discord', 'pinterest'].some(
-                (platform) => (l.type || l.title || l.url || '').toLowerCase().includes(platform)
-              )
+              l.group === "social" ||
+              [
+                "instagram",
+                "facebook",
+                "twitter",
+                "x",
+                "linkedin",
+                "youtube",
+                "tiktok",
+                "github",
+                "whatsapp",
+                "telegram",
+                "discord",
+                "pinterest",
+              ].some((platform) =>
+                (l.type || l.title || l.url || "")
+                  .toLowerCase()
+                  .includes(platform),
+              ),
           );
         const hasBlock = ctx.blocks.some(
-          (b) => b.type === 'SOCIAL' || b.type === 'SOCIAL_ICONS' || b.widget === 'SOCIAL'
+          (b) =>
+            b.type === "SOCIAL" ||
+            b.type === "SOCIAL_ICONS" ||
+            b.widget === "SOCIAL",
         );
         if (!hasSocialLinks && !hasBlock) return null;
       }
     } else {
       // Optional block widgets (FAQ, Gallery, Contact Form, Video, Custom HTML, etc.)
       const hasBlock = ctx.blocks.some(
-        (b) => b.type === node.widget || b.widget === node.widget || b.type === node.key || b.widget === node.key
+        (b) =>
+          b.type === node.widget ||
+          b.widget === node.widget ||
+          b.type === node.key ||
+          b.widget === node.key,
       );
 
       if (!hasBlock) {
@@ -264,26 +419,36 @@ function WidgetRenderer({
     }
   }
 
-  const Widget = WIDGET_RENDERERS[node.widget as keyof typeof WIDGET_RENDERERS] as any;
+  const Widget = WIDGET_RENDERERS[
+    node.widget as keyof typeof WIDGET_RENDERERS
+  ] as any;
 
   if (!Widget) {
     return (
-      <div className={`n${node.id}`} data-node-id={ctx.isEditing ? node.id : undefined}>
+      <div
+        className={`n${node.id}`}
+        data-node-id={ctx.isEditing ? node.id : undefined}
+      >
         {ctx.isEditing ? `Unknown widget: ${node.widget}` : null}
       </div>
     );
   }
 
   const widgetContent = content?.[node.key] ?? node.defaultContent ?? {};
+  const layout = node.layout ?? getWidgetMeta(node.widget)?.defaultLayout;
 
-  if (node.layout) {
+  if (layout) {
     return (
       <div
         className={`n${node.id}`}
         data-widget={node.widget}
         data-node-id={ctx.isEditing ? node.id : undefined}
       >
-        <NodeRenderer node={node.layout} content={{ [node.key]: widgetContent }} ctx={ctx} />
+        <NodeRenderer
+          node={layout}
+          content={{ [node.key]: widgetContent }}
+          ctx={{ ...ctx, selfData: widgetContent }}
+        />
       </div>
     );
   }
@@ -306,7 +471,15 @@ function WidgetRenderer({
 
 // ─── Slots ───────────────────────────────────────────────────────────────────
 
-function SlotRenderer({ node, content, ctx }: { node: SlotNode; content: any; ctx: RenderCtx }) {
+function SlotRenderer({
+  node,
+  content,
+  ctx,
+}: {
+  node: SlotNode;
+  content: any;
+  ctx: RenderCtx;
+}) {
   const items: any[] = content?.[node.key]?.items ?? [];
 
   return (
@@ -314,12 +487,19 @@ function SlotRenderer({ node, content, ctx }: { node: SlotNode; content: any; ct
       className={`n${node.id}`}
       data-node-id={ctx.isEditing ? node.id : undefined}
       data-slot={node.key}
-      data-empty={items.length === 0 ? 'true' : undefined}
+      data-empty={items.length === 0 ? "true" : undefined}
     >
       {items.map((item, i) => (
-        <NodeRenderer key={item.id ?? i} node={item} content={content} ctx={ctx} />
+        <NodeRenderer
+          key={item.id ?? i}
+          node={item}
+          content={content}
+          ctx={ctx}
+        />
       ))}
-      {ctx.isEditing && items.length === 0 && `Empty slot: ${node.label || node.key}`}
+      {ctx.isEditing &&
+        items.length === 0 &&
+        `Empty slot: ${node.label || node.key}`}
     </div>
   );
 }
@@ -328,7 +508,7 @@ function SlotRenderer({ node, content, ctx }: { node: SlotNode; content: any; ct
 
 function isEmpty(value: unknown): boolean {
   if (value === undefined || value === null) return true;
-  if (typeof value === 'string') return value.trim() === '';
+  if (typeof value === "string") return value.trim() === "";
   if (Array.isArray(value)) return value.length === 0;
   return false;
 }

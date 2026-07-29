@@ -7,27 +7,17 @@ export const meta: WidgetModule['meta'] = {
   group: 'content',
   description: 'A heading and a block of formatted text.',
   contentVersion: 1,
-  parts: [
-    { key: 'root', label: 'Container', kind: 'container' },
-    { key: 'title', label: 'Title', kind: 'text' },
-    { key: 'body', label: 'Body', kind: 'text' },
-  ],
-  designSchema: [
-    { key: 'showTitle', type: 'boolean', label: 'Show title' },
-    {
-      key: 'align', type: 'select', label: 'Alignment',
-      options: [
-        { value: 'left', label: 'Left' },
-        { value: 'center', label: 'Center' },
-      ],
-    },
-  ],
   contentSchema: [
     { key: 'title', type: 'text', label: 'Title', max: 80 },
     { key: 'body', type: 'richtext', label: 'Text', max: 4000, toolbar: ['b', 'i', 'link', 'ul', 'ol'] },
   ],
-  defaultPartStyles: {
-    root: {
+  defaultDesign: { showTitle: true, align: 'left' },
+  defaultContent: { title: 'About', body: '<p>Tell people what you do.</p>' },
+  defaultLayout: {
+    id: 'root',
+    kind: 'element',
+    tag: 'stack',
+    style: {
       base: {
         display: 'flex',
         flexDirection: 'column',
@@ -37,20 +27,34 @@ export const meta: WidgetModule['meta'] = {
         borderRadius: { all: '{radius.lg}' },
       },
     },
-    title: {
-      base: {
-        fontFamily: '{font.heading}',
-        fontSize: '{size.lg}',
-        fontWeight: 700,
-        color: '{color.text}',
+    children: [
+      {
+        id: 'title',
+        kind: 'element',
+        tag: 'heading',
+        props: { level: 3 },
+        bind: { source: 'self', path: 'title' },
+        hideIfEmpty: true,
+        style: {
+          base: {
+            fontFamily: '{font.heading}',
+            fontSize: '{size.lg}',
+            fontWeight: 700,
+            color: '{color.text}',
+          },
+        },
       },
-    },
-    body: {
-      base: { fontSize: '{size.base}', lineHeight: 1.6, color: '{color.muted}' },
-    },
+      {
+        id: 'body',
+        kind: 'element',
+        tag: 'richtext',
+        bind: { source: 'self', path: 'body' },
+        style: {
+          base: { fontSize: '{size.base}', lineHeight: 1.6, color: '{color.muted}' },
+        },
+      }
+    ]
   },
-  defaultDesign: { showTitle: true, align: 'left' },
-  defaultContent: { title: 'About', body: '<p>Tell people what you do.</p>' },
 };
 
 export const previews = {

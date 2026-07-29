@@ -66,16 +66,20 @@ const Description = __importStar(require("./description"));
 const Divider = __importStar(require("./divider"));
 const Embed = __importStar(require("./embed"));
 const Faq = __importStar(require("./faq"));
+const FeatureGrid = __importStar(require("./feature-grid"));
 const Gallery = __importStar(require("./gallery"));
 const Icon = __importStar(require("./icon"));
 const IconBox = __importStar(require("./icon-box"));
 const ImageWidget = __importStar(require("./image"));
 const LeadForm = __importStar(require("./lead-form"));
+const LogoWall = __importStar(require("./logo-wall"));
 const MapWidget = __importStar(require("./map"));
 const PriceList = __importStar(require("./price-list"));
 const Profile = __importStar(require("./profile"));
+const QrCode = __importStar(require("./qr-code"));
 const RichText = __importStar(require("./rich-text"));
 const ServiceList = __importStar(require("./service-list"));
+const ShareButton = __importStar(require("./share-button"));
 const SocialIcons = __importStar(require("./social-icons"));
 const Spacer = __importStar(require("./spacer"));
 const Stats = __importStar(require("./stats"));
@@ -83,6 +87,7 @@ const Team = __importStar(require("./team"));
 const Testimonials = __importStar(require("./testimonials"));
 const Timeline = __importStar(require("./timeline"));
 const Title = __importStar(require("./title"));
+const VcardButton = __importStar(require("./vcard-button"));
 const Video = __importStar(require("./video"));
 const VideoGallery = __importStar(require("./video-gallery"));
 const MODULES = [
@@ -115,6 +120,11 @@ const MODULES = [
     Team,
     Spacer,
     Divider,
+    QrCode,
+    VcardButton,
+    ShareButton,
+    LogoWall,
+    FeatureGrid,
 ];
 const BY_TYPE = new Map(MODULES.map((m) => [m.meta.type, m]));
 /** Every registered type, in palette order. */
@@ -153,5 +163,5 @@ function derivedTypes() {
 }
 /** Every part key a widget declares — used to reject dead `partStyles`. */
 function partKeys(type) {
-    return getWidgetMeta(type)?.parts.map((p) => p.key) ?? [];
+    return getWidgetMeta(type)?.parts?.map((p) => p.key) ?? [];
 }

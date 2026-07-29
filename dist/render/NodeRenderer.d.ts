@@ -1,5 +1,5 @@
-import React from 'react';
-import type { Node } from '../types/node';
+import React from "react";
+import type { Node } from "../types/node";
 export interface RenderCtx {
     card: any;
     links: any[];
@@ -7,6 +7,7 @@ export interface RenderCtx {
     isEditing?: boolean;
     gatedWidgetKeys?: string[];
     track: (event: any) => void;
+    selfData?: any;
 }
 export interface NodeRendererProps {
     node: Node;

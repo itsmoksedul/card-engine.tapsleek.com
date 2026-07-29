@@ -13,10 +13,12 @@
  * (applies the preset design), so the two can never disagree.
  */
 import { type TemplateDefinition } from '../types/definition';
+import { type ElementNode } from '../types/node';
 import type { StyleSet } from '../types/style';
 export interface BlockDesign {
     design: Record<string, unknown>;
     partStyles: Record<string, StyleSet>;
+    layout?: ElementNode;
 }
 /**
  * The `(design, partStyles)` a user block of `type` should render with, given

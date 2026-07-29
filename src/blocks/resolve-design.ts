@@ -14,16 +14,17 @@
  */
 
 import { definitionRoots, type TemplateDefinition } from '../types/definition';
-import { isWidget, walkTreeOrder } from '../types/node';
+import { isWidget, walkTreeOrder, type ElementNode } from '../types/node';
 import type { StyleSet } from '../types/style';
 import { getWidgetMeta } from '../widgets/registry';
 
 export interface BlockDesign {
   design: Record<string, unknown>;
   partStyles: Record<string, StyleSet>;
+  layout?: ElementNode;
 }
 
-type Instance = { design?: Record<string, unknown>; partStyles?: Record<string, StyleSet> };
+type Instance = { design?: Record<string, unknown>; partStyles?: Record<string, StyleSet>; layout?: ElementNode };
 
 /** First widget instance of `type` found in the template tree, if any. */
 function templateInstance(def: TemplateDefinition, type: string): Instance | null {
@@ -31,7 +32,7 @@ function templateInstance(def: TemplateDefinition, type: string): Instance | nul
     const matches: Instance[] = [];
     walkTreeOrder(root, (n) => {
       if (isWidget(n) && n.widget === type) {
-        matches.push({ design: n.design, partStyles: n.partStyles });
+        matches.push({ design: n.design, partStyles: n.partStyles, layout: n.layout });
       }
     });
     if (matches.length) return matches[0];
@@ -49,6 +50,7 @@ export function resolveBlockDesign(def: TemplateDefinition, type: string): Block
   return {
     design: { ...(meta?.defaultDesign ?? {}), ...(inst?.design ?? {}) },
     partStyles: inst?.partStyles ?? meta?.defaultPartStyles ?? {},
+    layout: inst?.layout ?? meta?.defaultLayout,
   };
 }
 

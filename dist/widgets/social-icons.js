@@ -12,12 +12,72 @@ exports.meta = {
     group: 'contact',
     description: 'A dedicated row or grid of social media icons.',
     contentVersion: 1,
-    parts: [
-        { key: 'root', label: 'Container', kind: 'container' },
-        { key: 'list', label: 'Icon List', kind: 'list' },
-        { key: 'item', label: 'Icon Link', kind: 'button' },
-        { key: 'icon', label: 'Icon Glyph', kind: 'icon' },
-    ],
+    defaultLayout: {
+        id: 'root',
+        kind: 'element',
+        tag: 'stack',
+        style: {
+            base: {
+                width: '100%',
+                padding: { t: '{space.2}', b: '{space.2}' },
+                alignItems: 'center', // map layout option if needed later via css
+            },
+        },
+        children: [
+            {
+                id: 'list',
+                kind: 'element',
+                tag: 'stack',
+                style: {
+                    base: {
+                        display: 'flex',
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        gap: '{space.3}',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    },
+                },
+                children: [
+                    {
+                        id: 'item',
+                        kind: 'element',
+                        tag: 'link',
+                        repeat: { source: 'self', path: 'profiles' },
+                        bind: { source: 'self', path: 'url' },
+                        style: {
+                            base: {
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '40px',
+                                height: '40px',
+                                background: { kind: 'color', color: '{color.surface}' },
+                                color: '{color.text}',
+                                borderRadius: { all: '{radius.full}' },
+                                transition: { property: ['transform', 'background-color'], duration: 150, easing: 'ease' },
+                            },
+                            hover: {
+                                transform: { translateY: '-2px' },
+                                background: { kind: 'color', color: '{color.border}' },
+                            },
+                        },
+                        children: [
+                            {
+                                id: 'icon',
+                                kind: 'element',
+                                tag: 'icon',
+                                bind: { source: 'self', path: 'platform' },
+                                style: {
+                                    base: { width: '20px', height: '20px' },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    },
     designSchema: [
         {
             key: 'layout', type: 'select', label: 'Layout',
@@ -48,25 +108,6 @@ exports.meta = {
             ]
         }
     ],
-    defaultPartStyles: {
-        root: { base: { display: 'flex', width: '100%', padding: { t: '{space.2}', b: '{space.2}' } } },
-        list: { base: { display: 'flex', flexWrap: 'wrap', gap: '{space.3}', alignItems: 'center' } },
-        item: {
-            base: {
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: '40px', height: '40px',
-                background: { kind: 'color', color: '{color.surface}' },
-                color: '{color.text}',
-                borderRadius: { all: '{radius.full}' },
-                transition: { property: ['transform', 'background-color'], duration: 150, easing: 'ease' }
-            },
-            hover: {
-                transform: { translateY: '-2px' },
-                background: { kind: 'color', color: '{color.border}' }
-            }
-        },
-        icon: { base: { width: '20px', height: '20px' } }
-    },
     defaultDesign: { layout: 'center', size: 'md' },
     defaultContent: {
         profiles: [

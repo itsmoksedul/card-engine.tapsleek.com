@@ -1,7 +1,7 @@
 import React from 'react';
 import type { TemplateDefinition } from '../types/definition';
 import type { BlockInstance } from '../types/block';
-import type { RenderCtx } from './NodeRenderer';
+import { type RenderCtx } from './NodeRenderer';
 /**
  * One user-composed block (v2.1).
  *

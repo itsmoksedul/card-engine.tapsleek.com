@@ -11,7 +11,7 @@
  */
 import type { StyleSet } from './style';
 /** Tags an admin can place. Layout containers accept children; leaves don't. */
-export type PrimitiveTag = 'frame' | 'stack' | 'grid' | 'heading' | 'text' | 'richtext' | 'image' | 'icon' | 'button' | 'link' | 'divider' | 'spacer';
+export type PrimitiveTag = 'frame' | 'stack' | 'grid' | 'heading' | 'text' | 'richtext' | 'image' | 'icon' | 'button' | 'link' | 'divider' | 'spacer' | 'embed' | 'video';
 export declare const CONTAINER_TAGS: PrimitiveTag[];
 export declare const VOID_TAGS: PrimitiveTag[];
 /**
@@ -63,6 +63,8 @@ export interface ElementNode extends BaseNode {
     bind?: Binding;
     /** A bound value that resolves empty removes the node entirely (no gap). */
     hideIfEmpty?: boolean;
+    /** If set, repeats this element for each item in the bound array. */
+    repeat?: Binding;
     children?: Node[];
 }
 export interface WidgetNode extends BaseNode {

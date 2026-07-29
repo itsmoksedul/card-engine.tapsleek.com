@@ -13,37 +13,46 @@
  * renders, flagged as a warning on publish.
  */
 
-import type { AnyWidgetMeta, WidgetMigrations, WidgetPreviews } from '../types/widget';
+import type {
+  AnyWidgetMeta,
+  WidgetMigrations,
+  WidgetPreviews,
+} from "../types/widget";
 
-import * as Appointment from './appointment';
-import * as BusinessHours from './business-hours';
-import * as ConnectButtons from './connect-buttons';
-import * as ContactLinks from './contact-links';
-import * as Copyright from './copyright';
-import * as CtaButton from './cta-button';
-import * as Description from './description';
-import * as Divider from './divider';
-import * as Embed from './embed';
-import * as Faq from './faq';
-import * as Gallery from './gallery';
-import * as Icon from './icon';
-import * as IconBox from './icon-box';
-import * as ImageWidget from './image';
-import * as LeadForm from './lead-form';
-import * as MapWidget from './map';
-import * as PriceList from './price-list';
-import * as Profile from './profile';
-import * as RichText from './rich-text';
-import * as ServiceList from './service-list';
-import * as SocialIcons from './social-icons';
-import * as Spacer from './spacer';
-import * as Stats from './stats';
-import * as Team from './team';
-import * as Testimonials from './testimonials';
-import * as Timeline from './timeline';
-import * as Title from './title';
-import * as Video from './video';
-import * as VideoGallery from './video-gallery';
+import * as Appointment from "./appointment";
+import * as BusinessHours from "./business-hours";
+import * as ConnectButtons from "./connect-buttons";
+import * as ContactLinks from "./contact-links";
+import * as Copyright from "./copyright";
+import * as CtaButton from "./cta-button";
+import * as Description from "./description";
+import * as Divider from "./divider";
+import * as Embed from "./embed";
+import * as Faq from "./faq";
+import * as FeatureGrid from "./feature-grid";
+import * as Gallery from "./gallery";
+import * as Icon from "./icon";
+import * as IconBox from "./icon-box";
+import * as ImageWidget from "./image";
+import * as LeadForm from "./lead-form";
+import * as LogoWall from "./logo-wall";
+import * as MapWidget from "./map";
+import * as PriceList from "./price-list";
+import * as Profile from "./profile";
+import * as QrCode from "./qr-code";
+import * as RichText from "./rich-text";
+import * as ServiceList from "./service-list";
+import * as ShareButton from "./share-button";
+import * as SocialIcons from "./social-icons";
+import * as Spacer from "./spacer";
+import * as Stats from "./stats";
+import * as Team from "./team";
+import * as Testimonials from "./testimonials";
+import * as Timeline from "./timeline";
+import * as Title from "./title";
+import * as VcardButton from "./vcard-button";
+import * as Video from "./video";
+import * as VideoGallery from "./video-gallery";
 
 export interface RegisteredWidget {
   meta: AnyWidgetMeta;
@@ -81,9 +90,16 @@ const MODULES: RegisteredWidget[] = [
   Team,
   Spacer,
   Divider,
+  QrCode,
+  VcardButton,
+  ShareButton,
+  LogoWall,
+  FeatureGrid,
 ] as RegisteredWidget[];
 
-const BY_TYPE = new Map<string, RegisteredWidget>(MODULES.map((m) => [m.meta.type, m]));
+const BY_TYPE = new Map<string, RegisteredWidget>(
+  MODULES.map((m) => [m.meta.type, m]),
+);
 
 /** Every registered type, in palette order. */
 export const WIDGET_TYPES: string[] = MODULES.map((m) => m.meta.type);
@@ -129,5 +145,5 @@ export function derivedTypes(): string[] {
 
 /** Every part key a widget declares — used to reject dead `partStyles`. */
 export function partKeys(type: string): string[] {
-  return getWidgetMeta(type)?.parts.map((p) => p.key) ?? [];
+  return getWidgetMeta(type)?.parts?.map((p) => p.key) ?? [];
 }

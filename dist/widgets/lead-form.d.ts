@@ -8,8 +8,8 @@
  *
  * The Free-plan 4-field cap is enforced server-side at save time, not here.
  */
-import type { WidgetModule } from '../types/widget';
-export declare const meta: WidgetModule['meta'];
+import type { WidgetModule } from "../types/widget";
+export declare const meta: WidgetModule["meta"];
 export declare const previews: {
     empty: {
         title: string;

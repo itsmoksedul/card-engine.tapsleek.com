@@ -26,7 +26,7 @@ function templateInstance(def, type) {
         const matches = [];
         (0, node_1.walkTreeOrder)(root, (n) => {
             if ((0, node_1.isWidget)(n) && n.widget === type) {
-                matches.push({ design: n.design, partStyles: n.partStyles });
+                matches.push({ design: n.design, partStyles: n.partStyles, layout: n.layout });
             }
         });
         if (matches.length)
@@ -44,6 +44,7 @@ function resolveBlockDesign(def, type) {
     return {
         design: { ...(meta?.defaultDesign ?? {}), ...(inst?.design ?? {}) },
         partStyles: inst?.partStyles ?? meta?.defaultPartStyles ?? {},
+        layout: inst?.layout ?? meta?.defaultLayout,
     };
 }
 /**

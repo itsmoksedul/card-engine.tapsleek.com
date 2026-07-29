@@ -8,4 +8,4 @@ import type { Binding } from '../types/node';
  * with `hideIfEmpty` silently deletes the owner's name from every template
  * that binds it.
  */
-export declare function resolveBinding(binding: Binding | undefined, card: any, content: any): any;
+export declare function resolveBinding(binding: Binding | undefined, card: any, content: any, selfData?: any): any;

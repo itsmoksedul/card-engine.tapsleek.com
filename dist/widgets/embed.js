@@ -9,11 +9,52 @@ exports.meta = {
     description: 'Embed external content like Spotify, Calendly, or Typeform via iframe HTML.',
     contentVersion: 1,
     interactive: true,
-    parts: [
-        { key: 'root', label: 'Container', kind: 'container' },
-        { key: 'wrapper', label: 'Embed Wrapper', kind: 'container' },
-        { key: 'caption', label: 'Caption', kind: 'text' },
-    ],
+    defaultLayout: {
+        id: 'root',
+        kind: 'element',
+        tag: 'stack',
+        style: {
+            base: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '{space.3}',
+                padding: { all: '{space.4}' },
+                background: { kind: 'color', color: '{color.surface}' },
+                borderRadius: { all: '{radius.lg}' },
+            },
+        },
+        children: [
+            {
+                id: 'wrapper',
+                kind: 'element',
+                tag: 'embed',
+                bind: { source: 'self', path: 'html' },
+                style: {
+                    base: {
+                        width: '100%',
+                        overflow: 'hidden',
+                        borderRadius: { all: '{radius.md}' },
+                        display: 'flex',
+                        flexDirection: 'column',
+                    },
+                },
+            },
+            {
+                id: 'caption',
+                kind: 'element',
+                tag: 'text',
+                hideIfEmpty: true,
+                bind: { source: 'self', path: 'caption' },
+                style: {
+                    base: {
+                        fontSize: '{size.sm}',
+                        color: '{color.muted}',
+                        textAlign: 'center',
+                    },
+                },
+            },
+        ],
+    },
     designSchema: [
         {
             key: 'height', type: 'select', label: 'Height',
@@ -36,34 +77,6 @@ exports.meta = {
         },
         { key: 'caption', type: 'text', label: 'Caption', max: 120 },
     ],
-    defaultPartStyles: {
-        root: {
-            base: {
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '{space.3}',
-                padding: { all: '{space.4}' },
-                background: { kind: 'color', color: '{color.surface}' },
-                borderRadius: { all: '{radius.lg}' }
-            }
-        },
-        wrapper: {
-            base: {
-                width: '100%',
-                overflow: 'hidden',
-                borderRadius: { all: '{radius.md}' },
-                display: 'flex',
-                flexDirection: 'column',
-            }
-        },
-        caption: {
-            base: {
-                fontSize: '{size.sm}',
-                color: '{color.muted}',
-                textAlign: 'center'
-            }
-        },
-    },
     defaultDesign: { height: 'auto', removePadding: false },
     defaultContent: {
         html: '',

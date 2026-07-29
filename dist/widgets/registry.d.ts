@@ -12,7 +12,7 @@
  * Retire one with `meta.deprecated` instead: hidden from the palette, still
  * renders, flagged as a warning on publish.
  */
-import type { AnyWidgetMeta, WidgetMigrations, WidgetPreviews } from '../types/widget';
+import type { AnyWidgetMeta, WidgetMigrations, WidgetPreviews } from "../types/widget";
 export interface RegisteredWidget {
     meta: AnyWidgetMeta;
     migrations?: WidgetMigrations;

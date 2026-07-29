@@ -8,17 +8,111 @@ exports.meta = {
     group: 'business',
     description: 'A menu or pricing list with items and costs.',
     contentVersion: 1,
-    parts: [
-        { key: 'root', label: 'Container', kind: 'container' },
-        { key: 'heading', label: 'Heading', kind: 'text' },
-        { key: 'list', label: 'List', kind: 'list' },
-        { key: 'item', label: 'Item Container', kind: 'container' },
-        { key: 'titleRow', label: 'Title & Price Row', kind: 'container' },
-        { key: 'title', label: 'Item Title', kind: 'text' },
-        { key: 'dots', label: 'Dotted Leader', kind: 'container' },
-        { key: 'price', label: 'Price', kind: 'text' },
-        { key: 'description', label: 'Description', kind: 'text' },
-    ],
+    defaultLayout: {
+        id: 'root',
+        kind: 'element',
+        tag: 'stack',
+        style: {
+            base: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '{space.4}',
+                padding: { all: '{space.4}' },
+                background: { kind: 'color', color: '{color.surface}' },
+                borderRadius: { all: '{radius.lg}' },
+            },
+        },
+        children: [
+            {
+                id: 'heading',
+                kind: 'element',
+                tag: 'heading',
+                props: { level: 3 },
+                hideIfEmpty: true,
+                bind: { source: 'self', path: 'heading' },
+                style: {
+                    base: {
+                        fontFamily: '{font.heading}',
+                        fontSize: '{size.lg}',
+                        fontWeight: 700,
+                        color: '{color.text}',
+                    },
+                },
+            },
+            {
+                id: 'list',
+                kind: 'element',
+                tag: 'stack',
+                style: {
+                    base: { display: 'flex', flexDirection: 'column', gap: '{space.3}' },
+                },
+                children: [
+                    {
+                        id: 'item',
+                        kind: 'element',
+                        tag: 'stack',
+                        repeat: { source: 'self', path: 'items' },
+                        style: {
+                            base: { display: 'flex', flexDirection: 'column', gap: '{space.1}' },
+                        },
+                        children: [
+                            {
+                                id: 'titleRow',
+                                kind: 'element',
+                                tag: 'stack',
+                                style: {
+                                    base: { display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '{space.2}', width: '100%' },
+                                },
+                                children: [
+                                    {
+                                        id: 'title',
+                                        kind: 'element',
+                                        tag: 'text',
+                                        bind: { source: 'self', path: 'title' },
+                                        style: {
+                                            base: { fontSize: '{size.base}', fontWeight: 600, color: '{color.text}' },
+                                        },
+                                    },
+                                    {
+                                        id: 'dots',
+                                        kind: 'element',
+                                        tag: 'stack',
+                                        style: {
+                                            base: {
+                                                flexGrow: 1,
+                                                border: { sides: { b: { width: '2px', style: 'dotted', color: '{color.border}' } } },
+                                                opacity: 0.4,
+                                                margin: { b: '4px' },
+                                            },
+                                        },
+                                    },
+                                    {
+                                        id: 'price',
+                                        kind: 'element',
+                                        tag: 'text',
+                                        bind: { source: 'self', path: 'price' },
+                                        style: {
+                                            base: { fontSize: '{size.base}', fontWeight: 700, color: '{color.primary}' },
+                                        },
+                                    },
+                                ],
+                            },
+                            {
+                                id: 'description',
+                                kind: 'element',
+                                tag: 'text',
+                                hideIfEmpty: true,
+                                bind: { source: 'self', path: 'description' },
+                                style: {
+                                    base: { fontSize: '{size.sm}', color: '{color.muted}', lineHeight: 1.4 },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    },
     designSchema: [
         { key: 'showDots', type: 'boolean', label: 'Show dotted line between title and price' },
         { key: 'showDividers', type: 'boolean', label: 'Show dividers between items' },
@@ -34,77 +128,6 @@ exports.meta = {
             ]
         }
     ],
-    defaultPartStyles: {
-        root: {
-            base: {
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '{space.4}',
-                padding: { all: '{space.4}' },
-                background: { kind: 'color', color: '{color.surface}' },
-                borderRadius: { all: '{radius.lg}' }
-            }
-        },
-        heading: {
-            base: {
-                fontFamily: '{font.heading}',
-                fontSize: '{size.lg}',
-                fontWeight: 700,
-                color: '{color.text}',
-            }
-        },
-        list: {
-            base: {
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '{space.3}'
-            }
-        },
-        item: {
-            base: {
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '{space.1}'
-            }
-        },
-        titleRow: {
-            base: {
-                display: 'flex',
-                alignItems: 'center',
-                gap: '{space.2}',
-                width: '100%'
-            }
-        },
-        title: {
-            base: {
-                fontSize: '{size.base}',
-                fontWeight: 600,
-                color: '{color.text}'
-            }
-        },
-        dots: {
-            base: {
-                flexGrow: 1,
-                border: { sides: { b: { width: '2px', style: 'dotted', color: '{color.border}' } } },
-                opacity: 0.4,
-                margin: { b: '4px' }
-            }
-        },
-        price: {
-            base: {
-                fontSize: '{size.base}',
-                fontWeight: 700,
-                color: '{color.primary}'
-            }
-        },
-        description: {
-            base: {
-                fontSize: '{size.sm}',
-                color: '{color.muted}',
-                lineHeight: 1.4
-            }
-        }
-    },
     defaultDesign: { showDots: true, showDividers: false },
     defaultContent: {
         heading: 'Services',

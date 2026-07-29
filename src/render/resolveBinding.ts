@@ -13,6 +13,7 @@ export function resolveBinding(
   binding: Binding | undefined,
   card: any,
   content: any,
+  selfData?: any,
 ): any {
   if (!binding) return undefined;
 
@@ -33,7 +34,7 @@ export function resolveBinding(
   }
 
   if (binding.source === 'self') {
-    let result: any = content;
+    let result: any = selfData !== undefined ? selfData : content;
     for (const part of binding.path.split('.')) {
       if (result == null) break;
       result = result[part];

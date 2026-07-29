@@ -25,7 +25,9 @@ export type PrimitiveTag =
   | 'button'
   | 'link'
   | 'divider'
-  | 'spacer';
+  | 'spacer'
+  | 'embed'
+  | 'video';
 
 export const CONTAINER_TAGS: PrimitiveTag[] = ['frame', 'stack', 'grid', 'link'];
 
@@ -38,6 +40,8 @@ export const VOID_TAGS: PrimitiveTag[] = [
   'button',
   'divider',
   'spacer',
+  'embed',
+  'video',
 ];
 
 /**
@@ -122,6 +126,8 @@ export interface ElementNode extends BaseNode {
   bind?: Binding;
   /** A bound value that resolves empty removes the node entirely (no gap). */
   hideIfEmpty?: boolean;
+  /** If set, repeats this element for each item in the bound array. */
+  repeat?: Binding;
   children?: Node[];
 }
 

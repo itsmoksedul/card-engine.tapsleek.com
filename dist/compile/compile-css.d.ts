@@ -9,7 +9,7 @@
  *   1. `@layer ts-reset`     — neutralise the host app's Preflight inside .ts-card
  *   2. `@layer ts-template`  — tokens, base rules, breakpoints, states
  *   3. `@layer ts-override`  — left empty here; the card's inline token
- *                              overrides are injected into it at render time
+ * overrides are injected into it at render time
  *
  * Breakpoints are DESKTOP-FIRST. Within `ts-template`, source order is:
  * tokens → `base` (Desktop) → `md` (Tablet, `max-width`) → `sm` (Mobile,
@@ -24,10 +24,10 @@
  * override is visible on a wide desktop editor window (where a `max-width` query
  * would never match). It never touches the published artifact.
  */
-import { type Breakpoint } from '../types/style';
-import { type TemplateDefinition, type TokenGroup } from '../types/definition';
-import type { CardTheme } from '../types/block';
-import { cssValue, len } from './value';
+import { type Breakpoint } from "../types/style";
+import { type TemplateDefinition, type TokenGroup } from "../types/definition";
+import type { CardTheme } from "../types/block";
+import { cssValue, len } from "./value";
 export interface CompileOptions {
     /** Readable output for the builder's debug drawer. Default false. */
     pretty?: boolean;
@@ -51,7 +51,7 @@ export interface CompileOptions {
      * type the template never used still renders styled). Omit for the pre-2.1
      * template-only stylesheet.
      */
-    emitBlockPresets?: 'template' | 'all';
+    emitBlockPresets?: "template" | "all";
 }
 export interface CompileResult {
     css: string;

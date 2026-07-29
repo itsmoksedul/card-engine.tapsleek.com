@@ -9,7 +9,7 @@
  *   1. `@layer ts-reset`     — neutralise the host app's Preflight inside .ts-card
  *   2. `@layer ts-template`  — tokens, base rules, breakpoints, states
  *   3. `@layer ts-override`  — left empty here; the card's inline token
- *                              overrides are injected into it at render time
+ * overrides are injected into it at render time
  *
  * Breakpoints are DESKTOP-FIRST. Within `ts-template`, source order is:
  * tokens → `base` (Desktop) → `md` (Tablet, `max-width`) → `sm` (Mobile,
@@ -31,20 +31,34 @@ import {
   type Breakpoint,
   type StyleProps,
   type StyleSet,
-} from '../types/style';
+} from "../types/style";
 import {
   definitionRoots,
   TOKEN_GROUPS,
   TOKEN_PREFIX,
   type TemplateDefinition,
   type TokenGroup,
-} from '../types/definition';
-import { isElement, isSlot, isWidget, walkTreeOrder, type Node } from '../types/node';
-import type { CardTheme } from '../types/block';
-import { resolveBlockDesign, blockClass } from '../blocks/resolve-design';
-import { WIDGET_TYPES } from '../widgets/registry';
-import { declarationsFor, serializeDecls, type Decl } from './declarations';
-import { color, cssValue, IDENT_RE, len, safeUrl, utf8Bytes, VALUE_RE } from './value';
+} from "../types/definition";
+import {
+  isElement,
+  isSlot,
+  isWidget,
+  walkTreeOrder,
+  type Node,
+} from "../types/node";
+import type { CardTheme } from "../types/block";
+import { resolveBlockDesign, blockClass } from "../blocks/resolve-design";
+import { WIDGET_TYPES, getWidgetMeta } from "../widgets/registry";
+import { declarationsFor, serializeDecls, type Decl } from "./declarations";
+import {
+  color,
+  cssValue,
+  IDENT_RE,
+  len,
+  safeUrl,
+  utf8Bytes,
+  VALUE_RE,
+} from "./value";
 
 export interface CompileOptions {
   /** Readable output for the builder's debug drawer. Default false. */
@@ -69,7 +83,7 @@ export interface CompileOptions {
    * type the template never used still renders styled). Omit for the pre-2.1
    * template-only stylesheet.
    */
-  emitBlockPresets?: 'template' | 'all';
+  emitBlockPresets?: "template" | "all";
 }
 
 export interface CompileResult {
@@ -88,7 +102,7 @@ interface Rule {
   decls: Decl[];
 }
 
-const DEFAULT_SCOPE = 'ts-card';
+const DEFAULT_SCOPE = "ts-card";
 
 export function compileCss(
   def: TemplateDefinition,
@@ -98,7 +112,7 @@ export function compileCss(
   // Tolerate a caller passing a selector-style scope (".ts-card-abc"): the
   // compiler builds `.${scope}`, so a leading dot would produce an unmatchable
   // `..ts-card-abc`. Strip it so both `"ts-card"` and `".ts-card"` work.
-  const scope = (options.scope ?? DEFAULT_SCOPE).replace(/^\.+/, '');
+  const scope = (options.scope ?? DEFAULT_SCOPE).replace(/^\.+/, "");
   const warnings: string[] = [];
   const emptyNodes: string[] = [];
 
@@ -114,13 +128,18 @@ export function compileCss(
 
   // ── 2. Card frame ──────────────────────────────────────────────────────
   const frameDecls: Decl[] = [];
-  const width = Number.isFinite(def.meta?.canvasWidth) ? def.meta.canvasWidth : 450;
-  frameDecls.push(['width', '100%']);
-  frameDecls.push(['max-width', `${Math.max(280, Math.min(1200, Math.round(width)))}px`]);
-  frameDecls.push(['margin-inline', 'auto']);
+  const width = Number.isFinite(def.meta?.canvasWidth)
+    ? def.meta.canvasWidth
+    : 450;
+  frameDecls.push(["width", "100%"]);
+  frameDecls.push([
+    "max-width",
+    `${Math.max(280, Math.min(1200, Math.round(width)))}px`,
+  ]);
+  frameDecls.push(["margin-inline", "auto"]);
   if (def.meta?.background) {
     const bg = color(def.meta.background);
-    if (bg) frameDecls.push(['background-color', bg]);
+    if (bg) frameDecls.push(["background-color", bg]);
   }
 
   // ── 3. Node rules ──────────────────────────────────────────────────────
@@ -132,7 +151,7 @@ export function compileCss(
       let produced = 0;
 
       // base / sm / md
-      for (const bp of ['base', 'sm', 'md'] as const) {
+      for (const bp of ["base", "sm", "md"] as const) {
         const props = mergeHidden(node.style?.[bp], node.hidden?.[bp]);
         const decls = declarationsFor(props);
         if (decls.length) {
@@ -151,8 +170,43 @@ export function compileCss(
       }
 
       // widget parts → `.ts-card .n<id> .p-<part>`
-      if (isWidget(node) && node.partStyles) {
-        produced += compilePartStyles(node.partStyles, sel, bucket, states, warnings);
+      if (isWidget(node)) {
+        if (node.partStyles) {
+          produced += compilePartStyles(
+            node.partStyles,
+            sel,
+            bucket,
+            states,
+            warnings,
+          );
+        }
+
+        const layout = node.layout ?? getWidgetMeta(node.widget)?.defaultLayout;
+        if (layout) {
+          walkTreeOrder(layout, (layoutNode) => {
+            const layoutCls = nodeClass(layoutNode.id, warnings);
+            if (!layoutCls) return;
+            const layoutSel = `${sel} .${layoutCls}`;
+            for (const bp of ["base", "sm", "md"] as const) {
+              const props = mergeHidden(
+                layoutNode.style?.[bp],
+                layoutNode.hidden?.[bp],
+              );
+              const decls = declarationsFor(props);
+              if (decls.length) {
+                bucket[bp].push({ selector: layoutSel, decls });
+                produced += decls.length;
+              }
+            }
+            for (const state of STATE_KEYS) {
+              const decls = declarationsFor(layoutNode.style?.[state]);
+              if (decls.length) {
+                states.push({ selector: `${layoutSel}:${state}`, decls });
+                produced += decls.length;
+              }
+            }
+          });
+        }
       }
 
       // slot presets → same shape, keyed per allowed widget type
@@ -160,11 +214,17 @@ export function compileCss(
         for (const [type, preset] of Object.entries(node.presets)) {
           if (!preset?.partStyles) continue;
           const scoped = `${sel} [data-widget="${cssSafeAttr(type)}"]`;
-          produced += compilePartStyles(preset.partStyles, scoped, bucket, states, warnings);
+          produced += compilePartStyles(
+            preset.partStyles,
+            scoped,
+            bucket,
+            states,
+            warnings,
+          );
         }
       }
 
-      if (produced === 0 && (isElement(node) ? node.tag !== 'spacer' : true)) {
+      if (produced === 0 && (isElement(node) ? node.tag !== "spacer" : true)) {
         emptyNodes.push(node.id);
       }
     });
@@ -174,12 +234,35 @@ export function compileCss(
   // Per widget TYPE, so any block a user composes is styled by this template.
   if (options.emitBlockPresets) {
     const types =
-      options.emitBlockPresets === 'all' ? WIDGET_TYPES : templateWidgetTypes(def);
+      options.emitBlockPresets === "all"
+        ? WIDGET_TYPES
+        : templateWidgetTypes(def);
     for (const type of types) {
-      const { partStyles } = resolveBlockDesign(def, type);
-      if (!partStyles || !Object.keys(partStyles).length) continue;
+      const { partStyles, layout } = resolveBlockDesign(def, type);
       const sel = `.${scope} .${blockClass(type)}`;
-      compilePartStyles(partStyles, sel, bucket, states, warnings);
+      if (partStyles && Object.keys(partStyles).length) {
+        compilePartStyles(partStyles, sel, bucket, states, warnings);
+      }
+      if (layout) {
+        walkTreeOrder(layout, (layoutNode) => {
+          const layoutCls = nodeClass(layoutNode.id, warnings);
+          if (!layoutCls) return;
+          const layoutSel = `${sel} .${layoutCls}`;
+          for (const bp of ["base", "sm", "md"] as const) {
+            const props = mergeHidden(
+              layoutNode.style?.[bp],
+              layoutNode.hidden?.[bp],
+            );
+            const decls = declarationsFor(props);
+            if (decls.length) bucket[bp].push({ selector: layoutSel, decls });
+          }
+          for (const state of STATE_KEYS) {
+            const decls = declarationsFor(layoutNode.style?.[state]);
+            if (decls.length)
+              states.push({ selector: `${layoutSel}:${state}`, decls });
+          }
+        });
+      }
     }
   }
 
@@ -193,7 +276,7 @@ export function compileCss(
   }
 
   // ── 5. Assemble ────────────────────────────────────────────────────────
-  const nl = pretty ? '\n' : '';
+  const nl = pretty ? "\n" : "";
   const out: string[] = [];
 
   out.push(`@layer ts-reset, ts-template, ts-override;`);
@@ -210,20 +293,30 @@ export function compileCss(
   if (options.flattenTo) {
     // Preview mode: pour the applicable override layers straight into the
     // cascade with no media wrapper, Tablet before Mobile so the narrower wins.
-    const active: Exclude<Breakpoint, 'base'>[] =
-      options.flattenTo === 'sm' ? ['md', 'sm'] : options.flattenTo === 'md' ? ['md'] : [];
+    const active: Exclude<Breakpoint, "base">[] =
+      options.flattenTo === "sm"
+        ? ["md", "sm"]
+        : options.flattenTo === "md"
+          ? ["md"]
+          : [];
     for (const bp of active) {
-      body.push(...dedupe(bucket[bp]).map((r) => rule(r.selector, r.decls, pretty)));
+      body.push(
+        ...dedupe(bucket[bp]).map((r) => rule(r.selector, r.decls, pretty)),
+      );
     }
   } else {
     // Desktop-first cascade: Tablet (wider max-width) first, Mobile last.
-    const mdCss = dedupe(md).map((r) => rule(r.selector, r.decls, pretty)).join(nl);
+    const mdCss = dedupe(md)
+      .map((r) => rule(r.selector, r.decls, pretty))
+      .join(nl);
     if (mdCss) {
       body.push(`@media ${BREAKPOINT_MEDIA.md}{${nl}${mdCss}${nl}}`);
       body.push(`@container ${BREAKPOINT_MEDIA.md}{${nl}${mdCss}${nl}}`);
     }
 
-    const smCss = dedupe(sm).map((r) => rule(r.selector, r.decls, pretty)).join(nl);
+    const smCss = dedupe(sm)
+      .map((r) => rule(r.selector, r.decls, pretty))
+      .join(nl);
     if (smCss) {
       body.push(`@media ${BREAKPOINT_MEDIA.sm}{${nl}${smCss}${nl}}`);
       body.push(`@container ${BREAKPOINT_MEDIA.sm}{${nl}${smCss}${nl}}`);
@@ -249,54 +342,54 @@ export function compileCss(
 
 const DEFAULT_TOKENS: Record<TokenGroup, Record<string, string>> = {
   color: {
-    primary: '#6366f1',
-    surface: '#ffffff',
-    bg: '#f8fafc',
-    text: '#0f172a',
-    muted: '#64748b',
-    border: '#e2e8f0',
-    onPrimary: '#ffffff',
+    primary: "#6366f1",
+    surface: "#ffffff",
+    bg: "#f8fafc",
+    text: "#0f172a",
+    muted: "#64748b",
+    border: "#e2e8f0",
+    onPrimary: "#ffffff",
   },
   space: {
-    '1': '4px',
-    '2': '8px',
-    '3': '12px',
-    '4': '16px',
-    '5': '20px',
-    '6': '24px',
-    '8': '32px',
+    "1": "4px",
+    "2": "8px",
+    "3": "12px",
+    "4": "16px",
+    "5": "20px",
+    "6": "24px",
+    "8": "32px",
   },
   radius: {
-    none: '0px',
-    sm: '4px',
-    md: '8px',
-    lg: '16px',
-    full: '9999px',
+    none: "0px",
+    sm: "4px",
+    md: "8px",
+    lg: "16px",
+    full: "9999px",
   },
   font: {
-    heading: 'Inter, sans-serif',
-    body: 'Inter, sans-serif',
+    heading: "Inter, sans-serif",
+    body: "Inter, sans-serif",
   },
   size: {
-    xs: '12px',
-    sm: '14px',
-    base: '16px',
-    lg: '18px',
-    xl: '20px',
-    '2xl': '24px',
+    xs: "12px",
+    sm: "14px",
+    base: "16px",
+    lg: "18px",
+    xl: "20px",
+    "2xl": "24px",
   },
   shadow: {
-    none: 'none',
-    sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-    md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-    lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+    none: "none",
+    sm: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+    md: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+    lg: "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
   },
 };
 
 /** Token table → CSS custom properties. Invalid literals are dropped + warned. */
 function compileTokens(def: TemplateDefinition, warnings: string[]): Decl[] {
   const decls: Decl[] = [];
-  const tokens = def.tokens ?? ({} as TemplateDefinition['tokens']);
+  const tokens = def.tokens ?? ({} as TemplateDefinition["tokens"]);
 
   for (const group of TOKEN_GROUPS) {
     const table = {
@@ -311,7 +404,9 @@ function compileTokens(def: TemplateDefinition, warnings: string[]): Decl[] {
       }
       const value = validateTokenLiteral(group, raw);
       if (value === null) {
-        warnings.push(`token ${group}.${name}: invalid value "${String(raw)}", dropped`);
+        warnings.push(
+          `token ${group}.${name}: invalid value "${String(raw)}", dropped`,
+        );
         continue;
       }
       decls.push([`${TOKEN_PREFIX[group]}${name}`, value]);
@@ -325,18 +420,18 @@ function compileTokens(def: TemplateDefinition, warnings: string[]): Decl[] {
  * `var(--x)`, which is why a token ref never needs per-property validation.
  */
 function validateTokenLiteral(group: TokenGroup, raw: unknown): string | null {
-  if (typeof raw !== 'string' || raw.length > 200) return null;
+  if (typeof raw !== "string" || raw.length > 200) return null;
   const v = raw.trim();
   switch (group) {
-    case 'color':
+    case "color":
       return VALUE_RE.color.test(v) ? v : null;
-    case 'space':
-    case 'radius':
-    case 'size':
+    case "space":
+    case "radius":
+    case "size":
       return VALUE_RE.length.test(v) ? v : null;
-    case 'font':
+    case "font":
       return VALUE_RE.fontFamily.test(v) ? v : null;
-    case 'shadow':
+    case "shadow":
       // Shadow tokens are literal box-shadow values — tightly constrained.
       return /^[a-z0-9\s.,()#%/-]+$/i.test(v) && !/[;{}@\\]/.test(v) ? v : null;
     default:
@@ -370,7 +465,7 @@ function pushStyleSet(
 ): number {
   if (!set) return 0;
   let produced = 0;
-  for (const bp of ['base', 'sm', 'md'] as const) {
+  for (const bp of ["base", "sm", "md"] as const) {
     const decls = declarationsFor(set[bp]);
     if (decls.length) {
       bucket[bp].push({ selector, decls });
@@ -388,9 +483,12 @@ function pushStyleSet(
 }
 
 /** `hidden[bp] === true` folds into that breakpoint as `display:none`. */
-function mergeHidden(props: StyleProps | undefined, hidden: boolean | undefined): StyleProps | undefined {
+function mergeHidden(
+  props: StyleProps | undefined,
+  hidden: boolean | undefined,
+): StyleProps | undefined {
   if (!hidden) return props;
-  return { ...(props ?? {}), display: 'none' };
+  return { ...(props ?? {}), display: "none" };
 }
 
 /**
@@ -414,19 +512,19 @@ function dedupe(rules: Rule[]): Rule[] {
   }
   return order.map((body) => {
     const hit = byBody.get(body)!;
-    return { selector: hit.selectors.join(','), decls: hit.decls };
+    return { selector: hit.selectors.join(","), decls: hit.decls };
   });
 }
 
 function rule(selector: string, decls: Decl[], pretty: boolean): string {
-  if (!decls.length) return '';
+  if (!decls.length) return "";
   return pretty
     ? `${selector} {\n${serializeDecls(decls, true)}\n}`
     : `${selector}{${serializeDecls(decls)}}`;
 }
 
 function nodeClass(id: unknown, warnings: string[]): string | null {
-  if (typeof id !== 'string' || !IDENT_RE.test(id) || id.length > 64) {
+  if (typeof id !== "string" || !IDENT_RE.test(id) || id.length > 64) {
     warnings.push(`node id "${String(id)}": invalid, skipped`);
     return null;
   }
@@ -434,7 +532,7 @@ function nodeClass(id: unknown, warnings: string[]): string | null {
 }
 
 function cssSafeAttr(v: string): string {
-  return String(v).replace(/[^A-Za-z0-9_-]/g, '');
+  return String(v).replace(/[^A-Za-z0-9_-]/g, "");
 }
 
 /**
@@ -443,7 +541,7 @@ function cssSafeAttr(v: string): string {
  * touch the surrounding page.
  */
 function resetCss(scope: string, pretty: boolean): string {
-  const nl = pretty ? '\n' : '';
+  const nl = pretty ? "\n" : "";
   const rules = [
     `.${scope} *,.${scope} *::before,.${scope} *::after{box-sizing:border-box}`,
     `.${scope}{-webkit-font-smoothing:antialiased;text-size-adjust:100%;color:var(--c-text, #0f172a)}`,
@@ -468,7 +566,7 @@ function compileFonts(
   warnings: string[],
 ): FontOutput {
   if (options.emitFonts === false || !def.fonts?.length) {
-    return { faces: '', googleHref: null };
+    return { faces: "", googleHref: null };
   }
 
   const faces: string[] = [];
@@ -479,35 +577,39 @@ function compileFonts(
       warnings.push(`font "${String(font?.family)}": invalid family, skipped`);
       continue;
     }
-    const weights = (font.weights ?? [400]).filter((w) => Number.isInteger(w) && w >= 100 && w <= 900);
+    const weights = (font.weights ?? [400]).filter(
+      (w) => Number.isInteger(w) && w >= 100 && w <= 900,
+    );
     if (!weights.length) continue;
 
-    if (font.source === 'google') {
-      googleFamilies.push(`family=${encodeURIComponent(font.family)}:wght@${weights.sort((a, b) => a - b).join(';')}`);
+    if (font.source === "google") {
+      googleFamilies.push(
+        `family=${encodeURIComponent(font.family)}:wght@${weights.sort((a, b) => a - b).join(";")}`,
+      );
       continue;
     }
 
-    const display = font.display ?? 'swap';
+    const display = font.display ?? "swap";
     for (const weight of weights) {
       const file = font.files?.[String(weight)];
-      const url = file
-        ? safeUrl(joinUrl(options.fontBaseUrl, file))
-        : null;
+      const url = file ? safeUrl(joinUrl(options.fontBaseUrl, file)) : null;
       if (!url) {
-        warnings.push(`font ${font.family}@${weight}: no valid self-hosted file, skipped`);
+        warnings.push(
+          `font ${font.family}@${weight}: no valid self-hosted file, skipped`,
+        );
         continue;
       }
       faces.push(
-        `@font-face{font-family:"${font.family}";font-style:${font.italic ? 'italic' : 'normal'};` +
+        `@font-face{font-family:"${font.family}";font-style:${font.italic ? "italic" : "normal"};` +
           `font-weight:${weight};font-display:${display};src:url("${url}") format("woff2")}`,
       );
     }
   }
 
   return {
-    faces: faces.join(''),
+    faces: faces.join(""),
     googleHref: googleFamilies.length
-      ? `https://fonts.googleapis.com/css2?${googleFamilies.join('&')}&display=swap`
+      ? `https://fonts.googleapis.com/css2?${googleFamilies.join("&")}&display=swap`
       : null,
   };
 }
@@ -515,7 +617,7 @@ function compileFonts(
 function joinUrl(base: string | undefined, path: string): string {
   if (/^https:\/\//i.test(path)) return path;
   if (!base) return path;
-  return `${base.replace(/\/+$/, '')}/${String(path).replace(/^\/+/, '')}`;
+  return `${base.replace(/\/+$/, "")}/${String(path).replace(/^\/+/, "")}`;
 }
 
 // ─── Render-time override sheet (tiny, inline, NOT part of the artifact) ─────
@@ -527,29 +629,32 @@ function joinUrl(base: string | undefined, path: string): string {
  * immutable and shared across every card on the template.
  */
 export function compileTokenOverrides(
-  overrides: Partial<Record<TokenGroup, Record<string, string>>> | null | undefined,
+  overrides:
+    | Partial<Record<TokenGroup, Record<string, string>>>
+    | null
+    | undefined,
   cardScopeClass: string,
   allow?: string[],
 ): string {
-  if (!overrides || !IDENT_RE.test(cardScopeClass)) return '';
+  if (!overrides || !IDENT_RE.test(cardScopeClass)) return "";
   const allowSet = allow?.length ? new Set(allow) : null;
   const decls: string[] = [];
 
   for (const group of TOKEN_GROUPS) {
     const table = overrides[group];
-    if (!table || typeof table !== 'object') continue;
+    if (!table || typeof table !== "object") continue;
     for (const [name, raw] of Object.entries(table)) {
       if (!IDENT_RE.test(name)) continue;
       // Only colour overrides are gated by `allowTokenOverride`.
-      if (group === 'color' && allowSet && !allowSet.has(name)) continue;
+      if (group === "color" && allowSet && !allowSet.has(name)) continue;
       const value = validateTokenLiteral(group, raw);
       if (value === null) continue;
       decls.push(`${TOKEN_PREFIX[group]}${name}:${value}`);
     }
   }
 
-  if (!decls.length) return '';
-  return `@layer ts-override{.${cardScopeClass}{${decls.join(';')}}}`;
+  if (!decls.length) return "";
+  return `@layer ts-override{.${cardScopeClass}{${decls.join(";")}}}`;
 }
 
 /**
@@ -565,33 +670,38 @@ export function compileCardTheme(
   theme: CardTheme | null | undefined,
   cardScopeClass: string,
 ): string {
-  if (!theme || !IDENT_RE.test(cardScopeClass)) return '';
+  if (!theme || !IDENT_RE.test(cardScopeClass)) return "";
   const decls: string[] = [];
 
   for (const [name, raw] of Object.entries(theme.colors ?? {})) {
     if (!IDENT_RE.test(name)) continue;
-    const v = validateTokenLiteral('color', raw);
+    const v = validateTokenLiteral("color", raw);
     if (v !== null) decls.push(`${TOKEN_PREFIX.color}${name}:${v}`);
   }
 
   if (theme.fontFamily) {
-    const v = validateTokenLiteral('font', theme.fontFamily);
-    if (v !== null) decls.push(`${TOKEN_PREFIX.font}heading:${v}`, `${TOKEN_PREFIX.font}body:${v}`);
+    const v = validateTokenLiteral("font", theme.fontFamily);
+    if (v !== null)
+      decls.push(
+        `${TOKEN_PREFIX.font}heading:${v}`,
+        `${TOKEN_PREFIX.font}body:${v}`,
+      );
   }
 
   if (theme.radius != null) {
-    const v = validateTokenLiteral('radius', `${theme.radius}px`);
+    const v = validateTokenLiteral("radius", `${theme.radius}px`);
     if (v !== null)
-      for (const key of ['sm', 'md', 'lg']) decls.push(`${TOKEN_PREFIX.radius}${key}:${v}`);
+      for (const key of ["sm", "md", "lg"])
+        decls.push(`${TOKEN_PREFIX.radius}${key}:${v}`);
   }
 
   if (theme.density != null) {
-    const v = validateTokenLiteral('space', `${theme.density}px`);
+    const v = validateTokenLiteral("space", `${theme.density}px`);
     if (v !== null) decls.push(`${TOKEN_PREFIX.space}4:${v}`);
   }
 
-  if (!decls.length) return '';
-  return `@layer ts-override{.${cardScopeClass}{${decls.join(';')}}}`;
+  if (!decls.length) return "";
+  return `@layer ts-override{.${cardScopeClass}{${decls.join(";")}}}`;
 }
 
 /** Distinct widget types placed in the template tree, in first-seen order. */
