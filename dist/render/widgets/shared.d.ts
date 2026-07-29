@@ -26,6 +26,7 @@ export declare function displayName(card: any): string;
 export declare function subtitleOf(card: any): string;
 export declare function asArray<T>(value: unknown): T[];
 export declare function str(value: unknown): string;
+export declare function iconVal(value: unknown): string | object | null;
 /**
  * In the builder an empty widget would collapse to nothing and become
  * unselectable, so mark it instead of returning null. On a live card the same

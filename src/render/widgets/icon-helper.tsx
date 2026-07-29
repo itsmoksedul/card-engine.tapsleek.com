@@ -27,10 +27,27 @@ export function RenderIcon({
   name,
   className,
 }: {
-  name?: string | null;
+  name?: string | Record<string, any> | null;
   className?: string;
 }) {
   if (!name) return null;
+
+  if (typeof name === 'object') {
+    if (name.type === 'svg' && name.svg) {
+      return (
+        <span
+          className={className}
+          data-icon={name.name || 'custom'}
+          aria-hidden
+          style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+          dangerouslySetInnerHTML={{ __html: name.svg }}
+        />
+      );
+    }
+    // Fallback if not an SVG object (e.g. invalid format)
+    return null;
+  }
+
   const upper = String(name).trim().toUpperCase();
   const mapped = COMMON_ICON_MAP[upper] ?? name;
 

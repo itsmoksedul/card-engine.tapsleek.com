@@ -60,6 +60,13 @@ const COMMON_ICON_MAP = {
 function RenderIcon({ name, className, }) {
     if (!name)
         return null;
+    if (typeof name === 'object') {
+        if (name.type === 'svg' && name.svg) {
+            return ((0, jsx_runtime_1.jsx)("span", { className: className, "data-icon": name.name || 'custom', "aria-hidden": true, style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }, dangerouslySetInnerHTML: { __html: name.svg } }));
+        }
+        // Fallback if not an SVG object (e.g. invalid format)
+        return null;
+    }
     const upper = String(name).trim().toUpperCase();
     const mapped = COMMON_ICON_MAP[upper] ?? name;
     const formatted = String(mapped)

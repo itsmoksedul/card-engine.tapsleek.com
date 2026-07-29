@@ -8,7 +8,7 @@ function IconBoxRender({ content, design, cls, ctx }) {
     const c = (content ?? {});
     const d = (design ?? {});
     const title = (0, shared_1.str)(c.title);
-    const icon = (0, shared_1.str)(c.icon);
+    const icon = (0, shared_1.iconVal)(c.icon);
     if (!title && !icon)
         return (0, jsx_runtime_1.jsx)(shared_1.EmptyState, { cls: cls, ctx: ctx, label: "Icon Box" });
     const inner = ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [icon && (0, jsx_runtime_1.jsx)(icon_helper_1.RenderIcon, { name: icon, className: cls('icon') }), title && (0, jsx_runtime_1.jsx)("div", { className: cls('title'), children: title }), d.showDescription !== false && (0, shared_1.str)(c.description) && ((0, jsx_runtime_1.jsx)("div", { className: cls('description'), children: (0, shared_1.str)(c.description) }))] }));

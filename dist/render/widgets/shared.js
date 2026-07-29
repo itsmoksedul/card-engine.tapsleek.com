@@ -4,6 +4,7 @@ exports.displayName = displayName;
 exports.subtitleOf = subtitleOf;
 exports.asArray = asArray;
 exports.str = str;
+exports.iconVal = iconVal;
 exports.EmptyState = EmptyState;
 const jsx_runtime_1 = require("react/jsx-runtime");
 /** Card owner's display name, assembled the same way the backend vCard does. */
@@ -20,6 +21,9 @@ function asArray(value) {
 }
 function str(value) {
     return typeof value === 'string' ? value : '';
+}
+function iconVal(value) {
+    return (typeof value === 'string' || typeof value === 'object') ? value : null;
 }
 /**
  * In the builder an empty widget would collapse to nothing and become

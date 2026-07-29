@@ -7,7 +7,7 @@ const shared_1 = require("./shared");
 function IconRender({ content, design, cls, ctx }) {
     const c = (content ?? {});
     const d = (design ?? {});
-    const icon = (0, shared_1.str)(c.icon);
+    const icon = (0, shared_1.iconVal)(c.icon);
     if (!icon)
         return (0, jsx_runtime_1.jsx)(shared_1.EmptyState, { cls: cls, ctx: ctx, label: "Icon" });
     const glyph = (0, jsx_runtime_1.jsx)(icon_helper_1.RenderIcon, { name: icon, className: cls('icon') });

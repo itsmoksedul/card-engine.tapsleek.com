@@ -41,6 +41,10 @@ export function str(value: unknown): string {
   return typeof value === 'string' ? value : '';
 }
 
+export function iconVal(value: unknown) {
+  return (typeof value === 'string' || typeof value === 'object') ? value : null;
+}
+
 /**
  * In the builder an empty widget would collapse to nothing and become
  * unselectable, so mark it instead of returning null. On a live card the same

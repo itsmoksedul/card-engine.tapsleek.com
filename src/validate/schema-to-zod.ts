@@ -116,7 +116,10 @@ function fieldToZod(field: FieldSchema, options: SchemaToZodOptions): z.ZodTypeA
         .refine((v) => v === '' || isAllowedImage(v, options.imageHosts), 'image host not allowed');
 
     case 'icon':
-      return z.string().regex(ICON_RE, 'invalid icon key');
+      return z.union([
+        z.string().regex(ICON_RE, 'invalid icon key'),
+        z.object({ type: z.string() }).passthrough()
+      ]);
 
     case 'date':
       return z.string().refine((v) => v === '' || DATE_RE.test(v), 'must be YYYY-MM-DD');

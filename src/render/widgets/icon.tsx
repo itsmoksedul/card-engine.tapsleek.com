@@ -1,15 +1,15 @@
 import React from 'react';
 import { RenderIcon } from './icon-helper';
-import { EmptyState, str, type WidgetRenderProps } from './shared';
+import { EmptyState, str, iconVal, type WidgetRenderProps } from './shared';
 
 export function IconRender({ content, design, cls, ctx }: WidgetRenderProps) {
   const c = (content ?? {}) as Record<string, unknown>;
   const d = (design ?? {}) as Record<string, any>;
-  const icon = str(c.icon);
+  const icon = iconVal(c.icon);
 
   if (!icon) return <EmptyState cls={cls} ctx={ctx} label="Icon" />;
 
-  const glyph = <RenderIcon name={icon} className={cls('icon')} />;
+  const glyph = <RenderIcon name={icon as any} className={cls('icon')} />;
   const link = str(c.link);
 
   return (

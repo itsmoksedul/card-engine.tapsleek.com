@@ -423,8 +423,10 @@ function validateElement(node: Node & { kind: 'element' }, path: string, ctx: Tr
       warnings.push({ path: `${path}.props.src`, message: 'image has no source and no binding' });
     }
   }
-  if (tag === 'icon' && props.name !== undefined && !IDENT_RE.test(String(props.name))) {
-    errors.push({ path: `${path}.props.name`, message: 'invalid icon name' });
+  if (tag === 'icon' && props.name !== undefined) {
+    if (typeof props.name === 'string' && !IDENT_RE.test(props.name)) {
+      errors.push({ path: `${path}.props.name`, message: 'invalid icon name' });
+    }
   }
   if (tag === 'button' || tag === 'link') {
     const action = props.action;

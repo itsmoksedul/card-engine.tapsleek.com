@@ -342,8 +342,10 @@ function validateElement(node, path, ctx) {
             warnings.push({ path: `${path}.props.src`, message: 'image has no source and no binding' });
         }
     }
-    if (tag === 'icon' && props.name !== undefined && !value_1.IDENT_RE.test(String(props.name))) {
-        errors.push({ path: `${path}.props.name`, message: 'invalid icon name' });
+    if (tag === 'icon' && props.name !== undefined) {
+        if (typeof props.name === 'string' && !value_1.IDENT_RE.test(props.name)) {
+            errors.push({ path: `${path}.props.name`, message: 'invalid icon name' });
+        }
     }
     if (tag === 'button' || tag === 'link') {
         const action = props.action;
