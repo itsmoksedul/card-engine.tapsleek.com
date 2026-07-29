@@ -10,7 +10,8 @@ export function SocialIconsRender({ design, content, cls, ctx }: WidgetRenderPro
   const d = (design ?? {}) as Record<string, any>;
   const c = (content ?? {}) as Record<string, any>;
   
-  const profiles = asArray<any>(c.profiles);
+  const demoProfiles = asArray<any>(c.profiles);
+  const profiles = demoProfiles.length ? demoProfiles : asArray<any>(ctx.card?.socials || ctx.card?.socialLinks);
 
   if (!profiles.length) {
     return <EmptyState cls={cls} ctx={ctx} label="No social profiles" />;
@@ -32,6 +33,9 @@ export function SocialIconsRender({ design, content, cls, ctx }: WidgetRenderPro
             aria-label={profile.platform}
           >
             <RenderIcon name={profile.platform} className={cls('icon')} />
+            {d.showLabel !== false && (
+              <span className={cls('label')}>{profile.platform}</span>
+            )}
           </a>
         ))}
       </div>

@@ -68,9 +68,20 @@ exports.meta = {
                                 id: 'icon',
                                 kind: 'element',
                                 tag: 'icon',
+                                name: 'Icon',
                                 bind: { source: 'self', path: 'platform' },
                                 style: {
                                     base: { width: '20px', height: '20px' },
+                                },
+                            },
+                            {
+                                id: 'label',
+                                kind: 'element',
+                                tag: 'text',
+                                name: 'Label',
+                                bind: { source: 'self', path: 'platform' },
+                                style: {
+                                    base: { fontSize: '{size.xs}', fontWeight: 500 },
                                 },
                             },
                         ],

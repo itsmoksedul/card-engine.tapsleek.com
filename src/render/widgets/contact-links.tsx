@@ -9,12 +9,14 @@ import { asArray, EmptyState, type WidgetRenderProps } from './shared';
  * click analytics, so this widget only decides which ones appear and how they
  * look. `data-link-id` is what the click beacon reads.
  */
-export function ContactLinksRender({ design, cls, ctx }: WidgetRenderProps) {
+export function ContactLinksRender({ design, content, cls, ctx }: WidgetRenderProps) {
   const d = (design ?? {}) as Record<string, any>;
+  const c = (content ?? {}) as Record<string, any>;
   const categories: string[] = Array.isArray(d.categories) ? d.categories : [];
   const max = Number(d.max) > 0 ? Number(d.max) : Infinity;
 
-  let links = asArray<any>(ctx.links);
+  const demoItems = asArray<any>(c.links);
+  let links = demoItems.length ? demoItems : asArray<any>(ctx.links);
   if (categories.length) links = links.filter((l) => categories.includes(l.category));
   links = links.slice(0, max);
 
@@ -23,20 +25,20 @@ export function ContactLinksRender({ design, cls, ctx }: WidgetRenderProps) {
   return (
     <div className={cls('root')} data-layout={d.layout ?? 'stack'}>
       <div className={cls('list')}>
-        {links.map((link) => (
+        {links.map((link, idx) => (
           <a
-            key={link.id}
+            key={link.id || idx}
             className={cls('item')}
             data-link-id={link.id}
             data-link-type={link.type}
-            href={link.value || '#'}
+            href={link.url || link.value || '#'}
             target="_blank"
             rel="noreferrer"
             onClick={() => ctx.track({ type: 'LINK_CLICK', linkId: link.id })}
           >
-            {d.showIcon !== false && <RenderIcon name={link.type || link.icon} className={cls('icon')} />}
-            <span className={cls('label')}>{link.label || link.type}</span>
-            {d.showValue && <span className={cls('value')}>{link.value}</span>}
+            {d.showIcon !== false && <RenderIcon name={link.icon || link.type} className={cls('icon')} />}
+            <span className={cls('label')}>{link.title || link.label || link.type}</span>
+            {d.showValue && link.value && <span className={cls('value')}>{link.value}</span>}
           </a>
         ))}
       </div>

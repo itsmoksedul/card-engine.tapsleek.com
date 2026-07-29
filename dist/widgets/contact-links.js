@@ -43,7 +43,16 @@ exports.meta = {
         },
         { key: 'max', type: 'number', label: 'Maximum links', min: 0, max: 50 },
     ],
-    contentSchema: [],
+    contentSchema: [
+        {
+            key: 'links', type: 'repeater', label: 'Link Buttons', itemLabel: '{title}',
+            fields: [
+                { key: 'title', type: 'text', label: 'Title' },
+                { key: 'url', type: 'url', label: 'URL' },
+                { key: 'icon', type: 'icon', label: 'Icon' }
+            ]
+        }
+    ],
     defaultPartStyles: {
         root: { base: { display: 'flex', flexDirection: 'column' } },
         list: { base: { display: 'flex', flexDirection: 'column', gap: '{space.2}' } },
@@ -84,7 +93,12 @@ exports.meta = {
         value: { base: { fontSize: '{size.xs}', color: '{color.muted}' } },
     },
     defaultDesign: { layout: 'stack', showIcon: true, showValue: false, categories: [], max: 0 },
-    defaultContent: {},
+    defaultContent: {
+        links: [
+            { title: 'Call me', url: 'tel:+1234567890', icon: 'Phone' },
+            { title: 'WhatsApp', url: 'https://wa.me/1234567890', icon: 'MessageSquare' }
+        ]
+    },
     defaultLayout: {
         kind: "element",
         id: "root",
@@ -101,10 +115,11 @@ exports.meta = {
         children: [
             {
                 kind: "element",
-                id: "item_1",
+                id: "item",
                 tag: "link",
-                name: "Call me",
-                props: { href: "tel:" },
+                name: "Link box",
+                repeat: { source: "self", path: "links" },
+                bind: { source: "self", path: "url" },
                 style: {
                     base: {
                         display: "flex",
@@ -114,55 +129,29 @@ exports.meta = {
                         background: { kind: "color", color: "{color.surface}" },
                         border: { width: "1px", style: "solid", color: "{color.border}" },
                         borderRadius: { all: "{radius.md}" },
+                        transition: { property: ["transform", "background-color"], duration: 150, easing: "ease" },
+                    },
+                    hover: {
+                        transform: { translateY: "-1px" },
+                        background: { kind: "color", color: "{color.bg}" },
                     },
                 },
                 children: [
                     {
                         kind: "element",
-                        id: "icon_1",
+                        id: "icon",
                         tag: "icon",
-                        props: { name: "Phone", size: 18 },
+                        name: "Icon",
+                        bind: { source: "self", path: "icon" },
+                        props: { size: 18 },
                         style: { base: { color: "{color.primary}" } },
                     },
                     {
                         kind: "element",
-                        id: "text_1",
+                        id: "label",
                         tag: "text",
-                        props: { text: "Call me" },
-                        style: { base: { fontSize: "{size.sm}", fontWeight: 500 } },
-                    },
-                ],
-            },
-            {
-                kind: "element",
-                id: "item_2",
-                tag: "link",
-                name: "WhatsApp",
-                props: { href: "https://wa.me/" },
-                style: {
-                    base: {
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "{space.3}",
-                        padding: { t: "{space.3}", b: "{space.3}", r: "{space.4}", l: "{space.4}" },
-                        background: { kind: "color", color: "{color.surface}" },
-                        border: { width: "1px", style: "solid", color: "{color.border}" },
-                        borderRadius: { all: "{radius.md}" },
-                    },
-                },
-                children: [
-                    {
-                        kind: "element",
-                        id: "icon_2",
-                        tag: "icon",
-                        props: { name: "MessageSquare", size: 18 },
-                        style: { base: { color: "{color.primary}" } },
-                    },
-                    {
-                        kind: "element",
-                        id: "text_2",
-                        tag: "text",
-                        props: { text: "WhatsApp" },
+                        name: "Label",
+                        bind: { source: "self", path: "title" },
                         style: { base: { fontSize: "{size.sm}", fontWeight: 500 } },
                     },
                 ],
