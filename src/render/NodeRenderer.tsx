@@ -50,6 +50,9 @@ const TAG_MAP: Record<string, string> = {
   video: "div",
 };
 
+/** HTML void elements — must never be given children or React 19 hard-errors. */
+const VOID_DOM_TAGS = new Set(["img", "hr", "br", "input", "wbr"]);
+
 /**
  * Props that configure the ENGINE, not the DOM.
  *
@@ -250,22 +253,22 @@ function ElementRenderer({
       break;
   }
 
+  // Void DOM tags (img, hr, br, input) and any node that already sets
+  // dangerouslySetInnerHTML (richtext, embed) must NOT receive children —
+  // React 19 / Next 16 turn that into a hard error rather than a warning.
+  if (VOID_DOM_TAGS.has(tag) || dom.dangerouslySetInnerHTML) {
+    return React.createElement(tag, dom);
+  }
+
   return React.createElement(
     tag,
     dom,
-    node.tag === "richtext" ? undefined : (
-      <>
-        {children}
-        {node.children?.map((child) => (
-          <NodeRenderer
-            key={child.id}
-            node={child}
-            content={content}
-            ctx={ctx}
-          />
-        ))}
-      </>
-    ),
+    <>
+      {children}
+      {node.children?.map((child) => (
+        <NodeRenderer key={child.id} node={child} content={content} ctx={ctx} />
+      ))}
+    </>,
   );
 }
 

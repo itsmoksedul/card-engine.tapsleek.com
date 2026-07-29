@@ -36,6 +36,8 @@ const TAG_MAP = {
     embed: "div",
     video: "div",
 };
+/** HTML void elements — must never be given children or React 19 hard-errors. */
+const VOID_DOM_TAGS = new Set(["img", "hr", "br", "input", "wbr"]);
 /**
  * Props that configure the ENGINE, not the DOM.
  *
@@ -197,7 +199,13 @@ function ElementRenderer({ node, content, ctx, }) {
         default:
             break;
     }
-    return react_1.default.createElement(tag, dom, node.tag === "richtext" ? undefined : ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [children, node.children?.map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)))] })));
+    // Void DOM tags (img, hr, br, input) and any node that already sets
+    // dangerouslySetInnerHTML (richtext, embed) must NOT receive children —
+    // React 19 / Next 16 turn that into a hard error rather than a warning.
+    if (VOID_DOM_TAGS.has(tag) || dom.dangerouslySetInnerHTML) {
+        return react_1.default.createElement(tag, dom);
+    }
+    return react_1.default.createElement(tag, dom, (0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [children, node.children?.map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)))] }));
 }
 // ─── Widgets ─────────────────────────────────────────────────────────────────
 /**
