@@ -28,9 +28,9 @@ export const meta: WidgetModule['meta'] = {
   ],
   contentSchema: [
     { key: 'label', type: 'text', label: 'Button text', required: true, max: 40 },
-    { key: 'url', type: 'url', label: 'Link', required: true },
     { key: 'icon', type: 'icon', label: 'Icon', set: 'lucide' },
-    { key: 'caption', type: 'text', label: 'Caption', max: 80 },
+    { key: 'url', type: 'url', label: 'Link', required: true },
+    { key: 'caption', type: 'text', label: 'Caption', placeholder: 'e.g. No credit card required', max: 80 },
     { key: 'newTab', type: 'boolean', label: 'Open in a new tab' },
   ],
   defaultPartStyles: {
