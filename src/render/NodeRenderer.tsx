@@ -449,6 +449,17 @@ function WidgetRenderer({
   const layout = node.layout ?? getWidgetMeta(node.widget)?.defaultLayout;
 
   if (layout) {
+    const mergedLayout: ElementNode = {
+      ...layout,
+      style: {
+        ...(layout.style ?? {}),
+        ...(node.style ?? {}),
+        base: {
+          ...(layout.style?.base ?? {}),
+          ...(node.style?.base ?? {}),
+        },
+      },
+    };
     return (
       <div
         className={`n${node.id}`}
@@ -456,7 +467,7 @@ function WidgetRenderer({
         data-node-id={ctx.isEditing ? node.id : undefined}
       >
         <NodeRenderer
-          node={layout}
+          node={mergedLayout}
           content={{ [node.key]: widgetContent }}
           ctx={{ ...ctx, selfData: widgetContent }}
         />

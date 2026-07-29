@@ -70,6 +70,65 @@ export const meta: WidgetModule['meta'] = {
     showConnectNow: true,
   },
   defaultContent: {},
+  defaultLayout: {
+    kind: "element",
+    id: "root",
+    tag: "stack",
+    name: "Connect Buttons",
+    style: {
+      base: {
+        display: "flex",
+        flexDirection: "row",
+        gap: "{space.3}",
+        width: "100%",
+      },
+    },
+    children: [
+      {
+        kind: "element",
+        id: "saveContact",
+        tag: "button",
+        name: "Save Contact",
+        props: { label: "Save Contact", action: "vcard" },
+        style: {
+          base: {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            padding: { t: "{space.3}", b: "{space.3}", r: "{space.4}", l: "{space.4}" },
+            background: { kind: "color", color: "{color.primary}" },
+            color: "{color.onPrimary}",
+            borderRadius: { all: "{radius.md}" },
+            fontWeight: 600,
+            cursor: "pointer",
+          },
+        },
+      },
+      {
+        kind: "element",
+        id: "connectNow",
+        tag: "button",
+        name: "Connect Now",
+        props: { label: "Connect Now", action: "link" },
+        style: {
+          base: {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            padding: { t: "{space.3}", b: "{space.3}", r: "{space.4}", l: "{space.4}" },
+            background: { kind: "color", color: "{color.surface}" },
+            border: { width: "1px", style: "solid", color: "{color.border}" },
+            color: "{color.text}",
+            borderRadius: { all: "{radius.md}" },
+            fontWeight: 600,
+            cursor: "pointer",
+          },
+        },
+      },
+    ],
+  },
 };
 
 export const previews = {

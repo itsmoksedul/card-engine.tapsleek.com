@@ -85,5 +85,89 @@ exports.meta = {
     },
     defaultDesign: { layout: 'stack', showIcon: true, showValue: false, categories: [], max: 0 },
     defaultContent: {},
+    defaultLayout: {
+        kind: "element",
+        id: "root",
+        tag: "stack",
+        name: "Link Buttons",
+        style: {
+            base: {
+                display: "flex",
+                flexDirection: "column",
+                gap: "{space.2}",
+                width: "100%",
+            },
+        },
+        children: [
+            {
+                kind: "element",
+                id: "item_1",
+                tag: "link",
+                name: "Call me",
+                props: { href: "tel:" },
+                style: {
+                    base: {
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "{space.3}",
+                        padding: { t: "{space.3}", b: "{space.3}", r: "{space.4}", l: "{space.4}" },
+                        background: { kind: "color", color: "{color.surface}" },
+                        border: { width: "1px", style: "solid", color: "{color.border}" },
+                        borderRadius: { all: "{radius.md}" },
+                    },
+                },
+                children: [
+                    {
+                        kind: "element",
+                        id: "icon_1",
+                        tag: "icon",
+                        props: { name: "Phone", size: 18 },
+                        style: { base: { color: "{color.primary}" } },
+                    },
+                    {
+                        kind: "element",
+                        id: "text_1",
+                        tag: "text",
+                        props: { text: "Call me" },
+                        style: { base: { fontSize: "{size.sm}", fontWeight: 500 } },
+                    },
+                ],
+            },
+            {
+                kind: "element",
+                id: "item_2",
+                tag: "link",
+                name: "WhatsApp",
+                props: { href: "https://wa.me/" },
+                style: {
+                    base: {
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "{space.3}",
+                        padding: { t: "{space.3}", b: "{space.3}", r: "{space.4}", l: "{space.4}" },
+                        background: { kind: "color", color: "{color.surface}" },
+                        border: { width: "1px", style: "solid", color: "{color.border}" },
+                        borderRadius: { all: "{radius.md}" },
+                    },
+                },
+                children: [
+                    {
+                        kind: "element",
+                        id: "icon_2",
+                        tag: "icon",
+                        props: { name: "MessageSquare", size: 18 },
+                        style: { base: { color: "{color.primary}" } },
+                    },
+                    {
+                        kind: "element",
+                        id: "text_2",
+                        tag: "text",
+                        props: { text: "WhatsApp" },
+                        style: { base: { fontSize: "{size.sm}", fontWeight: 500 } },
+                    },
+                ],
+            },
+        ],
+    },
 };
 exports.previews = { empty: {}, typical: {}, stress: {} };

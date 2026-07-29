@@ -65,6 +65,9 @@ export declare const WIDGET_RENDERERS: {
     TEAM: typeof TeamRender;
     SPACER: typeof SpacerRender;
     DIVIDER: typeof DividerRender;
+    SHARE_BUTTON: typeof CtaButtonRender;
+    VCARD_BUTTON: typeof CtaButtonRender;
+    QR_CODE: typeof IconRender;
 };
 export type WidgetRendererType = keyof typeof WIDGET_RENDERERS;
 export type { WidgetRenderProps } from './widgets/shared';

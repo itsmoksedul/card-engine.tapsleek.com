@@ -68,4 +68,7 @@ exports.WIDGET_RENDERERS = {
     TEAM: team_1.TeamRender,
     SPACER: spacer_1.SpacerRender,
     DIVIDER: divider_1.DividerRender,
+    SHARE_BUTTON: cta_button_1.CtaButtonRender,
+    VCARD_BUTTON: cta_button_1.CtaButtonRender,
+    QR_CODE: icon_1.IconRender,
 };

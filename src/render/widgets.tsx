@@ -66,6 +66,9 @@ export const WIDGET_RENDERERS = {
   TEAM: TeamRender,
   SPACER: SpacerRender,
   DIVIDER: DividerRender,
+  SHARE_BUTTON: CtaButtonRender,
+  VCARD_BUTTON: CtaButtonRender,
+  QR_CODE: IconRender,
 };
 
 export type WidgetRendererType = keyof typeof WIDGET_RENDERERS;
