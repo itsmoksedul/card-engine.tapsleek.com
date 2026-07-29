@@ -35,6 +35,9 @@ export type Binding = {
     key: string;
     path: string;
 } | {
+    source: 'self';
+    path: string;
+} | {
     source: 'token';
     path: string;
 };
@@ -64,7 +67,20 @@ export interface ElementNode extends BaseNode {
 }
 export interface WidgetNode extends BaseNode {
     kind: 'widget';
+    /** The type key matching a registered WidgetMeta (e.g. 'CTA_BUTTON'). */
     widget: string;
+    /**
+     * The user-entered content for this widget, keyed by the parts defined in
+     * its schema.
+     */
+    content?: Record<string, unknown>;
+    /**
+     * Designer-authored internal structure. When present, the widget renders by
+     * walking this subtree with NodeRenderer instead of its hardcoded component.
+     * Leaves bind to this widget's own content via { source:'self'|'widget', ... }.
+     * Absent => legacy hardcoded render (hybrid model).
+     */
+    layout?: ElementNode;
     /** Stable content address — `card.content[key]`. Unique within a template. */
     key: string;
     /** Semantic tag used to carry content across a template switch. */

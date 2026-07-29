@@ -193,6 +193,7 @@ export interface StyleProps {
   /** Compiles to the `-webkit-line-clamp` trio. */
   lineClamp?: number;
   color?: StyleValue;
+  strokeWidth?: StyleValue;
 
   // decoration
   background?: BackgroundValue;

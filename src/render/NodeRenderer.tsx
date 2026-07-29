@@ -276,6 +276,18 @@ function WidgetRenderer({
 
   const widgetContent = content?.[node.key] ?? node.defaultContent ?? {};
 
+  if (node.layout) {
+    return (
+      <div
+        className={`n${node.id}`}
+        data-widget={node.widget}
+        data-node-id={ctx.isEditing ? node.id : undefined}
+      >
+        <NodeRenderer node={node.layout} content={{ [node.key]: widgetContent }} ctx={ctx} />
+      </div>
+    );
+  }
+
   return (
     <div
       className={`n${node.id}`}

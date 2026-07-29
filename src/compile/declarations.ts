@@ -211,6 +211,10 @@ export const EMITTERS: Partial<Record<StylePropKey, Emitter>> = {
     const c = color(v);
     return c ? [["color", c]] : [];
   },
+  strokeWidth: (v) => {
+    const out = cssValue(v, "length");
+    return out ? [["stroke-width", out]] : [];
+  },
 
   // ── decoration ───────────────────────────────────────────────────────────
   background: (v) => background(v),

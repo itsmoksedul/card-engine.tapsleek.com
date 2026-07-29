@@ -187,6 +187,10 @@ exports.EMITTERS = {
         const c = (0, value_1.color)(v);
         return c ? [["color", c]] : [];
     },
+    strokeWidth: (v) => {
+        const out = (0, value_1.cssValue)(v, "length");
+        return out ? [["stroke-width", out]] : [];
+    },
     // ── decoration ───────────────────────────────────────────────────────────
     background: (v) => (0, value_1.background)(v),
     border: (v) => (0, value_1.border)(v),

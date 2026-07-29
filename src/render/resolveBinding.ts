@@ -32,6 +32,15 @@ export function resolveBinding(
     return result;
   }
 
+  if (binding.source === 'self') {
+    let result: any = content;
+    for (const part of binding.path.split('.')) {
+      if (result == null) break;
+      result = result[part];
+    }
+    return result;
+  }
+
   if (binding.source === 'token') {
     return `var(--${binding.path.replace('.', '-')})`;
   }

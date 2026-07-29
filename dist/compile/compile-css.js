@@ -363,6 +363,7 @@ function resetCss(scope, pretty) {
         `.${scope} button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}`,
         `.${scope} p,.${scope} h1,.${scope} h2,.${scope} h3,.${scope} h4,.${scope} figure,.${scope} blockquote{margin:0}`,
         `.${scope} ul,.${scope} ol{margin:0;padding:0;list-style:none}`,
+        `.${scope} svg{stroke-width:inherit}`,
     ];
     return rules.join(nl);
 }

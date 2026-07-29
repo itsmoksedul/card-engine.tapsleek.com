@@ -484,8 +484,11 @@ function validateBinding(bind: Binding, path: string, ctx: TreeCtx): void {
     case 'token':
       if (!isNonEmptyString(bind.path, 64)) errors.push({ path: `${path}.path`, message: 'required' });
       break;
+    case 'self':
+      if (!isNonEmptyString(bind.path, 128)) errors.push({ path: `${path}.path`, message: 'required' });
+      break;
     default:
-      errors.push({ path: `${path}.source`, message: 'must be "card", "widget" or "token"' });
+      errors.push({ path: `${path}.source`, message: 'must be "card", "widget", "token", or "self"' });
   }
 }
 
@@ -599,6 +602,15 @@ function validateWidget(node: Node & { kind: 'widget' }, path: string, ctx: Tree
       path: `${path}.userCanHide`,
       message: 'has no effect on a non-editable widget',
     });
+  }
+
+  // layout
+  if (node.layout !== undefined) {
+    if (!isElement(node.layout) || (node.layout as { tag?: string }).tag !== 'frame') {
+      errors.push({ path: `${path}.layout`, message: 'must be an element node with tag "frame"' });
+    } else {
+      validateTree(node.layout, `${path}.layout`, ctx);
+    }
   }
 }
 

@@ -156,6 +156,7 @@ export interface StyleProps {
     /** Compiles to the `-webkit-line-clamp` trio. */
     lineClamp?: number;
     color?: StyleValue;
+    strokeWidth?: StyleValue;
     background?: BackgroundValue;
     border?: BorderValue;
     borderRadius?: Corners4;

@@ -198,6 +198,9 @@ function WidgetRenderer({ node, content, ctx, }) {
         return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, children: ctx.isEditing ? `Unknown widget: ${node.widget}` : null }));
     }
     const widgetContent = content?.[node.key] ?? node.defaultContent ?? {};
+    if (node.layout) {
+        return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-widget": node.widget, "data-node-id": ctx.isEditing ? node.id : undefined, children: (0, jsx_runtime_1.jsx)(NodeRenderer, { node: node.layout, content: { [node.key]: widgetContent }, ctx: ctx }) }));
+    }
     return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, "data-widget": node.widget, children: (0, jsx_runtime_1.jsx)(Widget, { content: widgetContent, design: node.design ?? {}, cls: (part) => `p-${part}`, ctx: ctx }) }));
 }
 // ─── Slots ───────────────────────────────────────────────────────────────────

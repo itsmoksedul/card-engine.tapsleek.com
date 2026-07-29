@@ -405,8 +405,12 @@ function validateBinding(bind, path, ctx) {
             if (!isNonEmptyString(bind.path, 64))
                 errors.push({ path: `${path}.path`, message: 'required' });
             break;
+        case 'self':
+            if (!isNonEmptyString(bind.path, 128))
+                errors.push({ path: `${path}.path`, message: 'required' });
+            break;
         default:
-            errors.push({ path: `${path}.source`, message: 'must be "card", "widget" or "token"' });
+            errors.push({ path: `${path}.source`, message: 'must be "card", "widget", "token", or "self"' });
     }
 }
 function validateWidget(node, path, ctx) {
@@ -514,6 +518,15 @@ function validateWidget(node, path, ctx) {
             path: `${path}.userCanHide`,
             message: 'has no effect on a non-editable widget',
         });
+    }
+    // layout
+    if (node.layout !== undefined) {
+        if (!(0, node_1.isElement)(node.layout) || node.layout.tag !== 'frame') {
+            errors.push({ path: `${path}.layout`, message: 'must be an element node with tag "frame"' });
+        }
+        else {
+            validateTree(node.layout, `${path}.layout`, ctx);
+        }
     }
 }
 function validateSlot(node, path, ctx) {

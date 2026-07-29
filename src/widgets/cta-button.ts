@@ -68,6 +68,42 @@ export const meta: WidgetModule['meta'] = {
   },
   defaultDesign: { fullWidth: true, showIcon: true, iconPosition: 'left' },
   defaultContent: { label: 'Book a call', url: '', icon: 'Calendar', caption: '', newTab: true },
+  defaultLayout: {
+    id: 'root',
+    kind: 'element',
+    tag: 'frame',
+    children: [
+      {
+        id: 'button',
+        kind: 'element',
+        tag: 'link',
+        bind: { source: 'self', path: 'url' },
+        props: { action: 'link' },
+        children: [
+          {
+            id: 'icon',
+            kind: 'element',
+            tag: 'icon',
+            bind: { source: 'self', path: 'icon' },
+            hideIfEmpty: true,
+          },
+          {
+            id: 'label',
+            kind: 'element',
+            tag: 'text',
+            bind: { source: 'self', path: 'label' },
+          }
+        ]
+      },
+      {
+        id: 'caption',
+        kind: 'element',
+        tag: 'text',
+        bind: { source: 'self', path: 'caption' },
+        hideIfEmpty: true,
+      }
+    ]
+  }
 };
 
 export const previews = {

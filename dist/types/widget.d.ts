@@ -14,6 +14,7 @@
  * manifest has to survive JSON.stringify.
  */
 import type { FieldSchema } from './field';
+import type { ElementNode } from './node';
 import type { StyleSet } from './style';
 export type WidgetGroup = 'system' | 'blocks' | 'identity' | 'contact' | 'content' | 'media' | 'business' | 'utility';
 export type WidgetTier = 'FREE' | 'PRO';
@@ -113,6 +114,11 @@ export interface WidgetMeta<C extends Record<string, unknown> = Record<string, u
      */
     derived?: boolean;
     deprecated?: WidgetDeprecation;
+    /**
+     * Starting internal structure for composite-capable widgets. COPIED onto the
+     * node when placed (same contract as defaultPartStyles). Legacy widgets omit it.
+     */
+    defaultLayout?: ElementNode;
 }
 /** Any widget meta, for registry-level code that doesn't care about generics. */
 export type AnyWidgetMeta = WidgetMeta<Record<string, unknown>, Record<string, unknown>>;

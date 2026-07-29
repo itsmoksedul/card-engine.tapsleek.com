@@ -15,6 +15,7 @@
  */
 
 import type { FieldSchema } from './field';
+import type { ElementNode } from './node';
 import type { StyleSet } from './style';
 
 export type WidgetGroup =
@@ -139,6 +140,11 @@ export interface WidgetMeta<
   derived?: boolean;
 
   deprecated?: WidgetDeprecation;
+  /**
+   * Starting internal structure for composite-capable widgets. COPIED onto the
+   * node when placed (same contract as defaultPartStyles). Legacy widgets omit it.
+   */
+  defaultLayout?: ElementNode;
 }
 
 /** Any widget meta, for registry-level code that doesn't care about generics. */
