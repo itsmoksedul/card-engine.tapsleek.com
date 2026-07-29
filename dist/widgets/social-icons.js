@@ -11,6 +11,7 @@ exports.meta = {
     iconName: 'Twitter',
     group: 'contact',
     description: 'A dedicated row or grid of social media icons.',
+    derived: true,
     contentVersion: 1,
     defaultLayout: {
         id: 'root',
