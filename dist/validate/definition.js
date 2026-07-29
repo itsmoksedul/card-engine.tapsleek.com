@@ -627,7 +627,17 @@ function validateWidget(node, path, ctx) {
             });
         }
         else {
-            validateTree(node.layout, `${path}.layout`, ctx);
+            // Layout node ids only need to be unique WITHIN the widget's own subtree.
+            // The compiler scopes every layout node under its widget
+            // (`.n<widget> .n<layoutNode>`), so the same id (e.g. "root", "icon",
+            // "label") may legitimately appear in another widget's layout or match
+            // the template's own root id. Validate the subtree with a fresh id set
+            // instead of the global one, while still accumulating errors/warnings/
+            // stats into the shared context.
+            validateTree(node.layout, `${path}.layout`, {
+                ...ctx,
+                seenNodeIds: new Set(),
+            });
         }
     }
 }

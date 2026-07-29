@@ -1186,4 +1186,35 @@ describe("composite widgets — layout subtree", () => {
     const layoutErrors = r.errors.filter((e: any) => e.path.includes(".layout"));
     expect(layoutErrors).toEqual([]);
   });
+
+  it("allows layout node ids to repeat across widgets and match the template root", () => {
+    // defaultLayout subtrees ship generic ids ("root", "icon", "label"). Since
+    // the compiler scopes them under their widget, these are NOT global — two
+    // composite widgets may reuse them, and they may match the template root id
+    // ("root"). Publish must not reject this as a duplicate-id collision.
+    const mk = (id: string, key: string): WidgetNode =>
+      ({
+        kind: "widget",
+        id,
+        widget: "CTA_BUTTON",
+        key,
+        label: "Button",
+        defaultContent: { label: "Go", url: "https://x.com", icon: "Star" },
+        layout: {
+          id: "root", // ← collides with the template root + the other widget
+          kind: "element",
+          tag: "frame",
+          children: [
+            { id: "icon", kind: "element", tag: "icon", bind: { source: "self", path: "icon" } },
+            { id: "label", kind: "element", tag: "text", bind: { source: "self", path: "label" } },
+          ],
+        },
+      }) as WidgetNode;
+
+    const def = blankDefinition("t"); // def.root.id === "root"
+    def.root.children = [mk("btn1", "cta_a"), mk("btn2", "cta_b")];
+    const r = validateDefinition(def);
+    const dupErrors = r.errors.filter((e: any) => /duplicate node id/.test(e.message));
+    expect(dupErrors).toEqual([]);
+  });
 });
