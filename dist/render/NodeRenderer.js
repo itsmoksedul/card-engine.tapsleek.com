@@ -10,6 +10,7 @@ const react_1 = __importDefault(require("react"));
 const widgets_1 = require("../widgets");
 const resolveBinding_1 = require("./resolveBinding");
 const widgets_2 = require("./widgets");
+const icon_helper_1 = require("./widgets/icon-helper");
 function NodeRenderer({ node, content, ctx }) {
     if (node.kind === "element")
         return (0, jsx_runtime_1.jsx)(ElementRenderer, { node: node, content: content, ctx: ctx });
@@ -103,11 +104,19 @@ function ElementRenderer({ node, content, ctx, }) {
             break;
         }
         case "icon": {
-            dom["data-icon"] = props.name ?? "";
+            // The glyph name can come from a binding (composite widget content) or a
+            // static prop. Bound wins so an icon leaf renders the user's chosen icon.
+            const iconName = bound ?? props.name ?? "";
+            dom["data-icon"] =
+                typeof iconName === "string" ? iconName : iconName?.name ?? "";
             dom["aria-hidden"] = true;
             if (props.strokeWidth) {
                 dom.style = { ...dom.style, strokeWidth: props.strokeWidth };
             }
+            // Render the actual lucide/custom glyph. Colour, size (1em) and
+            // stroke-width all inherit from this node's compiled `.n<id>` styles.
+            if (iconName)
+                children = (0, jsx_runtime_1.jsx)(icon_helper_1.RenderIcon, { name: iconName });
             break;
         }
         case "heading":

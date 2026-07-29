@@ -4,6 +4,7 @@ import type { ElementNode, Node, SlotNode, WidgetNode } from "../types/node";
 import { getWidgetMeta } from "../widgets";
 import { resolveBinding } from "./resolveBinding";
 import { WIDGET_RENDERERS } from "./widgets";
+import { RenderIcon } from "./widgets/icon-helper";
 
 export interface RenderCtx {
   card: any;
@@ -141,11 +142,18 @@ function ElementRenderer({
       break;
     }
     case "icon": {
-      dom["data-icon"] = props.name ?? "";
+      // The glyph name can come from a binding (composite widget content) or a
+      // static prop. Bound wins so an icon leaf renders the user's chosen icon.
+      const iconName = bound ?? props.name ?? "";
+      dom["data-icon"] =
+        typeof iconName === "string" ? iconName : (iconName as any)?.name ?? "";
       dom["aria-hidden"] = true;
       if (props.strokeWidth) {
         dom.style = { ...dom.style, strokeWidth: props.strokeWidth };
       }
+      // Render the actual lucide/custom glyph. Colour, size (1em) and
+      // stroke-width all inherit from this node's compiled `.n<id>` styles.
+      if (iconName) children = <RenderIcon name={iconName as any} />;
       break;
     }
     case "heading":

@@ -38,6 +38,7 @@ import {
   switchTemplateContent,
   widgetTypeMap,
 } from "./content/template-switch";
+import { resolveBinding } from "./render/resolveBinding";
 import { blankDefinition, type TemplateDefinition } from "./types/definition";
 import { defaultsFor, walkFields } from "./types/field";
 import type { ElementNode, WidgetNode } from "./types/node";
@@ -1065,5 +1066,124 @@ describe("compileCardTheme", () => {
   it("returns empty string for an empty theme", () => {
     expect(compileCardTheme({}, "ts-card-abc")).toBe("");
     expect(compileCardTheme(null, "ts-card-abc")).toBe("");
+  });
+});
+
+// ─── Composite widgets (layout subtree) ──────────────────────────────────────
+//
+// A composite widget renders an editable ElementNode subtree instead of a
+// hardcoded component. Its leaves bind to the widget's OWN content (source:
+// "self"), the designer can reorder/wrap them, and the end-user still only
+// edits contentSchema. These tests lock the three integration points the
+// feature depends on: binding resolution, CSS compilation over the subtree,
+// and validation of the designer-authored tree.
+
+describe("composite widgets — layout subtree", () => {
+  function iconNode(over: Record<string, unknown> = {}): ElementNode {
+    return {
+      id: "licon",
+      kind: "element",
+      tag: "icon",
+      bind: { source: "self", path: "icon" },
+      hideIfEmpty: true,
+      style: {
+        base: { strokeWidth: 3, color: "{color.primary}", fontSize: "{size.xl}" },
+      },
+      ...over,
+    } as ElementNode;
+  }
+
+  function compositeButton(layoutOver: Record<string, unknown> = {}): WidgetNode {
+    return {
+      kind: "widget",
+      id: "btn",
+      widget: "CTA_BUTTON",
+      key: "cta_main",
+      label: "Button",
+      defaultContent: { label: "Book", url: "https://x.com", icon: "Calendar" },
+      layout: {
+        id: "lroot",
+        kind: "element",
+        tag: "frame",
+        children: [
+          {
+            id: "lbtn",
+            kind: "element",
+            tag: "link",
+            bind: { source: "self", path: "url" },
+            children: [
+              iconNode(),
+              {
+                id: "llabel",
+                kind: "element",
+                tag: "text",
+                bind: { source: "self", path: "label" },
+              },
+            ],
+          },
+        ],
+        ...layoutOver,
+      },
+    } as WidgetNode;
+  }
+
+  // ── Binding: a leaf reads the enclosing widget's own content ──
+  describe("resolveBinding", () => {
+    const content = { cta_main: { label: "Hello", icon: "Star" } };
+
+    it("self binding reads the widget content via selfData", () => {
+      const self = content.cta_main;
+      expect(resolveBinding({ source: "self", path: "label" }, {}, {}, self)).toBe("Hello");
+      expect(resolveBinding({ source: "self", path: "icon" }, {}, {}, self)).toBe("Star");
+    });
+
+    it("self binding walks a nested path", () => {
+      const self = { cta: { link: { url: "https://a.b" } } };
+      expect(
+        resolveBinding({ source: "self", path: "cta.link.url" }, {}, {}, self),
+      ).toBe("https://a.b");
+    });
+
+    it("widget binding resolves content[key] by path", () => {
+      expect(
+        resolveBinding({ source: "widget", key: "cta_main", path: "label" }, {}, content),
+      ).toBe("Hello");
+    });
+
+    it("returns undefined for a missing leaf (this is what drives hideIfEmpty)", () => {
+      expect(
+        resolveBinding({ source: "self", path: "caption" }, {}, {}, content.cta_main),
+      ).toBeUndefined();
+    });
+  });
+
+  // ── Compile: every subtree node is scoped under the widget, not as a part ──
+  it("compiles each layout node under the widget, incl. icon stroke-width", () => {
+    const def = blankDefinition("t");
+    def.root.children = [compositeButton()];
+    const { css } = compileCss(def);
+    // Nested `.n<widget> .n<layoutNode>` selector — NOT a `.p-<part>` selector.
+    expect(css).toContain(".nbtn .nlicon");
+    expect(css).toContain("stroke-width:3");
+    // The reset makes the lucide <svg> inherit that stroke-width from the node.
+    expect(css).toContain("svg{stroke-width:inherit}");
+  });
+
+  // ── Validate: the designer-authored subtree is guarded ──
+  it("rejects a layout whose root is not a frame", () => {
+    const def = blankDefinition("t");
+    def.root.children = [compositeButton()];
+    (def.root.children[0] as WidgetNode).layout!.tag = "text" as ElementNode["tag"];
+    const r = validateDefinition(def);
+    expect(r.ok).toBe(false);
+    expect(r.errors.some((e: any) => /tag "frame"/.test(e.message))).toBe(true);
+  });
+
+  it("accepts a well-formed frame layout (no .layout errors)", () => {
+    const def = blankDefinition("t");
+    def.root.children = [compositeButton()];
+    const r = validateDefinition(def);
+    const layoutErrors = r.errors.filter((e: any) => e.path.includes(".layout"));
+    expect(layoutErrors).toEqual([]);
   });
 });
