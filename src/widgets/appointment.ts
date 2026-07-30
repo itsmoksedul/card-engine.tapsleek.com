@@ -97,6 +97,72 @@ export const meta: WidgetModule['meta'] = {
   },
   defaultDesign: { mode: 'button', showDuration: true },
   defaultContent: { title: 'Book a meeting', description: '', profileId: null, buttonLabel: 'Choose a time' },
+  defaultLayout: {
+    id: 'root',
+    kind: 'element',
+    tag: 'stack',
+    name: 'Container',
+    style: {
+      base: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '{space.2}',
+        padding: { all: '{space.4}' },
+        background: { kind: 'color', color: '{color.surface}' },
+        border: { width: '1px', style: 'solid', color: '{color.border}' },
+        borderRadius: { all: '{radius.lg}' },
+      },
+    },
+    children: [
+      {
+        id: 'title',
+        kind: 'element',
+        tag: 'heading',
+        name: 'Title',
+        props: { level: 3 },
+        bind: { source: 'self', path: 'title' },
+        hideIfEmpty: true,
+        style: {
+          base: { fontFamily: '{font.heading}', fontSize: '{size.lg}', fontWeight: 700, color: '{color.text}' },
+        },
+      },
+      {
+        id: 'description',
+        kind: 'element',
+        tag: 'text',
+        name: 'Description',
+        bind: { source: 'self', path: 'description' },
+        hideIfEmpty: true,
+        style: {
+          base: { fontSize: '{size.sm}', lineHeight: 1.55, color: '{color.muted}' },
+        },
+      },
+      {
+        id: 'button',
+        kind: 'element',
+        tag: 'button',
+        name: 'Book button',
+        bind: { source: 'self', path: 'buttonLabel' },
+        props: { action: 'link' },
+        style: {
+          base: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '{space.2}',
+            width: '100%',
+            margin: { t: '{space.2}' },
+            padding: { t: '{space.3}', r: '{space.4}', b: '{space.3}', l: '{space.4}' },
+            background: { kind: 'color', color: '{color.primary}' },
+            color: '{color.onPrimary}',
+            borderRadius: { all: '{radius.md}' },
+            fontSize: '{size.sm}',
+            fontWeight: 600,
+          },
+        },
+      },
+    ],
+  },
 };
 
 export const previews = {

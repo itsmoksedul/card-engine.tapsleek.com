@@ -93,7 +93,88 @@ export const meta: WidgetModule['meta'] = {
     },
   },
   defaultDesign: { layout: 'grid-2', ratio: '1/1', showCaption: false, lightbox: true },
-  defaultContent: { title: 'Gallery', items: [] },
+  defaultContent: {
+    title: 'Gallery',
+    items: [
+      { url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600', caption: 'Abstract shape' },
+      { url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=600', caption: 'Gallery artwork' },
+    ],
+  },
+  defaultLayout: {
+    id: 'root',
+    kind: 'element',
+    tag: 'stack',
+    name: 'Container',
+    style: {
+      base: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '{space.3}',
+        padding: { all: '{space.4}' },
+        background: { kind: 'color', color: '{color.surface}' },
+        borderRadius: { all: '{radius.lg}' },
+      },
+    },
+    children: [
+      {
+        id: 'title',
+        kind: 'element',
+        tag: 'heading',
+        name: 'Title',
+        props: { level: 3 },
+        bind: { source: 'self', path: 'title' },
+        hideIfEmpty: true,
+        style: {
+          base: { fontFamily: '{font.heading}', fontSize: '{size.lg}', fontWeight: 700, color: '{color.text}' },
+        },
+      },
+      {
+        id: 'list',
+        kind: 'element',
+        tag: 'grid',
+        name: 'Grid',
+        style: { base: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '{space.2}' } },
+        children: [
+          {
+            id: 'item',
+            kind: 'element',
+            tag: 'frame',
+            name: 'Image wrapper',
+            repeat: { source: 'self', path: 'items' },
+            style: {
+              base: {
+                overflow: 'hidden',
+                borderRadius: { all: '{radius.md}' },
+              },
+            },
+            children: [
+              {
+                id: 'image',
+                kind: 'element',
+                tag: 'image',
+                name: 'Image',
+                bind: { source: 'self', path: 'url' },
+                style: {
+                  base: { width: '100%', aspectRatio: '1/1', objectFit: 'cover' },
+                },
+              },
+              {
+                id: 'caption',
+                kind: 'element',
+                tag: 'text',
+                name: 'Caption',
+                bind: { source: 'self', path: 'caption' },
+                hideIfEmpty: true,
+                style: {
+                  base: { fontSize: '{size.xs}', color: '{color.muted}', padding: { t: '{space.1}' } },
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
 };
 
 export const previews = {

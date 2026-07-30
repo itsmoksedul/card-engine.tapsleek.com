@@ -59,7 +59,6 @@ export function navProps(
 ): Record<string, any> {
   if (isEditing) {
     return {
-      href: '#',
       onClick: (e: React.MouseEvent) => e.preventDefault(),
     };
   }

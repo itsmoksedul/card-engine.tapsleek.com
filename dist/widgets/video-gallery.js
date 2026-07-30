@@ -130,10 +130,80 @@ exports.meta = {
     defaultContent: {
         title: 'Featured Videos',
         videos: [
-            { url: 'https://youtube.com/watch?v=dQw4w9WgXcQ', caption: 'Video 1', thumbnail: '' },
-            { url: 'https://vimeo.com/123456', caption: 'Video 2', thumbnail: '' },
+            { url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', caption: 'Demo Showcase Video', thumbnail: '' }
         ]
-    }
+    },
+    defaultLayout: {
+        id: 'root',
+        kind: 'element',
+        tag: 'stack',
+        name: 'Container',
+        style: {
+            base: { display: 'flex', flexDirection: 'column', gap: '{space.3}', width: '100%' },
+        },
+        children: [
+            {
+                id: 'title',
+                kind: 'element',
+                tag: 'heading',
+                name: 'Gallery Title',
+                props: { level: 3 },
+                bind: { source: 'self', path: 'title' },
+                hideIfEmpty: true,
+                style: {
+                    base: { fontFamily: '{font.heading}', fontSize: '{size.lg}', fontWeight: 700, color: '{color.text}' },
+                },
+            },
+            {
+                id: 'grid',
+                kind: 'element',
+                tag: 'grid',
+                name: 'Grid Layout',
+                style: { base: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '{space.3}' } },
+                children: [
+                    {
+                        id: 'item',
+                        kind: 'element',
+                        tag: 'frame',
+                        name: 'Video Item',
+                        repeat: { source: 'self', path: 'videos' },
+                        style: {
+                            base: {
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '{space.1}',
+                                overflow: 'hidden',
+                                borderRadius: { all: '{radius.md}' },
+                            },
+                        },
+                        children: [
+                            {
+                                id: 'thumbnail',
+                                kind: 'element',
+                                tag: 'image',
+                                name: 'Thumbnail',
+                                bind: { source: 'self', path: 'thumbnail' },
+                                style: {
+                                    base: { width: '100%', aspectRatio: '16/9', objectFit: 'cover' },
+                                },
+                            },
+                            {
+                                id: 'caption',
+                                kind: 'element',
+                                tag: 'text',
+                                name: 'Caption',
+                                bind: { source: 'self', path: 'caption' },
+                                hideIfEmpty: true,
+                                style: {
+                                    base: { fontSize: '{size.xs}', fontWeight: 500, color: '{color.text}' },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    },
 };
 exports.previews = {
     empty: { title: '', videos: [] },

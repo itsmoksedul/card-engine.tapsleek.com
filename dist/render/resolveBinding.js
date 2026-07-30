@@ -36,6 +36,14 @@ function resolveBinding(binding, card, content, selfData) {
                 break;
             result = result[part];
         }
+        if ((result == null || (Array.isArray(result) && result.length === 0)) && card) {
+            if (binding.path === 'links' && (card.links || content?.links)) {
+                return card.links || content?.links;
+            }
+            if (card[binding.path]) {
+                return card[binding.path];
+            }
+        }
         return result;
     }
     if (binding.source === 'token') {

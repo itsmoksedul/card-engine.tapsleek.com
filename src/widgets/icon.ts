@@ -16,33 +16,17 @@ export const meta: WidgetModule["meta"] = {
   defaultLayout: {
     id: "root",
     kind: "element",
-    tag: "link",
-    bind: { source: "self", path: "link" },
-    props: { action: "link" },
+    tag: "icon",
+    bind: { source: "self", path: "icon" },
     style: {
       base: {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        fontSize: "{size.2xl}",
+        color: "{color.primary}",
       },
     },
-    children: [
-      {
-        id: "icon",
-        kind: "element",
-        tag: "icon",
-        bind: { source: "self", path: "icon" },
-        style: {
-          base: {
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "{size.2xl}",
-            color: "{color.primary}",
-          },
-        },
-      },
-    ],
   },
 };
 

@@ -236,7 +236,6 @@ function ElementRenderer({
         const href = bound ?? props.href;
         if (node.tag === "link") {
           if (ctx.isEditing) {
-            dom.href = "#";
             dom.onClick = (e: React.MouseEvent) => e.preventDefault();
           } else {
             dom.href = href || "#";
@@ -329,6 +328,32 @@ function GatedWidgetUpsell({
       </div>
     </div>
   );
+}
+
+function mergeLayoutTrees(instance: ElementNode, defaultLayout: ElementNode): ElementNode {
+  const merged: ElementNode = { ...instance };
+  const defaultChildrenMap = new Map<string, ElementNode>();
+  if (defaultLayout.children) {
+    for (const c of defaultLayout.children) {
+      if (c.id) defaultChildrenMap.set(c.id, c as ElementNode);
+    }
+  }
+
+  if (merged.children && merged.children.length > 0) {
+    merged.children = merged.children.map((child) => {
+      if (child.kind === "element") {
+        const defaultChild = defaultChildrenMap.get(child.id);
+        if (defaultChild) {
+          return mergeLayoutTrees(child as ElementNode, defaultChild);
+        }
+      }
+      return child;
+    });
+  } else if (defaultLayout.children && defaultLayout.children.length > 0) {
+    merged.children = structuredClone(defaultLayout.children);
+  }
+
+  return merged;
 }
 
 function WidgetRenderer({
@@ -458,7 +483,11 @@ function WidgetRenderer({
   // Also applies to deprecated widgets: if they have a defaultLayout, render it.
   const hasMetaLayout = widgetMeta?.defaultLayout != null;
   const skipStoredLayout = widgetMeta?.derived === true && !hasMetaLayout;
-  const layout = skipStoredLayout ? undefined : (node.layout ?? widgetMeta?.defaultLayout);
+  const layout = skipStoredLayout
+    ? undefined
+    : node.layout && widgetMeta?.defaultLayout
+      ? mergeLayoutTrees(node.layout, widgetMeta.defaultLayout)
+      : node.layout ?? widgetMeta?.defaultLayout;
 
   // Deprecated widgets or widgets without a custom renderer fall back to layout tree.
   if (layout) {

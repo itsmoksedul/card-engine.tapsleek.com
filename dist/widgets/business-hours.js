@@ -105,15 +105,93 @@ exports.meta = {
     },
     defaultDesign: { showBadge: true, highlightToday: true, timeFormat: '12h' },
     defaultContent: {
-        title: 'Opening hours',
-        timezone: 'Asia/Dhaka',
-        days: DAYS.map((d) => ({
-            day: d,
-            closed: d === 'fri',
-            open: d === 'fri' ? '' : '10:00',
-            close: d === 'fri' ? '' : '18:00',
-        })),
+        title: 'Business Hours',
+        timezone: '',
+        days: DAYS.map((d) => ({ day: d, closed: d === 'sun', open: '09:00', close: '17:00' })),
         note: '',
+    },
+    defaultLayout: {
+        id: 'root',
+        kind: 'element',
+        tag: 'stack',
+        name: 'Container',
+        style: {
+            base: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '{space.3}',
+                padding: { all: '{space.4}' },
+                background: { kind: 'color', color: '{color.surface}' },
+                borderRadius: { all: '{radius.lg}' },
+            },
+        },
+        children: [
+            {
+                id: 'title',
+                kind: 'element',
+                tag: 'heading',
+                name: 'Title',
+                props: { level: 3 },
+                bind: { source: 'self', path: 'title' },
+                hideIfEmpty: true,
+                style: {
+                    base: { fontFamily: '{font.heading}', fontSize: '{size.lg}', fontWeight: 700, color: '{color.text}' },
+                },
+            },
+            {
+                id: 'list',
+                kind: 'element',
+                tag: 'stack',
+                name: 'List',
+                style: { base: { display: 'flex', flexDirection: 'column' } },
+                children: [
+                    {
+                        id: 'row',
+                        kind: 'element',
+                        tag: 'frame',
+                        name: 'Day row',
+                        repeat: { source: 'self', path: 'days' },
+                        style: {
+                            base: {
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: '{space.4}',
+                                padding: { t: '{space.2}', b: '{space.2}' },
+                                fontSize: '{size.sm}',
+                            },
+                        },
+                        children: [
+                            {
+                                id: 'day',
+                                kind: 'element',
+                                tag: 'text',
+                                name: 'Day name',
+                                bind: { source: 'self', path: 'day' },
+                                style: { base: { color: '{color.muted}', fontWeight: 500 } },
+                            },
+                            {
+                                id: 'time',
+                                kind: 'element',
+                                tag: 'text',
+                                name: 'Hours',
+                                bind: { source: 'self', path: 'open' },
+                                style: { base: { fontWeight: 600, color: '{color.text}' } },
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                id: 'note',
+                kind: 'element',
+                tag: 'text',
+                name: 'Note',
+                bind: { source: 'self', path: 'note' },
+                hideIfEmpty: true,
+                style: { base: { fontSize: '{size.xs}', color: '{color.muted}' } },
+            },
+        ],
     },
 };
 exports.previews = {

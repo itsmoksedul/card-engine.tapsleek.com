@@ -102,8 +102,100 @@ export const meta: WidgetModule['meta'] = {
   },
   defaultDesign: { openFirst: true, singleOpen: true, marker: 'chevron' },
   defaultContent: {
-    title: 'Frequently asked',
-    items: [{ question: 'How do I get started?', answer: 'Send a message and we will get back to you.' }],
+    title: 'Frequently asked questions',
+    items: [
+      { question: 'What is your turnaround time?', answer: 'Most projects wrap in 2-3 weeks.' },
+      { question: 'Do you offer ongoing support?', answer: 'Yes, retainer plans are available.' },
+    ],
+  },
+  defaultLayout: {
+    id: 'root',
+    kind: 'element',
+    tag: 'stack',
+    name: 'Container',
+    style: {
+      base: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '{space.3}',
+        padding: { all: '{space.4}' },
+        background: { kind: 'color', color: '{color.surface}' },
+        borderRadius: { all: '{radius.lg}' },
+      },
+    },
+    children: [
+      {
+        id: 'title',
+        kind: 'element',
+        tag: 'heading',
+        name: 'Title',
+        props: { level: 3 },
+        bind: { source: 'self', path: 'title' },
+        hideIfEmpty: true,
+        style: {
+          base: { fontFamily: '{font.heading}', fontSize: '{size.lg}', fontWeight: 700, color: '{color.text}' },
+        },
+      },
+      {
+        id: 'list',
+        kind: 'element',
+        tag: 'stack',
+        name: 'List',
+        style: { base: { display: 'flex', flexDirection: 'column', gap: '{space.2}' } },
+        children: [
+          {
+            id: 'item',
+            kind: 'element',
+            tag: 'frame',
+            name: 'Item',
+            repeat: { source: 'self', path: 'items' },
+            style: {
+              base: {
+                border: { width: '1px', style: 'solid', color: '{color.border}' },
+                borderRadius: { all: '{radius.md}' },
+                overflow: 'hidden',
+              },
+            },
+            children: [
+              {
+                id: 'question',
+                kind: 'element',
+                tag: 'text',
+                name: 'Question',
+                bind: { source: 'self', path: 'question' },
+                style: {
+                  base: {
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '{space.3}',
+                    padding: { t: '{space.3}', r: '{space.4}', b: '{space.3}', l: '{space.4}' },
+                    fontSize: '{size.base}',
+                    fontWeight: 600,
+                    color: '{color.text}',
+                  },
+                },
+              },
+              {
+                id: 'answer',
+                kind: 'element',
+                tag: 'text',
+                name: 'Answer',
+                bind: { source: 'self', path: 'answer' },
+                style: {
+                  base: {
+                    padding: { t: '0', r: '{space.4}', b: '{space.4}', l: '{space.4}' },
+                    fontSize: '{size.sm}',
+                    lineHeight: 1.6,
+                    color: '{color.muted}',
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
   },
 };
 

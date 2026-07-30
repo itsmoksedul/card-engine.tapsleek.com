@@ -194,6 +194,68 @@ exports.meta = {
         submitLabel: "Send",
         successMessage: "Thanks — we will be in touch shortly.",
     },
+    defaultLayout: {
+        id: 'root',
+        kind: 'element',
+        tag: 'stack',
+        name: 'Container',
+        style: {
+            base: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '{space.3}',
+                padding: { all: '{space.4}' },
+                background: { kind: 'color', color: '{color.surface}' },
+                borderRadius: { all: '{radius.lg}' },
+            },
+        },
+        children: [
+            {
+                id: 'title',
+                kind: 'element',
+                tag: 'heading',
+                name: 'Title',
+                props: { level: 3 },
+                bind: { source: 'self', path: 'title' },
+                hideIfEmpty: true,
+                style: {
+                    base: { fontFamily: '{font.heading}', fontSize: '{size.lg}', fontWeight: 700, color: '{color.text}' },
+                },
+            },
+            {
+                id: 'description',
+                kind: 'element',
+                tag: 'text',
+                name: 'Description',
+                bind: { source: 'self', path: 'description' },
+                hideIfEmpty: true,
+                style: {
+                    base: { fontSize: '{size.sm}', lineHeight: 1.55, color: '{color.muted}' },
+                },
+            },
+            {
+                id: 'submit',
+                kind: 'element',
+                tag: 'button',
+                name: 'Submit button',
+                props: { label: 'Submit message' },
+                style: {
+                    base: {
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '100%',
+                        padding: { t: '{space.3}', r: '{space.4}', b: '{space.3}', l: '{space.4}' },
+                        background: { kind: 'color', color: '{color.primary}' },
+                        color: '{color.onPrimary}',
+                        borderRadius: { all: '{radius.md}' },
+                        fontSize: '{size.sm}',
+                        fontWeight: 600,
+                    },
+                },
+            },
+        ],
+    },
 };
 exports.previews = {
     empty: {

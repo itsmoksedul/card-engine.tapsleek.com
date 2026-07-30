@@ -36,7 +36,6 @@ function iconVal(value) {
 function navProps(href, isEditing, target) {
     if (isEditing) {
         return {
-            href: '#',
             onClick: (e) => e.preventDefault(),
         };
     }

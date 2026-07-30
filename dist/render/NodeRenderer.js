@@ -181,7 +181,6 @@ function ElementRenderer({ node, content, ctx, }) {
                 const href = bound ?? props.href;
                 if (node.tag === "link") {
                     if (ctx.isEditing) {
-                        dom.href = "#";
                         dom.onClick = (e) => e.preventDefault();
                     }
                     else {
@@ -243,6 +242,31 @@ function GatedWidgetUpsell({ node, ctx, }) {
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
                 }, children: "Pro Feature" }), (0, jsx_runtime_1.jsxs)("div", { style: { fontSize: "13px", color: "#334155", marginTop: "4px" }, children: [node.label || node.widget, " is locked on current plan"] })] }));
+}
+function mergeLayoutTrees(instance, defaultLayout) {
+    const merged = { ...instance };
+    const defaultChildrenMap = new Map();
+    if (defaultLayout.children) {
+        for (const c of defaultLayout.children) {
+            if (c.id)
+                defaultChildrenMap.set(c.id, c);
+        }
+    }
+    if (merged.children && merged.children.length > 0) {
+        merged.children = merged.children.map((child) => {
+            if (child.kind === "element") {
+                const defaultChild = defaultChildrenMap.get(child.id);
+                if (defaultChild) {
+                    return mergeLayoutTrees(child, defaultChild);
+                }
+            }
+            return child;
+        });
+    }
+    else if (defaultLayout.children && defaultLayout.children.length > 0) {
+        merged.children = structuredClone(defaultLayout.children);
+    }
+    return merged;
 }
 function WidgetRenderer({ node, content, ctx, }) {
     const isGated = ctx.gatedWidgetKeys?.includes(node.key) ||
@@ -338,7 +362,11 @@ function WidgetRenderer({ node, content, ctx, }) {
     // Also applies to deprecated widgets: if they have a defaultLayout, render it.
     const hasMetaLayout = widgetMeta?.defaultLayout != null;
     const skipStoredLayout = widgetMeta?.derived === true && !hasMetaLayout;
-    const layout = skipStoredLayout ? undefined : (node.layout ?? widgetMeta?.defaultLayout);
+    const layout = skipStoredLayout
+        ? undefined
+        : node.layout && widgetMeta?.defaultLayout
+            ? mergeLayoutTrees(node.layout, widgetMeta.defaultLayout)
+            : node.layout ?? widgetMeta?.defaultLayout;
     // Deprecated widgets or widgets without a custom renderer fall back to layout tree.
     if (layout) {
         const mergedLayout = {

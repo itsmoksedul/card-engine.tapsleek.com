@@ -18,37 +18,15 @@ export const meta: WidgetModule['meta'] = {
   defaultLayout: {
     id: 'root',
     kind: 'element',
-    tag: 'link',
-    bind: { source: 'self', path: 'link' },
-    props: { action: 'link' },
+    tag: 'image',
+    bind: { source: 'self', path: 'src' },
     style: {
-      base: { display: 'flex', flexDirection: 'column', gap: '{space.2}' }
-    },
-    children: [
-      {
-        id: 'image',
-        kind: 'element',
-        tag: 'image',
-        bind: { source: 'self', path: 'src' },
-        style: {
-          base: {
-            width: '100%',
-            borderRadius: { all: '{radius.lg}' },
-            objectFit: 'cover',
-          },
-        },
+      base: {
+        width: '100%',
+        borderRadius: { all: '{radius.lg}' },
+        objectFit: 'cover',
       },
-      {
-        id: 'caption',
-        kind: 'element',
-        tag: 'text',
-        bind: { source: 'self', path: 'caption' },
-        hideIfEmpty: true,
-        style: {
-          base: { fontSize: '{size.xs}', color: '{color.muted}', textAlign: 'center' },
-        },
-      }
-    ]
+    },
   },
 };
 

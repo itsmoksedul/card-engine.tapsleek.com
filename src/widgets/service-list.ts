@@ -133,6 +133,135 @@ export const meta: WidgetModule['meta'] = {
       { name: 'Web Development', description: 'Fast, accessible websites.', image: '', price: '', link: '' },
     ],
   },
+  defaultLayout: {
+    id: 'root',
+    kind: 'element',
+    tag: 'stack',
+    name: 'Container',
+    style: {
+      base: { display: 'flex', flexDirection: 'column', gap: '{space.3}', width: '100%' },
+    },
+    children: [
+      {
+        id: 'header',
+        kind: 'element',
+        tag: 'stack',
+        name: 'Header',
+        style: { base: { display: 'flex', flexDirection: 'column', gap: '{space.1}' } },
+        children: [
+          {
+            id: 'title',
+            kind: 'element',
+            tag: 'heading',
+            name: 'Section title',
+            props: { level: 3 },
+            bind: { source: 'self', path: 'title' },
+            hideIfEmpty: true,
+            style: {
+              base: { fontFamily: '{font.heading}', fontSize: '{size.lg}', fontWeight: 700, color: '{color.text}' },
+            },
+          },
+          {
+            id: 'description',
+            kind: 'element',
+            tag: 'text',
+            name: 'Section description',
+            bind: { source: 'self', path: 'description' },
+            hideIfEmpty: true,
+            style: {
+              base: { fontSize: '{size.sm}', lineHeight: 1.55, color: '{color.muted}' },
+            },
+          },
+        ],
+      },
+      {
+        id: 'list',
+        kind: 'element',
+        tag: 'grid',
+        name: 'List',
+        style: { base: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '{space.3}' } },
+        children: [
+          {
+            id: 'item',
+            kind: 'element',
+            tag: 'frame',
+            name: 'Item card',
+            repeat: { source: 'self', path: 'items' },
+            style: {
+              base: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '{space.1}',
+                padding: { all: '{space.3}' },
+                background: { kind: 'color', color: '{color.surface}' },
+                border: { width: '1px', style: 'solid', color: '{color.border}' },
+                borderRadius: { all: '{radius.md}' },
+              },
+            },
+            children: [
+              {
+                id: 'itemMedia',
+                kind: 'element',
+                tag: 'image',
+                name: 'Item image',
+                bind: { source: 'self', path: 'image' },
+                hideIfEmpty: true,
+                style: {
+                  base: { width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: { all: '{radius.sm}' }, margin: { b: '{space.2}' } },
+                },
+              },
+              {
+                id: 'itemTitle',
+                kind: 'element',
+                tag: 'heading',
+                name: 'Item title',
+                props: { level: 4 },
+                bind: { source: 'self', path: 'name' },
+                hideIfEmpty: true,
+                style: {
+                  base: { fontSize: '{size.sm}', fontWeight: 600, color: '{color.text}' },
+                },
+              },
+              {
+                id: 'itemDesc',
+                kind: 'element',
+                tag: 'text',
+                name: 'Item description',
+                bind: { source: 'self', path: 'description' },
+                hideIfEmpty: true,
+                style: {
+                  base: { fontSize: '{size.xs}', lineHeight: 1.5, color: '{color.muted}' },
+                },
+              },
+              {
+                id: 'itemPrice',
+                kind: 'element',
+                tag: 'text',
+                name: 'Item price',
+                bind: { source: 'self', path: 'price' },
+                hideIfEmpty: true,
+                style: {
+                  base: { fontSize: '{size.sm}', fontWeight: 700, color: '{color.primary}' },
+                },
+              },
+              {
+                id: 'itemLink',
+                kind: 'element',
+                tag: 'link',
+                name: 'Item link',
+                bind: { source: 'self', path: 'link' },
+                props: { action: 'link', label: 'Learn more' },
+                hideIfEmpty: true,
+                style: {
+                  base: { fontSize: '{size.xs}', fontWeight: 600, color: '{color.primary}' },
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
 };
 
 /**

@@ -118,12 +118,106 @@ export const meta: WidgetModule['meta'] = {
   defaultContent: {
     title: 'What clients say',
     items: [
+      { author: 'Jane Doe', role: 'CEO, Acme Corp', quote: 'Tapsleek made connecting with clients seamless and beautiful.', avatar: '', rating: 5 },
+      { author: 'John Smith', role: 'Founder, Startup', quote: 'Highly recommended for any modern professional.', avatar: '', rating: 5 },
+    ],
+  },
+  defaultLayout: {
+    id: 'root',
+    kind: 'element',
+    tag: 'stack',
+    name: 'Container',
+    style: {
+      base: { display: 'flex', flexDirection: 'column', gap: '{space.3}', width: '100%' },
+    },
+    children: [
       {
-        quote: 'Delivered exactly what we needed, ahead of schedule.',
-        author: 'Sarah Ahmed',
-        role: 'CEO, Northwind',
-        avatar: '',
-        rating: 5,
+        id: 'title',
+        kind: 'element',
+        tag: 'heading',
+        name: 'Section title',
+        props: { level: 3 },
+        bind: { source: 'self', path: 'title' },
+        hideIfEmpty: true,
+        style: {
+          base: { fontFamily: '{font.heading}', fontSize: '{size.lg}', fontWeight: 700, color: '{color.text}' },
+        },
+      },
+      {
+        id: 'list',
+        kind: 'element',
+        tag: 'stack',
+        name: 'List',
+        style: { base: { display: 'flex', flexDirection: 'column', gap: '{space.3}' } },
+        children: [
+          {
+            id: 'item',
+            kind: 'element',
+            tag: 'frame',
+            name: 'Testimonial card',
+            repeat: { source: 'self', path: 'items' },
+            style: {
+              base: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '{space.2}',
+                padding: { all: '{space.4}' },
+                background: { kind: 'color', color: '{color.surface}' },
+                border: { width: '1px', style: 'solid', color: '{color.border}' },
+                borderRadius: { all: '{radius.md}' },
+              },
+            },
+            children: [
+              {
+                id: 'quote',
+                kind: 'element',
+                tag: 'text',
+                name: 'Quote text',
+                bind: { source: 'self', path: 'quote' },
+                style: {
+                  base: { fontSize: '{size.sm}', lineHeight: 1.6, color: '{color.text}', fontStyle: 'italic' },
+                },
+              },
+              {
+                id: 'caption',
+                kind: 'element',
+                tag: 'stack',
+                name: 'Author row',
+                style: { base: { display: 'flex', alignItems: 'center', gap: '{space.2}', margin: { t: '{space.1}' } } },
+                children: [
+                  {
+                    id: 'avatar',
+                    kind: 'element',
+                    tag: 'image',
+                    name: 'Avatar',
+                    bind: { source: 'self', path: 'avatar' },
+                    hideIfEmpty: true,
+                    style: {
+                      base: { width: '32px', height: '32px', borderRadius: { all: '{radius.full}' }, objectFit: 'cover' },
+                    },
+                  },
+                  {
+                    id: 'author',
+                    kind: 'element',
+                    tag: 'text',
+                    name: 'Author name',
+                    bind: { source: 'self', path: 'author' },
+                    style: { base: { fontSize: '{size.xs}', fontWeight: 600, color: '{color.text}' } },
+                  },
+                  {
+                    id: 'role',
+                    kind: 'element',
+                    tag: 'text',
+                    name: 'Author role',
+                    bind: { source: 'self', path: 'role' },
+                    hideIfEmpty: true,
+                    style: { base: { fontSize: '{size.xs}', color: '{color.muted}' } },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
       },
     ],
   },
