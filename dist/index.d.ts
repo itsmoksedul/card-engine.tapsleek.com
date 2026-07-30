@@ -16,6 +16,7 @@ export * from './validate';
 export * from './widgets';
 export * from './blocks';
 export * from './content';
+export * from './catalog/links';
 export * from './render/CardRenderer';
 export * from './render/NodeRenderer';
 export * from './render/BlockRenderer';

@@ -32,6 +32,7 @@ __exportStar(require("./validate"), exports);
 __exportStar(require("./widgets"), exports);
 __exportStar(require("./blocks"), exports);
 __exportStar(require("./content"), exports);
+__exportStar(require("./catalog/links"), exports);
 __exportStar(require("./render/CardRenderer"), exports);
 __exportStar(require("./render/NodeRenderer"), exports);
 __exportStar(require("./render/BlockRenderer"), exports);

@@ -1,9 +1,7 @@
+import { LINK_CATALOG } from '../catalog/links';
 import type { WidgetModule } from '../types/widget';
 
-const PLATFORMS = [
-  'facebook', 'twitter', 'instagram', 'linkedin', 'youtube', 
-  'tiktok', 'github', 'discord', 'twitch', 'website'
-] as const;
+const PLATFORMS = LINK_CATALOG.filter(l => l.category === 'SOCIAL_MEDIA').map(l => l.type);
 
 export const meta: WidgetModule['meta'] = {
   type: 'SOCIAL_ICONS',
@@ -114,7 +112,8 @@ export const meta: WidgetModule['meta'] = {
       fields: [
         {
           key: 'platform', type: 'select', label: 'Platform',
-          options: PLATFORMS.map(p => ({ value: p, label: p.charAt(0).toUpperCase() + p.slice(1) }))
+          options: PLATFORMS.map(p => ({ value: p, label: LINK_CATALOG.find(l => l.type === p)?.label ?? p }))
+
         },
         { key: 'url', type: 'url', label: 'Profile URL' }
       ]
