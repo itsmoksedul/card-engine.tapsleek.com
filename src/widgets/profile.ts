@@ -112,6 +112,21 @@ export const meta: WidgetModule["meta"] = {
         },
       },
       {
+        id: "company",
+        kind: "element",
+        tag: "text",
+        bind: { source: "card", field: "companyName" },
+        hideIfEmpty: true,
+        style: {
+          base: {
+            fontSize: "{size.sm}",
+            fontWeight: 500,
+            color: "{color.muted}",
+            padding: { r: "{space.4}", l: "{space.4}" },
+          },
+        },
+      },
+      {
         id: "bio",
         kind: "element",
         tag: "text",
@@ -146,6 +161,7 @@ export const meta: WidgetModule["meta"] = {
     { key: "showCover", type: "boolean", label: "Show cover photo" },
     { key: "showAvatar", type: "boolean", label: "Show avatar" },
     { key: "showLogo", type: "boolean", label: "Show company logo" },
+    { key: "showCompany", type: "boolean", label: "Show company name" },
     { key: "showBio", type: "boolean", label: "Show bio" },
     { key: "showLocation", type: "boolean", label: "Show location" },
     {
@@ -164,6 +180,7 @@ export const meta: WidgetModule["meta"] = {
     showCover: true,
     showAvatar: true,
     showLogo: true,
+    showCompany: true,
     showBio: true,
     showLocation: true,
     align: "center",
