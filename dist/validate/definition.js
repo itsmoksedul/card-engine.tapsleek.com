@@ -13,6 +13,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateDefinition = validateDefinition;
 exports.assertValidDefinition = assertValidDefinition;
+exports.sanitizeTemplateDefinition = sanitizeTemplateDefinition;
 const value_1 = require("../compile/value");
 const definition_1 = require("../types/definition");
 const node_1 = require("../types/node");
@@ -807,4 +808,63 @@ function assertValidDefinition(input, options) {
         throw new Error(`Invalid template definition (${result.errors.length} error${result.errors.length === 1 ? "" : "s"}): ${detail}`);
     }
     return input;
+}
+/** Automatically sanitizes template definition for valid save & publish. */
+function sanitizeTemplateDefinition(input) {
+    if (!input || typeof input !== "object")
+        return input;
+    const cloned = structuredClone(input);
+    function isUnallowedImage(url) {
+        if (typeof url !== "string" || !url.startsWith("http"))
+            return false;
+        if (url.includes("images.unsplash.com") ||
+            url.includes("via.placeholder.com") ||
+            url.includes("placeholder.com")) {
+            return true;
+        }
+        return false;
+    }
+    function sanitizeObj(obj) {
+        if (!obj || typeof obj !== "object")
+            return;
+        for (const key of Object.keys(obj)) {
+            const val = obj[key];
+            if (typeof val === "string" && isUnallowedImage(val)) {
+                obj[key] = "";
+            }
+            else if (Array.isArray(val)) {
+                val.forEach((item) => sanitizeObj(item));
+            }
+            else if (val && typeof val === "object") {
+                sanitizeObj(val);
+            }
+        }
+    }
+    function walkNode(node) {
+        if (!node || typeof node !== "object")
+            return;
+        // 1. Fix <button> with children -> convert tag to <link>
+        if (node.kind === "element" &&
+            node.tag === "button" &&
+            Array.isArray(node.children) &&
+            node.children.length > 0) {
+            node.tag = "link";
+        }
+        // 2. Clean widget defaultContent image URLs
+        if (node.kind === "widget" && node.defaultContent) {
+            sanitizeObj(node.defaultContent);
+        }
+        // 3. Clean widget layout if present
+        if (node.layout) {
+            walkNode(node.layout);
+        }
+        // 4. Walk children
+        if (Array.isArray(node.children)) {
+            node.children.forEach(walkNode);
+        }
+    }
+    if (cloned.root) {
+        walkNode(cloned.root);
+    }
+    return cloned;
 }

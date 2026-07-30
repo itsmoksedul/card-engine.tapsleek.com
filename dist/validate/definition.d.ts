@@ -35,3 +35,5 @@ export interface ValidateOptions {
 export declare function validateDefinition(input: unknown, options?: ValidateOptions): DefinitionValidation;
 /** Throwable wrapper for call sites that want an exception. */
 export declare function assertValidDefinition(input: unknown, options?: ValidateOptions): TemplateDefinition;
+/** Automatically sanitizes template definition for valid save & publish. */
+export declare function sanitizeTemplateDefinition<T = unknown>(input: T): T;
