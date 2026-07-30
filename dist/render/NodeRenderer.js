@@ -316,8 +316,18 @@ function WidgetRenderer({ node, content, ctx, }) {
     if (!Widget) {
         return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, children: ctx.isEditing ? `Unknown widget: ${node.widget}` : null }));
     }
+    const widgetMeta = (0, widgets_1.getWidgetMeta)(node.widget);
     const widgetContent = content?.[node.key] ?? node.defaultContent ?? {};
-    const layout = node.layout ?? (0, widgets_1.getWidgetMeta)(node.widget)?.defaultLayout;
+    // For derived widgets that have NO defaultLayout defined in their meta,
+    // skip any stored node.layout and use the React render component directly.
+    // This handles CONTACT_LINKS (and similar) where the old defaultLayout was
+    // removed from meta — without this, a stale node.layout from the DB would
+    // keep rendering an element tree with broken self-bindings, invisible labels,
+    // and confusing link icons in the editor layers panel.
+    // Derived widgets that DO have a defaultLayout (e.g. PROFILE) are unaffected.
+    const hasMetaLayout = widgetMeta?.defaultLayout != null;
+    const skipStoredLayout = widgetMeta?.derived === true && !hasMetaLayout;
+    const layout = skipStoredLayout ? undefined : (node.layout ?? widgetMeta?.defaultLayout);
     if (layout) {
         const mergedLayout = {
             ...layout,

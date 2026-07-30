@@ -36,6 +36,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RenderIcon = RenderIcon;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const LucideIcons = __importStar(require("lucide-react"));
+const fa_1 = require("react-icons/fa");
+const links_1 = require("../../catalog/links");
+const si_1 = require("react-icons/si");
+const SI_MAP = {
+    SiWhatsapp: si_1.SiWhatsapp, SiMessenger: si_1.SiMessenger, SiSignal: si_1.SiSignal, SiViber: si_1.SiViber, SiWechat: si_1.SiWechat, SiGooglemaps: si_1.SiGooglemaps, SiFacebook: si_1.SiFacebook, SiInstagram: si_1.SiInstagram, SiX: si_1.SiX, SiYoutube: si_1.SiYoutube, SiTiktok: si_1.SiTiktok, SiTelegram: si_1.SiTelegram, SiSnapchat: si_1.SiSnapchat, SiPinterest: si_1.SiPinterest, SiThreads: si_1.SiThreads, SiReddit: si_1.SiReddit, SiDiscord: si_1.SiDiscord, SiTwitch: si_1.SiTwitch, SiGithub: si_1.SiGithub, SiBehance: si_1.SiBehance, SiDribbble: si_1.SiDribbble, SiMedium: si_1.SiMedium, SiVimeo: si_1.SiVimeo, SiPaypal: si_1.SiPaypal, SiCashapp: si_1.SiCashapp, SiVenmo: si_1.SiVenmo, SiStripe: si_1.SiStripe, SiPayoneer: si_1.SiPayoneer, SiWise: si_1.SiWise, SiPatreon: si_1.SiPatreon, SiBuymeacoffee: si_1.SiBuymeacoffee, SiGofundme: si_1.SiGofundme, SiSpotify: si_1.SiSpotify, SiApplemusic: si_1.SiApplemusic, SiSoundcloud: si_1.SiSoundcloud, SiYoutubemusic: si_1.SiYoutubemusic, SiDeezer: si_1.SiDeezer, SiBandcamp: si_1.SiBandcamp, SiAudiomack: si_1.SiAudiomack, SiLinktree: si_1.SiLinktree
+};
 const COMMON_ICON_MAP = {
     PHONE: "Phone",
     EMAIL: "Mail",
@@ -61,16 +67,29 @@ function RenderIcon({ name, className, }) {
     if (!name)
         return null;
     let iconValue = name;
+    if (typeof name === "string") {
+        const def = (0, links_1.linkDef)(name);
+        if (def && def.iconSvg) {
+            return ((0, jsx_runtime_1.jsx)("span", { className: className, "data-icon": def.type, "aria-hidden": true, style: {
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                }, dangerouslySetInnerHTML: { __html: def.iconSvg } }));
+        }
+        if (def && def.iconName) {
+            iconValue = def.iconName;
+        }
+    }
     if (typeof iconValue === "object" && iconValue !== null) {
         if (iconValue.type === "svg" && iconValue.svg) {
-            return ((0, jsx_runtime_1.jsx)("span", { className: className, "data-icon": iconValue.name || "custom", "aria-hidden": true, style: {
+            return ((0, jsx_runtime_1.jsx)("span", { className: className, "data-icon": iconValue.name ?? "custom", "aria-hidden": true, style: {
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
                 }, dangerouslySetInnerHTML: { __html: iconValue.svg } }));
         }
         if (iconValue.type === "url" && iconValue.url) {
-            return ((0, jsx_runtime_1.jsx)("span", { className: className, "data-icon": iconValue.name || "url", "aria-hidden": true, style: {
+            return ((0, jsx_runtime_1.jsx)("span", { className: className, "data-icon": iconValue.name ?? "custom-url", "aria-hidden": true, style: {
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -89,10 +108,21 @@ function RenderIcon({ name, className, }) {
         .split(/[-_ ]+/)
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join("");
-    const IconComponent = LucideIcons[formatted] ??
-        LucideIcons[mapped] ??
-        LucideIcons[upper] ??
-        LucideIcons.Globe;
+    // Check SI Map first
+    let IconComponent = null;
+    if (formatted === "FaLinkedin") {
+        IconComponent = fa_1.FaLinkedin;
+    }
+    else if (formatted.startsWith("Si") && SI_MAP[formatted]) {
+        IconComponent = SI_MAP[formatted];
+    }
+    else {
+        IconComponent =
+            LucideIcons[formatted] ??
+                LucideIcons[mapped] ??
+                LucideIcons[upper] ??
+                LucideIcons.Globe;
+    }
     return ((0, jsx_runtime_1.jsx)("span", { className: className, "data-icon": String(iconValue), "aria-hidden": true, style: {
             display: "inline-flex",
             alignItems: "center",

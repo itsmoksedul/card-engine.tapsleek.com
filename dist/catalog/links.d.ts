@@ -3,7 +3,8 @@ export interface LinkTypeDef {
     type: string;
     label: string;
     category: LinkCategory;
-    iconSvg: string;
+    iconName: string;
+    iconSvg?: string;
     placeholder?: string;
     tier?: "free" | "pro";
     color?: string;

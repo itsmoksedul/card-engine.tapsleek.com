@@ -1,4 +1,53 @@
 import * as LucideIcons from "lucide-react";
+import { FaLinkedin } from "react-icons/fa";
+import { linkDef } from "../../catalog/links";
+import {
+  SiWhatsapp,
+  SiMessenger,
+  SiSignal,
+  SiViber,
+  SiWechat,
+  SiGooglemaps,
+  
+  SiFacebook,
+  SiInstagram,
+  SiX,
+  SiYoutube,
+  SiTiktok,
+  SiTelegram,
+  SiSnapchat,
+  SiPinterest,
+  SiThreads,
+  SiReddit,
+  SiDiscord,
+  SiTwitch,
+  SiGithub,
+  SiBehance,
+  SiDribbble,
+  SiMedium,
+  SiVimeo,
+  SiPaypal,
+  SiCashapp,
+  SiVenmo,
+  SiStripe,
+  SiPayoneer,
+  SiWise,
+  SiPatreon,
+  SiBuymeacoffee,
+  SiGofundme,
+  SiSpotify,
+  SiApplemusic,
+  SiSoundcloud,
+  SiYoutubemusic,
+  SiDeezer,
+  SiBandcamp,
+  SiAudiomack,
+  SiLinktree
+} from "react-icons/si";
+
+const SI_MAP: Record<string, any> = {
+  SiWhatsapp, SiMessenger, SiSignal, SiViber, SiWechat, SiGooglemaps,  SiFacebook, SiInstagram, SiX, SiYoutube, SiTiktok, SiTelegram, SiSnapchat, SiPinterest, SiThreads, SiReddit, SiDiscord, SiTwitch, SiGithub, SiBehance, SiDribbble, SiMedium, SiVimeo, SiPaypal, SiCashapp, SiVenmo, SiStripe, SiPayoneer, SiWise, SiPatreon, SiBuymeacoffee, SiGofundme, SiSpotify, SiApplemusic, SiSoundcloud, SiYoutubemusic, SiDeezer, SiBandcamp, SiAudiomack, SiLinktree
+};
 
 const COMMON_ICON_MAP: Record<string, string> = {
   PHONE: "Phone",
@@ -33,12 +82,35 @@ export function RenderIcon({
 
   let iconValue = name;
 
+  if (typeof name === "string") {
+    const def = linkDef(name);
+    if (def && def.iconSvg) {
+      return (
+        <span
+          className={className}
+          data-icon={def.type}
+          aria-hidden
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          dangerouslySetInnerHTML={{ __html: def.iconSvg }}
+        />
+      );
+    }
+    
+    if (def && def.iconName) {
+      iconValue = def.iconName;
+    }
+  }
+
   if (typeof iconValue === "object" && iconValue !== null) {
     if (iconValue.type === "svg" && iconValue.svg) {
       return (
         <span
           className={className}
-          data-icon={iconValue.name || "custom"}
+          data-icon={iconValue.name ?? "custom"}
           aria-hidden
           style={{
             display: "inline-flex",
@@ -53,7 +125,7 @@ export function RenderIcon({
       return (
         <span
           className={className}
-          data-icon={iconValue.name || "url"}
+          data-icon={iconValue.name ?? "custom-url"}
           aria-hidden
           style={{
             display: "inline-flex",
@@ -84,11 +156,18 @@ export function RenderIcon({
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join("");
 
-  const IconComponent =
-    (LucideIcons as any)[formatted] ??
-    (LucideIcons as any)[mapped] ??
-    (LucideIcons as any)[upper] ??
-    LucideIcons.Globe;
+  // Check SI Map first
+  let IconComponent = null;
+  
+  if (formatted === "FaLinkedin") { IconComponent = FaLinkedin; } else if (formatted.startsWith("Si") && SI_MAP[formatted]) {
+    IconComponent = SI_MAP[formatted];
+  } else {
+    IconComponent =
+      (LucideIcons as any)[formatted] ??
+      (LucideIcons as any)[mapped] ??
+      (LucideIcons as any)[upper] ??
+      LucideIcons.Globe;
+  }
 
   return (
     <span

@@ -171,9 +171,24 @@ export function compileCss(
 
       // widget parts → `.ts-card .n<id> .p-<part>`
       if (isWidget(node)) {
-        if (node.partStyles) {
+        // Merge defaultPartStyles (from widget meta) with node.partStyles so
+        // that widgets using the React render component (no layout tree) still
+        // get their base styles compiled into CSS. node.partStyles overrides.
+        const defaultParts = getWidgetMeta(node.widget)?.defaultPartStyles ?? {};
+        const mergedPartStyles: Record<string, StyleSet> = {};
+        const allPartKeys = new Set([
+          ...Object.keys(defaultParts),
+          ...Object.keys(node.partStyles ?? {}),
+        ]);
+        for (const key of allPartKeys) {
+          mergedPartStyles[key] = {
+            ...(defaultParts[key as keyof typeof defaultParts] as StyleSet | undefined),
+            ...(node.partStyles?.[key as keyof typeof node.partStyles] as StyleSet | undefined),
+          };
+        }
+        if (Object.keys(mergedPartStyles).length) {
           produced += compilePartStyles(
-            node.partStyles,
+            mergedPartStyles,
             sel,
             bucket,
             states,

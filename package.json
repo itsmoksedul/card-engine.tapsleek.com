@@ -17,11 +17,12 @@
     "build": "tsc"
   },
   "dependencies": {
+    "isomorphic-dompurify": "^2.19.0",
+    "lucide-react": "^0.300.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "zod": "^4.4.3",
-    "lucide-react": "^0.300.0",
-    "isomorphic-dompurify": "^2.19.0"
+    "react-icons": "^5.7.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

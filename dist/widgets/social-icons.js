@@ -1,10 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.previews = exports.meta = void 0;
-const PLATFORMS = [
-    'facebook', 'twitter', 'instagram', 'linkedin', 'youtube',
-    'tiktok', 'github', 'discord', 'twitch', 'website'
-];
+const links_1 = require("../catalog/links");
+const PLATFORMS = links_1.LINK_CATALOG.filter(l => l.category === 'SOCIAL_MEDIA').map(l => l.type);
 exports.meta = {
     type: 'SOCIAL_ICONS',
     label: 'Social Icons',
@@ -114,7 +112,7 @@ exports.meta = {
             fields: [
                 {
                     key: 'platform', type: 'select', label: 'Platform',
-                    options: PLATFORMS.map(p => ({ value: p, label: p.charAt(0).toUpperCase() + p.slice(1) }))
+                    options: PLATFORMS.map(p => ({ value: p, label: links_1.LINK_CATALOG.find(l => l.type === p)?.label ?? p }))
                 },
                 { key: 'url', type: 'url', label: 'Profile URL' }
             ]

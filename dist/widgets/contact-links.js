@@ -1,6 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.previews = exports.meta = void 0;
+/**
+ * CONTACT_LINKS — renders the card's CardLink rows.
+ *
+ * Also derived: links stay a first-class DB entity because they carry per-link
+ * click analytics (`CardLinkDailyStat`). The widget only decides how they look
+ * and which categories appear.
+ */
+const links_1 = require("../catalog/links");
 exports.meta = {
     type: 'CONTACT_LINKS',
     label: 'Link Buttons',
@@ -45,11 +53,16 @@ exports.meta = {
     ],
     contentSchema: [
         {
-            key: 'links', type: 'repeater', label: 'Link Buttons', itemLabel: '{title}',
+            key: 'links', type: 'repeater', label: 'Link Buttons', itemLabel: '{label}',
             fields: [
-                { key: 'title', type: 'text', label: 'Title' },
+                { key: 'label', type: 'text', label: 'Label' },
                 { key: 'url', type: 'url', label: 'URL' },
-                { key: 'icon', type: 'icon', label: 'Icon' }
+                {
+                    key: 'type',
+                    type: 'select',
+                    label: 'Type',
+                    options: links_1.LINK_CATALOG.map(l => ({ value: l.type, label: l.label }))
+                }
             ]
         }
     ],
@@ -95,68 +108,11 @@ exports.meta = {
     defaultDesign: { layout: 'stack', showIcon: true, showValue: false, categories: [], max: 0 },
     defaultContent: {
         links: [
-            { title: 'Call me', url: 'tel:+1234567890', icon: 'Phone' },
-            { title: 'WhatsApp', url: 'https://wa.me/1234567890', icon: 'MessageSquare' }
+            { id: 'demo-1', type: 'phone', label: 'Phone', icon: 'Phone', url: 'tel:+1234567890' },
+            { id: 'demo-2', type: 'whatsapp', label: 'WhatsApp', icon: 'SiWhatsapp', url: 'https://wa.me/1234567890' },
+            { id: 'demo-3', type: 'email', label: 'Email', icon: 'AtSign', url: 'mailto:hello@example.com' },
         ]
     },
-    defaultLayout: {
-        kind: "element",
-        id: "root",
-        tag: "stack",
-        name: "Link Buttons",
-        style: {
-            base: {
-                display: "flex",
-                flexDirection: "column",
-                gap: "{space.2}",
-                width: "100%",
-            },
-        },
-        children: [
-            {
-                kind: "element",
-                id: "item",
-                tag: "link",
-                name: "Link box",
-                repeat: { source: "self", path: "links" },
-                bind: { source: "self", path: "url" },
-                style: {
-                    base: {
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "{space.3}",
-                        padding: { t: "{space.3}", b: "{space.3}", r: "{space.4}", l: "{space.4}" },
-                        background: { kind: "color", color: "{color.surface}" },
-                        border: { width: "1px", style: "solid", color: "{color.border}" },
-                        borderRadius: { all: "{radius.md}" },
-                        transition: { property: ["transform", "background-color"], duration: 150, easing: "ease" },
-                    },
-                    hover: {
-                        transform: { translateY: "-1px" },
-                        background: { kind: "color", color: "{color.bg}" },
-                    },
-                },
-                children: [
-                    {
-                        kind: "element",
-                        id: "icon",
-                        tag: "icon",
-                        name: "Icon",
-                        bind: { source: "self", path: "icon" },
-                        props: { size: 18 },
-                        style: { base: { color: "{color.primary}" } },
-                    },
-                    {
-                        kind: "element",
-                        id: "label",
-                        tag: "text",
-                        name: "Label",
-                        bind: { source: "self", path: "title" },
-                        style: { base: { fontSize: "{size.sm}", fontWeight: 500 } },
-                    },
-                ],
-            },
-        ],
-    },
+    defaultLayout: undefined,
 };
 exports.previews = { empty: {}, typical: {}, stress: {} };
