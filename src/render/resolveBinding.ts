@@ -1,14 +1,30 @@
-import type { Binding } from '../types/node';
+import { LINK_CATALOG } from "../catalog/links";
+import type { Binding } from "../types/node";
 
-/**
- * Resolve a node's binding to a rendered value.
- *
- * Not every `CardField` is a column on the card. `fullName` is assembled from
- * first + last, and the URL fields are derived from the slug / share key — a
- * naive `card[field]` lookup returns undefined for all of them, which combined
- * with `hideIfEmpty` silently deletes the owner's name from every template
- * that binds it.
- */
+function formatLinkUrl(type: string, value?: string): string {
+  if (!value) return "";
+  if (
+    value.startsWith("http://") ||
+    value.startsWith("https://") ||
+    value.startsWith("mailto:") ||
+    value.startsWith("tel:") ||
+    value.startsWith("sms:")
+  ) {
+    return value;
+  }
+  const lowerType = type?.toLowerCase() || "";
+  if (lowerType === "phone" || lowerType === "tel" || lowerType === "sms") {
+    return `tel:${value}`;
+  }
+  if (lowerType === "email" || lowerType === "mailto") {
+    return `mailto:${value}`;
+  }
+  if (lowerType === "whatsapp") {
+    return `https://wa.me/${value.replace(/[^0-9]/g, "")}`;
+  }
+  return value.startsWith("/") ? value : `https://${value}`;
+}
+
 export function resolveBinding(
   binding: Binding | undefined,
   card: any,
@@ -17,31 +33,67 @@ export function resolveBinding(
 ): any {
   if (!binding) return undefined;
 
-  if (binding.source === 'card') {
+  if (binding.source === "card") {
     return resolveCardField(binding.field, card);
   }
 
-  if (binding.source === 'widget') {
+  if (binding.source === "widget") {
     const widgetData = content?.[binding.key];
     if (!widgetData) return undefined;
-    // Dot path, array indices included — "items.0.name".
     let result: any = widgetData;
-    for (const part of binding.path.split('.')) {
+    for (const part of binding.path.split(".")) {
       if (result == null) break;
       result = result[part];
     }
     return result;
   }
 
-  if (binding.source === 'self') {
+  if (binding.source === "self") {
+    // When repeating over 'links' for a real card, user's real card.links MUST take priority over demo template links!
+    if (binding.path === "links" && card?.links && Array.isArray(card.links)) {
+      const activeLinks = card.links.filter((l: any) => l.isVisible !== false);
+      if (activeLinks.length > 0) {
+        return activeLinks;
+      }
+    }
+
     let result: any = selfData !== undefined ? selfData : content;
-    for (const part of binding.path.split('.')) {
+
+    // Resolving properties on an individual link item in selfData
+    if (selfData && typeof selfData === "object" && !Array.isArray(selfData)) {
+      if (binding.path === "url") {
+        const urlVal = selfData.url || selfData.value;
+        return formatLinkUrl(selfData.type, urlVal);
+      }
+      if (binding.path === "icon") {
+        if (selfData.icon) return selfData.icon;
+        const catalogItem = LINK_CATALOG.find((l) => l.type === selfData.type);
+        if (catalogItem?.iconName) return catalogItem.iconName;
+      }
+      if (binding.path === "label") {
+        if (selfData.label) return selfData.label;
+        const catalogItem = LINK_CATALOG.find((l) => l.type === selfData.type);
+        if (catalogItem?.label) return catalogItem.label;
+        return selfData.type || "";
+      }
+      if (binding.path === "value") {
+        return selfData.value || "";
+      }
+    }
+
+    for (const part of binding.path.split(".")) {
       if (result == null) break;
       result = result[part];
     }
-    if ((result == null || (Array.isArray(result) && result.length === 0)) && card) {
-      if (binding.path === 'links' && (card.links || content?.links)) {
-        return card.links || content?.links;
+
+    if (
+      (result == null || (Array.isArray(result) && result.length === 0)) &&
+      card
+    ) {
+      if (binding.path === "links" && (card.links || content?.links)) {
+        return card.links && card.links.length > 0
+          ? card.links
+          : content?.links;
       }
       if (card[binding.path]) {
         return card[binding.path];
@@ -50,8 +102,8 @@ export function resolveBinding(
     return result;
   }
 
-  if (binding.source === 'token') {
-    return `var(--${binding.path.replace('.', '-')})`;
+  if (binding.source === "token") {
+    return `var(--${binding.path.replace(".", "-")})`;
   }
 
   return undefined;
@@ -59,9 +111,10 @@ export function resolveBinding(
 
 function base(): string {
   const url =
-    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_CARD_BASE_URL) ||
-    'https://tapsleek.me';
-  return String(url).replace(/\/+$/, '');
+    (typeof process !== "undefined" &&
+      process.env?.NEXT_PUBLIC_CARD_BASE_URL) ||
+    "https://tapsleek.me";
+  return String(url).replace(/\/+$/, "");
 }
 
 function resolveCardField(field: string, card: any): any {
@@ -69,26 +122,29 @@ function resolveCardField(field: string, card: any): any {
 
   switch (field) {
     // Assembled, not stored.
-    case 'fullName': {
-      const name = [card.firstName, card.lastName].filter(Boolean).join(' ').trim();
+    case "fullName": {
+      const name = [card.firstName, card.lastName]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
       return name || card.name || undefined;
     }
 
     // Derived from the slug / share key.
-    case 'publicUrl':
+    case "publicUrl":
       return card.slug ? `${base()}/${card.slug}` : undefined;
-    case 'shareUrl':
+    case "shareUrl":
       return card.shareKey ? `${base()}/k/${card.shareKey}` : undefined;
-    case 'vcardUrl':
+    case "vcardUrl":
       return card.slug ? `${base()}/${card.slug}/vcard` : undefined;
-    case 'qrUrl':
+    case "qrUrl":
       return card.slug ? `${base()}/${card.slug}/qr` : undefined;
 
     default: {
       const value = card[field];
       // Normalise '' to undefined so `hideIfEmpty` behaves the same whether a
       // field is missing or merely blank.
-      return value === '' ? undefined : value;
+      return value === "" ? undefined : value;
     }
   }
 }
