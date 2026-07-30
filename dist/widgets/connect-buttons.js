@@ -120,7 +120,7 @@ exports.meta = {
             {
                 kind: "element",
                 id: "saveContact",
-                tag: "button",
+                tag: "link",
                 name: "Save Contact",
                 props: { action: "vcard" },
                 style: {
@@ -175,7 +175,7 @@ exports.meta = {
             {
                 kind: "element",
                 id: "connectNow",
-                tag: "button",
+                tag: "link",
                 name: "Connect Now",
                 props: { action: "link" },
                 style: {

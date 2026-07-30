@@ -97,8 +97,8 @@ exports.meta = {
     defaultContent: {
         title: 'Gallery',
         items: [
-            { url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600', caption: 'Abstract shape' },
-            { url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=600', caption: 'Gallery artwork' },
+            { url: '', caption: 'Abstract shape' },
+            { url: '', caption: 'Gallery artwork' },
         ],
     },
     defaultLayout: {
