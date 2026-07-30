@@ -195,11 +195,13 @@ export const meta: WidgetModule["meta"] = {
       {
         name: "Alice Smith",
         role: "Founder & CEO",
+        image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
         bio: "10+ years scaling tech startups.",
       },
       {
         name: "Bob Jones",
         role: "Head of Design",
+        image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
         bio: "Obsessed with typography.",
       },
     ],

@@ -119,8 +119,8 @@ exports.meta = {
     defaultContent: {
         title: 'What clients say',
         items: [
-            { author: 'Jane Doe', role: 'CEO, Acme Corp', quote: 'Tapsleek made connecting with clients seamless and beautiful.', avatar: '', rating: 5 },
-            { author: 'John Smith', role: 'Founder, Startup', quote: 'Highly recommended for any modern professional.', avatar: '', rating: 5 },
+            { author: 'Jane Doe', role: 'CEO, Acme Corp', quote: 'Tapsleek made connecting with clients seamless and beautiful.', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb', rating: 5 },
+            { author: 'John Smith', role: 'Founder, Startup', quote: 'Highly recommended for any modern professional.', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d', rating: 5 },
         ],
     },
     defaultLayout: {
