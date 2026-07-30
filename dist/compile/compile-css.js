@@ -67,11 +67,7 @@ function compileCss(def, options = {}) {
         `${Math.max(280, Math.min(1200, Math.round(width)))}px`,
     ]);
     frameDecls.push(["margin-inline", "auto"]);
-    if (def.meta?.background) {
-        const bg = (0, value_1.color)(def.meta.background);
-        if (bg)
-            frameDecls.push(["background-color", bg]);
-    }
+    frameDecls.push(["background-color", "transparent"]);
     // ── 3. Node rules ──────────────────────────────────────────────────────
     for (const root of (0, definition_1.definitionRoots)(def)) {
         (0, node_1.walkTreeOrder)(root, (node) => {
@@ -82,7 +78,11 @@ function compileCss(def, options = {}) {
             let produced = 0;
             // base / sm / md
             for (const bp of ["base", "sm", "md"]) {
-                const props = mergeHidden(node.style?.[bp], node.hidden?.[bp]);
+                const props = { ...mergeHidden(node.style?.[bp], node.hidden?.[bp]) };
+                // Ensure root card container clips child elements cleanly when border-radius is set
+                if (node.id === "root" && props.borderRadius && props.overflow === undefined) {
+                    props.overflow = "hidden";
+                }
                 const decls = (0, declarations_1.declarationsFor)(props);
                 if (decls.length) {
                     bucket[bp].push({ selector: sel, decls });

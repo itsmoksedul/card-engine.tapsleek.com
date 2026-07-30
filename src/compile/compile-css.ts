@@ -137,10 +137,7 @@ export function compileCss(
     `${Math.max(280, Math.min(1200, Math.round(width)))}px`,
   ]);
   frameDecls.push(["margin-inline", "auto"]);
-  if (def.meta?.background) {
-    const bg = color(def.meta.background);
-    if (bg) frameDecls.push(["background-color", bg]);
-  }
+  frameDecls.push(["background-color", "transparent"]);
 
   // ── 3. Node rules ──────────────────────────────────────────────────────
   for (const root of definitionRoots(def)) {
@@ -152,7 +149,11 @@ export function compileCss(
 
       // base / sm / md
       for (const bp of ["base", "sm", "md"] as const) {
-        const props = mergeHidden(node.style?.[bp], node.hidden?.[bp]);
+        const props = { ...mergeHidden(node.style?.[bp], node.hidden?.[bp]) };
+        // Ensure root card container clips child elements cleanly when border-radius is set
+        if (node.id === "root" && props.borderRadius && props.overflow === undefined) {
+          props.overflow = "hidden";
+        }
         const decls = declarationsFor(props);
         if (decls.length) {
           bucket[bp].push({ selector: sel, decls });
