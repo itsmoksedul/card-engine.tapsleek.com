@@ -1,5 +1,5 @@
 import React from 'react';
-import { EmptyState, type WidgetRenderProps } from './shared';
+import { EmptyState, navProps, type WidgetRenderProps } from './shared';
 
 const HEIGHT_MAP: Record<string, string> = {
   sm: '200px',
@@ -46,9 +46,7 @@ export function MapRender({ design, content, cls, ctx }: WidgetRenderProps) {
 
       {d.showDirectionsBtn !== false && (
         <a
-          href={directionsUrl}
-          target="_blank"
-          rel="noreferrer"
+          {...navProps(directionsUrl, ctx.isEditing ?? false, '_blank')}
           className={cls('directionsBtn')}
         >
           <span className={cls('icon')} data-icon="Navigation" aria-hidden />

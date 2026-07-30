@@ -234,10 +234,21 @@ function ElementRenderer({
       dom["data-action"] = action;
       if (action === "link") {
         const href = bound ?? props.href;
-        if (node.tag === "link") dom.href = href || "#";
-        else if (href)
-          dom.onClick = () =>
-            window.open(String(href), props.target || "_self");
+        if (node.tag === "link") {
+          if (ctx.isEditing) {
+            dom.href = "#";
+            dom.onClick = (e: React.MouseEvent) => e.preventDefault();
+          } else {
+            dom.href = href || "#";
+          }
+        } else if (href) {
+          if (ctx.isEditing) {
+            dom.onClick = (e: React.MouseEvent) => e.preventDefault();
+          } else {
+            dom.onClick = () =>
+              window.open(String(href), props.target || "_self");
+          }
+        }
       } else if (action === "popup") {
         dom["data-popup"] = props.popup ?? "";
       }
@@ -434,17 +445,6 @@ function WidgetRenderer({
     node.widget as keyof typeof WIDGET_RENDERERS
   ] as any;
 
-  if (!Widget) {
-    return (
-      <div
-        className={`n${node.id}`}
-        data-node-id={ctx.isEditing ? node.id : undefined}
-      >
-        {ctx.isEditing ? `Unknown widget: ${node.widget}` : null}
-      </div>
-    );
-  }
-
   const widgetMeta = getWidgetMeta(node.widget);
   const widgetContent = content?.[node.key] ?? node.defaultContent ?? {};
 
@@ -455,10 +455,12 @@ function WidgetRenderer({
   // keep rendering an element tree with broken self-bindings, invisible labels,
   // and confusing link icons in the editor layers panel.
   // Derived widgets that DO have a defaultLayout (e.g. PROFILE) are unaffected.
+  // Also applies to deprecated widgets: if they have a defaultLayout, render it.
   const hasMetaLayout = widgetMeta?.defaultLayout != null;
   const skipStoredLayout = widgetMeta?.derived === true && !hasMetaLayout;
   const layout = skipStoredLayout ? undefined : (node.layout ?? widgetMeta?.defaultLayout);
 
+  // Deprecated widgets or widgets without a custom renderer fall back to layout tree.
   if (layout) {
     const mergedLayout: ElementNode = {
       ...layout,
@@ -482,6 +484,20 @@ function WidgetRenderer({
           content={{ [node.key]: widgetContent }}
           ctx={{ ...ctx, selfData: widgetContent }}
         />
+      </div>
+    );
+  }
+
+  // No layout and no custom Widget renderer — this shouldn't happen in normal flow
+  // (all widgets have either a layout or a renderer), but handle it gracefully.
+  if (!Widget) {
+    return (
+      <div
+        className={`n${node.id}`}
+        data-node-id={ctx.isEditing ? node.id : undefined}
+        data-widget={node.widget}
+      >
+        {ctx.isEditing ? `Unknown widget: ${node.widget}` : null}
       </div>
     );
   }

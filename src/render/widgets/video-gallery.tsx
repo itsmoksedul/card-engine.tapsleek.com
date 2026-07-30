@@ -1,5 +1,5 @@
 import React from 'react';
-import { asArray, EmptyState, type WidgetRenderProps } from './shared';
+import { asArray, EmptyState, navProps, type WidgetRenderProps } from './shared';
 
 function getYoutubeId(url: string) {
   const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
@@ -35,9 +35,7 @@ export function VideoGalleryRender({ design, content, cls, ctx }: WidgetRenderPr
             <a
               key={i}
               className={cls('item')}
-              href={video.url || '#'}
-              target="_blank"
-              rel="noreferrer"
+              {...navProps(video.url, ctx.isEditing ?? false, '_blank')}
             >
               <div style={{ position: 'relative', width: '100%', aspectRatio }}>
                 {thumbUrl ? (

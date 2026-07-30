@@ -6,6 +6,10 @@ export const meta: WidgetModule['meta'] = {
   iconName: 'LayoutGrid',
   group: 'business',
   description: 'A grid highlighting key features or services with icons.',
+  deprecated: {
+    since: '2.1',
+    note: 'Feature Grid has been deprecated. Use Service List or custom blocks instead.',
+  },
   contentVersion: 1,
   defaultLayout: {
     id: 'root',

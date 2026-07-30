@@ -1,6 +1,6 @@
 import React from 'react';
 import { RenderIcon } from './icon-helper';
-import { EmptyState, str, iconVal, type WidgetRenderProps } from './shared';
+import { EmptyState, str, iconVal, navProps, type WidgetRenderProps } from './shared';
 
 export function CtaButtonRender({ content, design, cls, ctx }: WidgetRenderProps) {
   const c = (content ?? {}) as Record<string, unknown>;
@@ -13,11 +13,9 @@ export function CtaButtonRender({ content, design, cls, ctx }: WidgetRenderProps
     <div className={cls('root')} data-full-width={d.fullWidth !== false ? 'true' : undefined}>
       <a
         className={cls('button')}
-        href={str(c.url) || '#'}
-        target={c.newTab ? '_blank' : undefined}
-        rel={c.newTab ? 'noreferrer' : undefined}
+        {...navProps(str(c.url), ctx.isEditing ?? false, c.newTab ? '_blank' : undefined)}
         data-icon-position={d.iconPosition ?? 'left'}
-        onClick={() => ctx.track({ type: 'WIDGET_CLICK', part: 'button' })}
+        onClick={() => !ctx.isEditing && ctx.track({ type: 'WIDGET_CLICK', part: 'button' })}
       >
         {d.showIcon !== false && iconVal(c.icon) && (
           <RenderIcon name={iconVal(c.icon) as any} className={cls('icon')} />

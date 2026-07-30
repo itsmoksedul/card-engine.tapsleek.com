@@ -5,6 +5,7 @@ exports.subtitleOf = subtitleOf;
 exports.asArray = asArray;
 exports.str = str;
 exports.iconVal = iconVal;
+exports.navProps = navProps;
 exports.EmptyState = EmptyState;
 const jsx_runtime_1 = require("react/jsx-runtime");
 /** Card owner's display name, assembled the same way the backend vCard does. */
@@ -24,6 +25,26 @@ function str(value) {
 }
 function iconVal(value) {
     return (typeof value === 'string' || typeof value === 'object') ? value : null;
+}
+/**
+ * Navigation props for links in editing mode.
+ *
+ * When the admin is editing a template in the builder canvas, real links would
+ * navigate away or open external URLs, breaking the editing flow. This helper
+ * suppresses navigation in edit mode while preserving the hover/focus UX.
+ */
+function navProps(href, isEditing, target) {
+    if (isEditing) {
+        return {
+            href: '#',
+            onClick: (e) => e.preventDefault(),
+        };
+    }
+    return {
+        href: href || '#',
+        ...(target && { target }),
+        ...(target === '_blank' && { rel: 'noreferrer' }),
+    };
 }
 /**
  * In the builder an empty widget would collapse to nothing and become

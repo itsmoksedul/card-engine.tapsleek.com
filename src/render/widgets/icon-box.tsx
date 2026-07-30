@@ -1,6 +1,6 @@
 import React from 'react';
 import { RenderIcon } from './icon-helper';
-import { EmptyState, str, iconVal, type WidgetRenderProps } from './shared';
+import { EmptyState, str, iconVal, navProps, type WidgetRenderProps } from './shared';
 
 export function IconBoxRender({ content, design, cls, ctx }: WidgetRenderProps) {
   const c = (content ?? {}) as Record<string, unknown>;
@@ -25,10 +25,8 @@ export function IconBoxRender({ content, design, cls, ctx }: WidgetRenderProps) 
     <div className={cls('root')} data-layout={d.layout ?? 'top'}>
       {link ? (
         <a
-          href={link}
-          target="_blank"
-          rel="noreferrer"
-          onClick={() => ctx.track({ type: 'WIDGET_CLICK', part: 'root' })}
+          {...navProps(link, ctx.isEditing ?? false, '_blank')}
+          onClick={() => !ctx.isEditing && ctx.track({ type: 'WIDGET_CLICK', part: 'root' })}
         >
           {inner}
         </a>

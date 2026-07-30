@@ -13,5 +13,5 @@ function IconBoxRender({ content, design, cls, ctx }) {
         return (0, jsx_runtime_1.jsx)(shared_1.EmptyState, { cls: cls, ctx: ctx, label: "Icon Box" });
     const inner = ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [icon && (0, jsx_runtime_1.jsx)(icon_helper_1.RenderIcon, { name: icon, className: cls('icon') }), title && (0, jsx_runtime_1.jsx)("div", { className: cls('title'), children: title }), d.showDescription !== false && (0, shared_1.str)(c.description) && ((0, jsx_runtime_1.jsx)("div", { className: cls('description'), children: (0, shared_1.str)(c.description) }))] }));
     const link = (0, shared_1.str)(c.link);
-    return ((0, jsx_runtime_1.jsx)("div", { className: cls('root'), "data-layout": d.layout ?? 'top', children: link ? ((0, jsx_runtime_1.jsx)("a", { href: link, target: "_blank", rel: "noreferrer", onClick: () => ctx.track({ type: 'WIDGET_CLICK', part: 'root' }), children: inner })) : (inner) }));
+    return ((0, jsx_runtime_1.jsx)("div", { className: cls('root'), "data-layout": d.layout ?? 'top', children: link ? ((0, jsx_runtime_1.jsx)("a", { ...(0, shared_1.navProps)(link, ctx.isEditing ?? false, '_blank'), onClick: () => !ctx.isEditing && ctx.track({ type: 'WIDGET_CLICK', part: 'root' }), children: inner })) : (inner) }));
 }

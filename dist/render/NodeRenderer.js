@@ -179,10 +179,23 @@ function ElementRenderer({ node, content, ctx, }) {
             dom["data-action"] = action;
             if (action === "link") {
                 const href = bound ?? props.href;
-                if (node.tag === "link")
-                    dom.href = href || "#";
-                else if (href)
-                    dom.onClick = () => window.open(String(href), props.target || "_self");
+                if (node.tag === "link") {
+                    if (ctx.isEditing) {
+                        dom.href = "#";
+                        dom.onClick = (e) => e.preventDefault();
+                    }
+                    else {
+                        dom.href = href || "#";
+                    }
+                }
+                else if (href) {
+                    if (ctx.isEditing) {
+                        dom.onClick = (e) => e.preventDefault();
+                    }
+                    else {
+                        dom.onClick = () => window.open(String(href), props.target || "_self");
+                    }
+                }
             }
             else if (action === "popup") {
                 dom["data-popup"] = props.popup ?? "";
@@ -313,9 +326,6 @@ function WidgetRenderer({ node, content, ctx, }) {
         }
     }
     const Widget = widgets_2.WIDGET_RENDERERS[node.widget];
-    if (!Widget) {
-        return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, children: ctx.isEditing ? `Unknown widget: ${node.widget}` : null }));
-    }
     const widgetMeta = (0, widgets_1.getWidgetMeta)(node.widget);
     const widgetContent = content?.[node.key] ?? node.defaultContent ?? {};
     // For derived widgets that have NO defaultLayout defined in their meta,
@@ -325,9 +335,11 @@ function WidgetRenderer({ node, content, ctx, }) {
     // keep rendering an element tree with broken self-bindings, invisible labels,
     // and confusing link icons in the editor layers panel.
     // Derived widgets that DO have a defaultLayout (e.g. PROFILE) are unaffected.
+    // Also applies to deprecated widgets: if they have a defaultLayout, render it.
     const hasMetaLayout = widgetMeta?.defaultLayout != null;
     const skipStoredLayout = widgetMeta?.derived === true && !hasMetaLayout;
     const layout = skipStoredLayout ? undefined : (node.layout ?? widgetMeta?.defaultLayout);
+    // Deprecated widgets or widgets without a custom renderer fall back to layout tree.
     if (layout) {
         const mergedLayout = {
             ...layout,
@@ -341,6 +353,11 @@ function WidgetRenderer({ node, content, ctx, }) {
             },
         };
         return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-widget": node.widget, "data-node-id": ctx.isEditing ? node.id : undefined, children: (0, jsx_runtime_1.jsx)(NodeRenderer, { node: mergedLayout, content: { [node.key]: widgetContent }, ctx: { ...ctx, selfData: widgetContent } }) }));
+    }
+    // No layout and no custom Widget renderer — this shouldn't happen in normal flow
+    // (all widgets have either a layout or a renderer), but handle it gracefully.
+    if (!Widget) {
+        return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, "data-widget": node.widget, children: ctx.isEditing ? `Unknown widget: ${node.widget}` : null }));
     }
     return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, "data-widget": node.widget, children: (0, jsx_runtime_1.jsx)(Widget, { content: widgetContent, design: node.design ?? {}, cls: (part) => `p-${part}`, ctx: ctx }) }));
 }

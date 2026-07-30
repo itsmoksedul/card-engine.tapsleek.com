@@ -1,6 +1,6 @@
 import React from 'react';
 import { RenderIcon } from './icon-helper';
-import { EmptyState, str, iconVal, type WidgetRenderProps } from './shared';
+import { EmptyState, str, iconVal, navProps, type WidgetRenderProps } from './shared';
 
 export function IconRender({ content, design, cls, ctx }: WidgetRenderProps) {
   const c = (content ?? {}) as Record<string, unknown>;
@@ -16,10 +16,8 @@ export function IconRender({ content, design, cls, ctx }: WidgetRenderProps) {
     <div className={cls('root')} data-align={d.align ?? 'center'}>
       {link ? (
         <a
-          href={link}
-          target="_blank"
-          rel="noreferrer"
-          onClick={() => ctx.track({ type: 'WIDGET_CLICK', part: 'icon' })}
+          {...navProps(link, ctx.isEditing ?? false, '_blank')}
+          onClick={() => !ctx.isEditing && ctx.track({ type: 'WIDGET_CLICK', part: 'icon' })}
         >
           {glyph}
         </a>

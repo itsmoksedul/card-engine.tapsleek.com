@@ -1,6 +1,6 @@
 import React from 'react';
 import { RenderIcon } from './icon-helper';
-import { asArray, EmptyState, type WidgetRenderProps } from './shared';
+import { asArray, EmptyState, navProps, type WidgetRenderProps } from './shared';
 
 /**
  * SOCIAL_ICONS — explicitly defined social media profile links.
@@ -27,9 +27,7 @@ export function SocialIconsRender({ design, content, cls, ctx }: WidgetRenderPro
           <a
             key={i}
             className={cls('item')}
-            href={profile.url || '#'}
-            target="_blank"
-            rel="noreferrer"
+            {...navProps(profile.url, ctx.isEditing ?? false, '_blank')}
             aria-label={profile.platform}
           >
             <RenderIcon name={profile.platform} className={cls('icon')} />

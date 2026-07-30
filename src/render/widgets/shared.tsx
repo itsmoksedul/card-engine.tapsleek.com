@@ -46,6 +46,31 @@ export function iconVal(value: unknown) {
 }
 
 /**
+ * Navigation props for links in editing mode.
+ *
+ * When the admin is editing a template in the builder canvas, real links would
+ * navigate away or open external URLs, breaking the editing flow. This helper
+ * suppresses navigation in edit mode while preserving the hover/focus UX.
+ */
+export function navProps(
+  href: string | undefined,
+  isEditing: boolean,
+  target?: string,
+): Record<string, any> {
+  if (isEditing) {
+    return {
+      href: '#',
+      onClick: (e: React.MouseEvent) => e.preventDefault(),
+    };
+  }
+  return {
+    href: href || '#',
+    ...(target && { target }),
+    ...(target === '_blank' && { rel: 'noreferrer' }),
+  };
+}
+
+/**
  * In the builder an empty widget would collapse to nothing and become
  * unselectable, so mark it instead of returning null. On a live card the same
  * widget renders nothing at all.

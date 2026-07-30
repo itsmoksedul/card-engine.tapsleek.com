@@ -1,6 +1,6 @@
 import React from 'react';
 import { RenderIcon } from './icon-helper';
-import { asArray, EmptyState, type WidgetRenderProps } from './shared';
+import { asArray, EmptyState, navProps, type WidgetRenderProps } from './shared';
 
 /**
  * CONTACT_LINKS — renders the card's CardLink rows.
@@ -31,10 +31,8 @@ export function ContactLinksRender({ design, content, cls, ctx }: WidgetRenderPr
             className={cls('item')}
             data-link-id={link.id}
             data-link-type={link.type}
-            href={link.url || link.value || '#'}
-            target="_blank"
-            rel="noreferrer"
-            onClick={() => ctx.track({ type: 'LINK_CLICK', linkId: link.id })}
+            {...navProps(link.url || link.value, ctx.isEditing ?? false, '_blank')}
+            onClick={() => !ctx.isEditing && ctx.track({ type: 'LINK_CLICK', linkId: link.id })}
           >
             {d.showIcon !== false && <RenderIcon name={link.icon || link.type} className={cls('icon')} />}
             <span className={cls('label')}>{link.title || link.label || link.type}</span>

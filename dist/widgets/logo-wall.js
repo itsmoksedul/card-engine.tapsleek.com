@@ -7,6 +7,10 @@ exports.meta = {
     iconName: 'Image',
     group: 'business',
     description: 'A grid of logos for partners, clients, or certifications.',
+    deprecated: {
+        since: '2.1',
+        note: 'Logo Wall has been deprecated. Use Gallery or custom blocks instead.',
+    },
     contentVersion: 1,
     defaultLayout: {
         id: 'root',

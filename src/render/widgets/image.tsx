@@ -1,5 +1,5 @@
 import React from 'react';
-import { EmptyState, str, type WidgetRenderProps } from './shared';
+import { EmptyState, str, navProps, type WidgetRenderProps } from './shared';
 
 export function ImageRender({ content, design, cls, ctx }: WidgetRenderProps) {
   const c = (content ?? {}) as Record<string, unknown>;
@@ -24,10 +24,8 @@ export function ImageRender({ content, design, cls, ctx }: WidgetRenderProps) {
     <figure className={cls('root')}>
       {link ? (
         <a
-          href={link}
-          target="_blank"
-          rel="noreferrer"
-          onClick={() => ctx.track({ type: 'WIDGET_CLICK', part: 'image' })}
+          {...navProps(link, ctx.isEditing ?? false, '_blank')}
+          onClick={() => !ctx.isEditing && ctx.track({ type: 'WIDGET_CLICK', part: 'image' })}
         >
           {img}
         </a>
