@@ -37,8 +37,8 @@ function simple(prop: string, kind: keyof typeof VALUE_RE): Emitter {
 
 /** Keyword property restricted to an explicit set. */
 function enumProp(prop: string, allowed: readonly string[]): Emitter {
-  const set = new Set(allowed);
-  return (v) => (typeof v === "string" && set.has(v) ? [[prop, v]] : []);
+  const set = new Set(allowed.map(s => s.toLowerCase()));
+  return (v) => (typeof v === "string" && set.has(v.toLowerCase()) ? [[prop, v.toLowerCase()]] : []);
 }
 
 /** Integer property with bounds. */

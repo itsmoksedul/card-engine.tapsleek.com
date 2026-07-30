@@ -73,7 +73,11 @@ function resolveBinding(binding, card, content, selfData) {
                 return selfData.type || "";
             }
             if (binding.path === "value") {
-                return selfData.value || "";
+                let raw = selfData.value || selfData.url || "";
+                if (typeof raw === "string") {
+                    raw = raw.replace(/^tel:/, '').replace(/^mailto:/, '').replace(/^https:\/\/wa\.me\//, '');
+                }
+                return raw;
             }
         }
         for (const part of binding.path.split(".")) {

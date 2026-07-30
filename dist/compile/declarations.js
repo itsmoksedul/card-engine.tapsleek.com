@@ -21,8 +21,8 @@ function simple(prop, kind) {
 }
 /** Keyword property restricted to an explicit set. */
 function enumProp(prop, allowed) {
-    const set = new Set(allowed);
-    return (v) => (typeof v === "string" && set.has(v) ? [[prop, v]] : []);
+    const set = new Set(allowed.map(s => s.toLowerCase()));
+    return (v) => (typeof v === "string" && set.has(v.toLowerCase()) ? [[prop, v.toLowerCase()]] : []);
 }
 /** Integer property with bounds. */
 function int(prop, min, max) {
