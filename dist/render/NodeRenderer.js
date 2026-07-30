@@ -177,27 +177,73 @@ function ElementRenderer({ node, content, ctx, }) {
         case "link": {
             const action = props.action || "link";
             dom["data-action"] = action;
+            const interceptClick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (ctx.onActionClick)
+                    ctx.onActionClick(action);
+            };
             if (action === "link") {
                 const href = bound ?? props.href;
                 if (node.tag === "link") {
-                    if (ctx.isEditing) {
-                        dom.onClick = (e) => e.preventDefault();
+                    if (ctx.isEditing || ctx.onActionClick) {
+                        dom.onClick = interceptClick;
                     }
                     else {
                         dom.href = href || "#";
                     }
                 }
                 else if (href) {
-                    if (ctx.isEditing) {
-                        dom.onClick = (e) => e.preventDefault();
+                    if (ctx.isEditing || ctx.onActionClick) {
+                        dom.onClick = interceptClick;
                     }
                     else {
                         dom.onClick = () => window.open(String(href), props.target || "_self");
                     }
                 }
             }
+            else if (action === "vcard") {
+                if (ctx.isEditing || ctx.onActionClick) {
+                    dom.onClick = interceptClick;
+                }
+                else {
+                    dom.onClick = () => {
+                        const el = document.createElement("a");
+                        el.href = "/api/vcard";
+                        el.download = "contact.vcf";
+                        el.click();
+                    };
+                }
+            }
+            else if (action === "share") {
+                if (ctx.isEditing || ctx.onActionClick) {
+                    dom.onClick = interceptClick;
+                }
+                else {
+                    dom.onClick = async () => {
+                        if (navigator.share) {
+                            try {
+                                await navigator.share({
+                                    title: "My Digital Business Card",
+                                    url: window.location.href,
+                                });
+                            }
+                            catch (err) {
+                                console.error("Share failed", err);
+                            }
+                        }
+                        else {
+                            navigator.clipboard.writeText(window.location.href);
+                            alert("Link copied to clipboard");
+                        }
+                    };
+                }
+            }
             else if (action === "popup") {
                 dom["data-popup"] = props.popup ?? "";
+                if (ctx.onActionClick && !ctx.isEditing) {
+                    dom.onClick = interceptClick;
+                }
             }
             if (node.tag === "button")
                 dom.type = "button";
@@ -380,7 +426,7 @@ function WidgetRenderer({ node, content, ctx, }) {
                 },
             },
         };
-        return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-widget": node.widget, "data-node-id": ctx.isEditing ? node.id : undefined, children: (0, jsx_runtime_1.jsx)(NodeRenderer, { node: mergedLayout, content: { [node.key]: widgetContent }, ctx: { ...ctx, selfData: widgetContent } }) }));
+        return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-widget": node.widget, "data-node-id": ctx.isEditing ? node.id : undefined, children: (0, jsx_runtime_1.jsx)(NodeRenderer, { node: mergedLayout, content: { [node.key]: widgetContent, _design: node.design }, ctx: { ...ctx, selfData: widgetContent } }) }));
     }
     // No layout and no custom Widget renderer — this shouldn't happen in normal flow
     // (all widgets have either a layout or a renderer), but handle it gracefully.

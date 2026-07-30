@@ -19,6 +19,7 @@ export interface WidgetRenderProps<C = any, D = any> {
     links: any[];
     isEditing?: boolean;
     track: (event: any) => void;
+    onActionClick?: (action: string) => void;
   };
 }
 

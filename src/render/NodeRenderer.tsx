@@ -14,6 +14,7 @@ export interface RenderCtx {
   gatedWidgetKeys?: string[];
   track: (event: any) => void;
   selfData?: any;
+  onActionClick?: (action: string) => void;
 }
 
 export interface NodeRendererProps {
@@ -232,24 +233,65 @@ function ElementRenderer({
     case "link": {
       const action = (props.action as string) || "link";
       dom["data-action"] = action;
+
+      const interceptClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (ctx.onActionClick) ctx.onActionClick(action);
+      };
+
       if (action === "link") {
         const href = bound ?? props.href;
         if (node.tag === "link") {
-          if (ctx.isEditing) {
-            dom.onClick = (e: React.MouseEvent) => e.preventDefault();
+          if (ctx.isEditing || ctx.onActionClick) {
+            dom.onClick = interceptClick;
           } else {
             dom.href = href || "#";
           }
         } else if (href) {
-          if (ctx.isEditing) {
-            dom.onClick = (e: React.MouseEvent) => e.preventDefault();
+          if (ctx.isEditing || ctx.onActionClick) {
+            dom.onClick = interceptClick;
           } else {
             dom.onClick = () =>
               window.open(String(href), props.target || "_self");
           }
         }
+      } else if (action === "vcard") {
+        if (ctx.isEditing || ctx.onActionClick) {
+          dom.onClick = interceptClick;
+        } else {
+          dom.onClick = () => {
+            const el = document.createElement("a");
+            el.href = "/api/vcard";
+            el.download = "contact.vcf";
+            el.click();
+          };
+        }
+      } else if (action === "share") {
+        if (ctx.isEditing || ctx.onActionClick) {
+          dom.onClick = interceptClick;
+        } else {
+          dom.onClick = async () => {
+            if (navigator.share) {
+              try {
+                await navigator.share({
+                  title: "My Digital Business Card",
+                  url: window.location.href,
+                });
+              } catch (err) {
+                console.error("Share failed", err);
+              }
+            } else {
+              navigator.clipboard.writeText(window.location.href);
+              alert("Link copied to clipboard");
+            }
+          };
+        }
       } else if (action === "popup") {
         dom["data-popup"] = props.popup ?? "";
+        if (ctx.onActionClick && !ctx.isEditing) {
+          dom.onClick = interceptClick;
+        }
       }
       if (node.tag === "button") dom.type = "button";
       children = props.label ?? null;
@@ -510,7 +552,7 @@ function WidgetRenderer({
       >
         <NodeRenderer
           node={mergedLayout}
-          content={{ [node.key]: widgetContent }}
+          content={{ [node.key]: widgetContent, _design: node.design }}
           ctx={{ ...ctx, selfData: widgetContent }}
         />
       </div>

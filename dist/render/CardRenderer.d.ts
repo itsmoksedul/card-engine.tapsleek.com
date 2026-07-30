@@ -9,6 +9,7 @@ export interface CardRendererProps {
     isEditing?: boolean;
     gatedWidgetKeys?: string[];
     onTrack?: (event: any) => void;
+    onActionClick?: (action: string) => void;
     /**
      * v2.1 — a user card renders its own ordered BLOCKS instead of the template's
      * node tree. Each block is styled by the template (via `tsb-<type>` presets);
@@ -20,4 +21,4 @@ export interface CardRendererProps {
     /** v2.1 — the card owner's global theme; applied at the root. */
     theme?: CardTheme;
 }
-export declare function CardRenderer({ definition, content, card, links, isEditing, gatedWidgetKeys, onTrack, blocks, theme, }: CardRendererProps): React.JSX.Element;
+export declare function CardRenderer({ definition, content, card, links, isEditing, gatedWidgetKeys, onTrack, onActionClick, blocks, theme, }: CardRendererProps): React.JSX.Element;

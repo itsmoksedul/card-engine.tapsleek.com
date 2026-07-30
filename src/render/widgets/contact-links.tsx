@@ -32,7 +32,14 @@ export function ContactLinksRender({ design, content, cls, ctx }: WidgetRenderPr
             data-link-id={link.id}
             data-link-type={link.type}
             {...navProps(link.url || link.value, ctx.isEditing ?? false, '_blank')}
-            onClick={() => !ctx.isEditing && ctx.track({ type: 'LINK_CLICK', linkId: link.id })}
+            onClick={(e) => {
+              if (ctx.onActionClick && !ctx.isEditing) {
+                e.preventDefault();
+                ctx.onActionClick('link');
+                return;
+              }
+              if (!ctx.isEditing) ctx.track({ type: 'LINK_CLICK', linkId: link.id });
+            }}
           >
             {d.showIcon !== false && <RenderIcon name={link.icon || link.type} className={cls('icon')} />}
             <span className={cls('label')}>{link.title || link.label || link.type}</span>

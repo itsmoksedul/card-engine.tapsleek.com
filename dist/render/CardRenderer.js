@@ -4,7 +4,7 @@ exports.CardRenderer = CardRenderer;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const NodeRenderer_1 = require("./NodeRenderer");
 const BlockRenderer_1 = require("./BlockRenderer");
-function CardRenderer({ definition, content, card, links, isEditing, gatedWidgetKeys, onTrack, blocks, theme, }) {
+function CardRenderer({ definition, content, card, links, isEditing, gatedWidgetKeys, onTrack, onActionClick, blocks, theme, }) {
     const ctx = {
         card,
         links,
@@ -12,6 +12,7 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
         isEditing,
         gatedWidgetKeys,
         track: onTrack || (() => { }),
+        onActionClick,
     };
     // ── User card: render the composed blocks inside the template's root frame ──
     // Only when there ARE blocks. An empty array must fall through to the template

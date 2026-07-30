@@ -58,6 +58,8 @@ function resolveBinding(binding, card, content, selfData) {
                 return formatLinkUrl(selfData.type, urlVal);
             }
             if (binding.path === "icon") {
+                if (content?._design?.showIcon === false)
+                    return "";
                 if (selfData.icon)
                     return selfData.icon;
                 const catalogItem = links_1.LINK_CATALOG.find((l) => l.type === selfData.type);
@@ -73,6 +75,8 @@ function resolveBinding(binding, card, content, selfData) {
                 return selfData.type || "";
             }
             if (binding.path === "value") {
+                if (content?._design?.showValue === false)
+                    return "";
                 let raw = selfData.value || selfData.url || "";
                 if (typeof raw === "string") {
                     raw = raw.replace(/^tel:/, '').replace(/^mailto:/, '').replace(/^https:\/\/wa\.me\//, '');

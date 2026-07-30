@@ -155,6 +155,7 @@ export const meta: WidgetModule['meta'] = {
                 tag: 'icon',
                 name: 'Icon',
                 bind: { source: 'self', path: 'icon' },
+                hideIfEmpty: true,
                 style: {
                   base: {
                     display: 'flex',

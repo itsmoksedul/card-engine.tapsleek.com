@@ -18,6 +18,7 @@ export interface WidgetRenderProps<C = any, D = any> {
         links: any[];
         isEditing?: boolean;
         track: (event: any) => void;
+        onActionClick?: (action: string) => void;
     };
 }
 /** Card owner's display name, assembled the same way the backend vCard does. */

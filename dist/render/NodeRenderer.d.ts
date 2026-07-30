@@ -8,6 +8,7 @@ export interface RenderCtx {
     gatedWidgetKeys?: string[];
     track: (event: any) => void;
     selfData?: any;
+    onActionClick?: (action: string) => void;
 }
 export interface NodeRendererProps {
     node: Node;

@@ -12,6 +12,7 @@ export interface CardRendererProps {
   isEditing?: boolean;
   gatedWidgetKeys?: string[];
   onTrack?: (event: any) => void;
+  onActionClick?: (action: string) => void;
   /**
    * v2.1 — a user card renders its own ordered BLOCKS instead of the template's
    * node tree. Each block is styled by the template (via `tsb-<type>` presets);
@@ -32,6 +33,7 @@ export function CardRenderer({
   isEditing,
   gatedWidgetKeys,
   onTrack,
+  onActionClick,
   blocks,
   theme,
 }: CardRendererProps) {
@@ -42,6 +44,7 @@ export function CardRenderer({
     isEditing,
     gatedWidgetKeys,
     track: onTrack || (() => {}),
+    onActionClick,
   };
 
   // ── User card: render the composed blocks inside the template's root frame ──
