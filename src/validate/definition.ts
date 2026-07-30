@@ -972,14 +972,19 @@ export function sanitizeTemplateDefinition<T = unknown>(input: T): T {
 
   function isUnallowedImage(url: string): boolean {
     if (typeof url !== "string" || !url.startsWith("http")) return false;
-    if (
-      url.includes("images.unsplash.com") ||
-      url.includes("via.placeholder.com") ||
-      url.includes("placeholder.com")
-    ) {
+    try {
+      const hostname = new URL(url).hostname.toLowerCase();
+      if (
+        hostname.includes("tapsleek") ||
+        hostname.includes("r2.") ||
+        hostname.includes("localhost")
+      ) {
+        return false;
+      }
       return true;
+    } catch {
+      return false;
     }
-    return false;
   }
 
   function sanitizeObj(obj: any): void {

@@ -817,12 +817,18 @@ function sanitizeTemplateDefinition(input) {
     function isUnallowedImage(url) {
         if (typeof url !== "string" || !url.startsWith("http"))
             return false;
-        if (url.includes("images.unsplash.com") ||
-            url.includes("via.placeholder.com") ||
-            url.includes("placeholder.com")) {
+        try {
+            const hostname = new URL(url).hostname.toLowerCase();
+            if (hostname.includes("tapsleek") ||
+                hostname.includes("r2.") ||
+                hostname.includes("localhost")) {
+                return false;
+            }
             return true;
         }
-        return false;
+        catch {
+            return false;
+        }
     }
     function sanitizeObj(obj) {
         if (!obj || typeof obj !== "object")
