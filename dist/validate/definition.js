@@ -30,6 +30,7 @@ const NODE_ACTIONS = new Set([
     "popup",
     "scroll-to",
     "copy",
+    "connect",
 ]);
 const POPUP_TRIGGERS = new Set(["onLoad", "afterDelay", "onExit", "manual"]);
 function validateDefinition(input, options = {}) {
