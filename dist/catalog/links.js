@@ -25,7 +25,7 @@ exports.LINK_CATALOG = [
         "type": "whatsapp",
         "label": "WhatsApp",
         "category": "CONTACT",
-        "placeholder": "https://wa.me/...",
+        "placeholder": "Phone number",
         "prefix": "https://wa.me/",
         "color": "#25D366",
         "iconName": "SiWhatsapp"
@@ -42,7 +42,7 @@ exports.LINK_CATALOG = [
         "type": "messenger",
         "label": "Messenger",
         "category": "CONTACT",
-        "placeholder": "https://m.me/...",
+        "placeholder": "username",
         "prefix": "https://m.me/",
         "color": "#0084FF",
         "iconName": "SiMessenger"
@@ -51,7 +51,7 @@ exports.LINK_CATALOG = [
         "type": "signal",
         "label": "Signal",
         "category": "CONTACT",
-        "placeholder": "https://signal.me/...",
+        "placeholder": "Phone number",
         "prefix": "https://signal.me/#p/",
         "color": "#3A76F0",
         "iconName": "SiSignal"
@@ -60,7 +60,7 @@ exports.LINK_CATALOG = [
         "type": "viber",
         "label": "Viber",
         "category": "CONTACT",
-        "placeholder": "viber://chat?number=...",
+        "placeholder": "Phone number",
         "prefix": "viber://chat?number=",
         "color": "#7360F2",
         "iconName": "SiViber"
@@ -85,7 +85,7 @@ exports.LINK_CATALOG = [
         "type": "telegram",
         "label": "Telegram",
         "category": "CONTACT",
-        "placeholder": "https://t.me/...",
+        "placeholder": "username",
         "prefix": "https://t.me/",
         "color": "#24A1DE",
         "iconName": "SiTelegram"
@@ -94,7 +94,7 @@ exports.LINK_CATALOG = [
         "type": "line",
         "label": "LINE",
         "category": "CONTACT",
-        "placeholder": "https://line.me/ti/p/...",
+        "placeholder": "Phone number",
         "prefix": "https://line.me/ti/p/",
         "color": "#00C300",
         "iconName": "SiLine"
@@ -471,7 +471,7 @@ exports.LINK_CATALOG = [
         "type": "linkedin",
         "label": "LinkedIn",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://linkedin.com/in/...",
+        "placeholder": "username",
         "prefix": "https://linkedin.com/in/",
         "color": "#0077B5",
         "iconName": "FaLinkedin"
@@ -480,7 +480,7 @@ exports.LINK_CATALOG = [
         "type": "facebook",
         "label": "Facebook",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://facebook.com/...",
+        "placeholder": "username",
         "prefix": "https://facebook.com/",
         "color": "#1877F2",
         "iconName": "SiFacebook"
@@ -489,7 +489,7 @@ exports.LINK_CATALOG = [
         "type": "instagram",
         "label": "Instagram",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://instagram.com/...",
+        "placeholder": "username",
         "prefix": "https://instagram.com/",
         "color": "#E4405F",
         "iconName": "SiInstagram"
@@ -498,7 +498,7 @@ exports.LINK_CATALOG = [
         "type": "x",
         "label": "X.com",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://x.com/...",
+        "placeholder": "username",
         "prefix": "https://x.com/",
         "color": "#333333",
         "iconName": "SiX"
@@ -507,7 +507,7 @@ exports.LINK_CATALOG = [
         "type": "youtube",
         "label": "YouTube",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://youtube.com/@...",
+        "placeholder": "username",
         "prefix": "https://youtube.com/@",
         "color": "#FF0000",
         "iconName": "SiYoutube"
@@ -516,7 +516,7 @@ exports.LINK_CATALOG = [
         "type": "tiktok",
         "label": "TikTok",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://tiktok.com/@...",
+        "placeholder": "username",
         "prefix": "https://tiktok.com/@",
         "color": "#333333",
         "iconName": "SiTiktok"
@@ -525,7 +525,7 @@ exports.LINK_CATALOG = [
         "type": "snapchat",
         "label": "Snapchat",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://snapchat.com/add/...",
+        "placeholder": "username",
         "prefix": "https://snapchat.com/add/",
         "color": "#E6E200",
         "iconName": "SiSnapchat"
@@ -534,7 +534,7 @@ exports.LINK_CATALOG = [
         "type": "pinterest",
         "label": "Pinterest",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://pinterest.com/...",
+        "placeholder": "username",
         "prefix": "https://pinterest.com/",
         "color": "#E60023",
         "iconName": "SiPinterest"
@@ -543,7 +543,7 @@ exports.LINK_CATALOG = [
         "type": "threads",
         "label": "Threads",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://threads.net/@...",
+        "placeholder": "username",
         "prefix": "https://threads.net/@",
         "color": "#333333",
         "iconName": "SiThreads"
@@ -552,7 +552,7 @@ exports.LINK_CATALOG = [
         "type": "reddit",
         "label": "Reddit",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://reddit.com/u/...",
+        "placeholder": "username",
         "prefix": "https://reddit.com/user/",
         "color": "#FF4500",
         "iconName": "SiReddit"
@@ -561,7 +561,7 @@ exports.LINK_CATALOG = [
         "type": "discord",
         "label": "Discord",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://discord.gg/...",
+        "placeholder": "username",
         "prefix": "https://discord.com/users/",
         "color": "#5865F2",
         "iconName": "SiDiscord"
@@ -570,7 +570,7 @@ exports.LINK_CATALOG = [
         "type": "twitch",
         "label": "Twitch",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://twitch.tv/...",
+        "placeholder": "username",
         "prefix": "https://twitch.tv/",
         "color": "#9146FF",
         "iconName": "SiTwitch"
@@ -579,7 +579,7 @@ exports.LINK_CATALOG = [
         "type": "github",
         "label": "GitHub",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://github.com/...",
+        "placeholder": "username",
         "prefix": "https://github.com/",
         "color": "#333333",
         "iconName": "SiGithub"
@@ -588,7 +588,7 @@ exports.LINK_CATALOG = [
         "type": "behance",
         "label": "Behance",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://behance.net/...",
+        "placeholder": "username",
         "prefix": "https://behance.net/",
         "color": "#1769FF",
         "iconName": "SiBehance"
@@ -597,7 +597,7 @@ exports.LINK_CATALOG = [
         "type": "dribbble",
         "label": "Dribbble",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://dribbble.com/...",
+        "placeholder": "username",
         "prefix": "https://dribbble.com/",
         "color": "#EA4C89",
         "iconName": "SiDribbble"
@@ -606,7 +606,7 @@ exports.LINK_CATALOG = [
         "type": "medium",
         "label": "Medium",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://medium.com/@...",
+        "placeholder": "username",
         "prefix": "https://medium.com/@",
         "color": "#333333",
         "iconName": "SiMedium"
@@ -615,7 +615,7 @@ exports.LINK_CATALOG = [
         "type": "vimeo",
         "label": "Vimeo",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://vimeo.com/...",
+        "placeholder": "username",
         "prefix": "https://vimeo.com/",
         "color": "#1AB7EA",
         "iconName": "SiVimeo"
@@ -624,7 +624,7 @@ exports.LINK_CATALOG = [
         "type": "gitlab",
         "label": "GitLab",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://gitlab.com/...",
+        "placeholder": "username",
         "prefix": "https://gitlab.com/",
         "color": "#FC6D26",
         "iconName": "SiGitlab"
@@ -633,7 +633,7 @@ exports.LINK_CATALOG = [
         "type": "bitbucket",
         "label": "Bitbucket",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://bitbucket.org/...",
+        "placeholder": "username",
         "prefix": "https://bitbucket.org/",
         "color": "#0052CC",
         "iconName": "SiBitbucket"
@@ -658,7 +658,7 @@ exports.LINK_CATALOG = [
         "type": "devto",
         "label": "Dev.to",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://dev.to/...",
+        "placeholder": "username",
         "prefix": "https://dev.to/",
         "color": "#0A0A0A",
         "iconName": "SiDevdotto"
@@ -667,7 +667,7 @@ exports.LINK_CATALOG = [
         "type": "hashnode",
         "label": "Hashnode",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://hashnode.com/...",
+        "placeholder": "username",
         "prefix": "https://hashnode.com/@",
         "color": "#2962FF",
         "iconName": "SiHashnode"
@@ -692,7 +692,7 @@ exports.LINK_CATALOG = [
         "type": "dockerhub",
         "label": "Docker Hub",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://hub.docker.com/u/...",
+        "placeholder": "username",
         "prefix": "https://hub.docker.com/u/",
         "color": "#2496ED",
         "iconName": "SiDocker"
@@ -701,7 +701,7 @@ exports.LINK_CATALOG = [
         "type": "replit",
         "label": "Replit",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://replit.com/...",
+        "placeholder": "username",
         "prefix": "https://replit.com/@",
         "color": "#F26207",
         "iconName": "SiReplit"
@@ -726,7 +726,7 @@ exports.LINK_CATALOG = [
         "type": "flickr",
         "label": "Flickr",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://flickr.com/photos/...",
+        "placeholder": "username",
         "prefix": "https://flickr.com/photos/",
         "color": "#0063DC",
         "iconName": "SiFlickr"
@@ -735,7 +735,7 @@ exports.LINK_CATALOG = [
         "type": "500px",
         "label": "500px",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://500px.com/...",
+        "placeholder": "username",
         "prefix": "https://500px.com/p/",
         "color": "#0099E5",
         "iconName": "Camera"
@@ -744,7 +744,7 @@ exports.LINK_CATALOG = [
         "type": "artstation",
         "label": "ArtStation",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://artstation.com/...",
+        "placeholder": "username",
         "prefix": "https://artstation.com/",
         "color": "#13AFF0",
         "iconName": "SiArtstation"
@@ -753,7 +753,7 @@ exports.LINK_CATALOG = [
         "type": "pixiv",
         "label": "Pixiv",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://pixiv.net/users/...",
+        "placeholder": "username",
         "prefix": "https://pixiv.net/users/",
         "color": "#0096FA",
         "iconName": "SiPixiv"
@@ -762,7 +762,7 @@ exports.LINK_CATALOG = [
         "type": "bluesky",
         "label": "Bluesky",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://bsky.app/profile/...",
+        "placeholder": "username",
         "prefix": "https://bsky.app/profile/",
         "color": "#0085FF",
         "iconName": "SiBluesky"
@@ -771,7 +771,7 @@ exports.LINK_CATALOG = [
         "type": "mastodon",
         "label": "Mastodon",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://mastodon.social/...",
+        "placeholder": "username",
         "prefix": "https://mastodon.social/@",
         "color": "#6364FF",
         "iconName": "SiMastodon"
@@ -780,7 +780,7 @@ exports.LINK_CATALOG = [
         "type": "fiverr",
         "label": "Fiverr",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://fiverr.com/...",
+        "placeholder": "username",
         "prefix": "https://fiverr.com/",
         "color": "#1DBF73",
         "iconName": "SiFiverr"
@@ -789,7 +789,7 @@ exports.LINK_CATALOG = [
         "type": "upwork",
         "label": "Upwork",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://upwork.com/freelancers/...",
+        "placeholder": "username",
         "prefix": "https://upwork.com/freelancers/~",
         "color": "#14A800",
         "iconName": "SiUpwork"
@@ -806,7 +806,7 @@ exports.LINK_CATALOG = [
         "type": "freelancer",
         "label": "Freelancer",
         "category": "SOCIAL_MEDIA",
-        "placeholder": "https://freelancer.com/u/...",
+        "placeholder": "username",
         "prefix": "https://freelancer.com/u/",
         "color": "#29B2FE",
         "iconName": "SiFreelancer"
@@ -815,7 +815,7 @@ exports.LINK_CATALOG = [
         "type": "paypal",
         "label": "PayPal",
         "category": "PAYMENT",
-        "placeholder": "https://paypal.me/...",
+        "placeholder": "username",
         "prefix": "https://paypal.me/",
         "color": "#00457C",
         "iconName": "SiPaypal"
@@ -824,7 +824,7 @@ exports.LINK_CATALOG = [
         "type": "cashapp",
         "label": "Cash App",
         "category": "PAYMENT",
-        "placeholder": "$cashtag",
+        "placeholder": "username",
         "prefix": "https://cash.app/$",
         "color": "#00D632",
         "iconName": "SiCashapp"
@@ -833,7 +833,7 @@ exports.LINK_CATALOG = [
         "type": "venmo",
         "label": "Venmo",
         "category": "PAYMENT",
-        "placeholder": "https://venmo.com/...",
+        "placeholder": "username",
         "prefix": "https://venmo.com/u/",
         "color": "#008CFF",
         "iconName": "SiVenmo"
@@ -869,7 +869,7 @@ exports.LINK_CATALOG = [
         "type": "patreon",
         "label": "Patreon",
         "category": "PAYMENT",
-        "placeholder": "https://patreon.com/...",
+        "placeholder": "username",
         "prefix": "https://patreon.com/",
         "color": "#FF424D",
         "iconName": "SiPatreon"
@@ -878,7 +878,7 @@ exports.LINK_CATALOG = [
         "type": "buymeacoffee",
         "label": "Buy Me a Coffee",
         "category": "PAYMENT",
-        "placeholder": "https://buymeacoffee.com/...",
+        "placeholder": "username",
         "prefix": "https://buymeacoffee.com/",
         "color": "#FFDD00",
         "iconName": "SiBuymeacoffee"
@@ -984,7 +984,7 @@ exports.LINK_CATALOG = [
         "type": "githubsponsors",
         "label": "GitHub Sponsors",
         "category": "PAYMENT",
-        "placeholder": "https://github.com/sponsors/...",
+        "placeholder": "username",
         "prefix": "https://github.com/sponsors/",
         "color": "#EA4AAA",
         "iconName": "SiGithubsponsors"
