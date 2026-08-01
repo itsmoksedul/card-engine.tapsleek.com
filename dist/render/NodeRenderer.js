@@ -349,6 +349,8 @@ function WidgetRenderer({ node, content, ctx, }) {
             "SOCIAL_LINKS",
             "SOCIAL",
             "COPYRIGHT",
+            "VCARD_BUTTON",
+            "SHARE_BUTTON",
         ].includes(w);
         if (isCoreWidget) {
             // CONTACT_LINKS / LINK_BUTTONS / LINKS check if user has links or blocks

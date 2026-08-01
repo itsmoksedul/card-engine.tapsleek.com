@@ -449,6 +449,8 @@ function WidgetRenderer({
       "SOCIAL_LINKS",
       "SOCIAL",
       "COPYRIGHT",
+      "VCARD_BUTTON",
+      "SHARE_BUTTON",
     ].includes(w);
 
     if (isCoreWidget) {

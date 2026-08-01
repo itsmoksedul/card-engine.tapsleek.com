@@ -25,6 +25,7 @@ export const meta: WidgetModule['meta'] = {
         id: 'button',
         kind: 'element',
         tag: 'link',
+        props: { action: 'vcard' },
         bind: { source: 'card', field: 'vcardUrl' },
         style: {
           base: {
