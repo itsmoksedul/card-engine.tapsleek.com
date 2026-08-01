@@ -166,6 +166,10 @@ export interface StyleProps {
   overflowX?: "visible" | "hidden" | "auto" | "scroll" | "clip";
   overflowY?: "visible" | "hidden" | "auto" | "scroll" | "clip";
   isolation?: "auto" | "isolate";
+  scrollSnapType?: string;
+  scrollSnapAlign?: string;
+  scrollbarWidth?: string;
+  msOverflowStyle?: string;
 
   // box model
   width?: StyleValue;

@@ -45,6 +45,7 @@ exports.meta = {
                 { value: '9/16', label: '9:16 Vertical' },
             ],
         },
+        ...(0, carousel_parts_1.getCarouselDesignSchema)(),
     ],
     contentSchema: [
         { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },

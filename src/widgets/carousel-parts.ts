@@ -51,6 +51,38 @@ export const carouselParts: WidgetPart[] = [
   },
 ];
 
+export function getCarouselDesignSchema(dotsKey = "showDots"): any[] {
+  return [
+    { key: "useCarousel", type: "boolean", label: "Enable Carousel" },
+    { key: "showArrows", type: "boolean", label: "Show Arrows", visibleIf: { key: "useCarousel", equals: true } },
+    { key: dotsKey, type: "boolean", label: "Show Pagination", visibleIf: { key: "useCarousel", equals: true } },
+    {
+      key: "carouselSlidesPerView",
+      type: "select",
+      label: "Slides Per View",
+      visibleIf: { key: "useCarousel", equals: true },
+      options: [
+        { value: 1.25, label: "1 (with peek)" },
+        { value: 2.25, label: "2 (with peek)" },
+        { value: 1, label: "1 (Full)" },
+        { value: 2, label: "2 (Full)" },
+        { value: 3, label: "3 (Full)" },
+      ],
+    },
+    {
+      key: "carouselAlign",
+      type: "select",
+      label: "Alignment",
+      visibleIf: { key: "useCarousel", equals: true },
+      options: [
+        { value: "start", label: "Start" },
+        { value: "center", label: "Center" },
+        { value: "end", label: "End" },
+      ],
+    },
+  ];
+}
+
 export const carouselDefaultPartStyles: WidgetModule["meta"]["defaultPartStyles"] =
   {
     carouselRoot: {
@@ -161,7 +193,7 @@ export function createCarouselLayout(
   return {
     id: "carouselRoot",
     kind: "element",
-    tag: "stack",
+    tag: "carousel-root",
     name: "Carousel Container",
     visibleIf: { key: "useCarousel", equals: true },
     style: {
@@ -174,7 +206,7 @@ export function createCarouselLayout(
         tag: "carousel",
         name: "Carousel Track",
         style: {
-          base: { display: "flex", overflowX: "auto", gap: "{space.3}", padding: { b: "{space.2}" }, scrollSnapType: "x mandatory", msOverflowStyle: "none", scrollbarWidth: "none" }
+          base: { display: "flex", overflow: "hidden", gap: "{space.3}", padding: { b: "{space.2}" } }
         },
         children: [
           {
@@ -185,84 +217,107 @@ export function createCarouselLayout(
               ...itemNode.style,
               base: {
                 ...(itemNode.style?.base || {}),
-                flexShrink: 0,
+                flex: "0 0 auto",
                 minWidth: "80%",
-                scrollSnapAlign: "start",
               },
             },
           },
         ],
       },
       {
-        id: "carouselArrows",
+        id: "carouselControls",
         kind: "element",
         tag: "frame",
-        name: "Arrows",
-        visibleIf: { key: "showArrows", equals: true },
-        children: [
-          {
-            id: "arrowPrev",
-            kind: "element",
-            tag: "button",
-            name: "Prev Arrow",
-            props: { action: "carousel-prev" },
-            style: {
-              base: {
-                position: "absolute", left: "{space.2}", top: "50%", transform: { translateY: "-50%" }, zIndex: 10,
-                width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center",
-                background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "50%" },
-                border: { style: "solid", width: "1px", color: "{color.border}" },
-                boxShadow: { x: "0", y: "2px", blur: "4px", color: "rgba(0,0,0,0.1)" }, cursor: "pointer",
-              },
-            },
-            children: [
-              { id: "iconPrev", kind: "element", tag: "icon", name: "Icon", props: { name: "ChevronLeft" }, style: { base: { width: "16px", height: "16px", color: "{color.text}" } } }
-            ]
-          },
-          {
-            id: "arrowNext",
-            kind: "element",
-            tag: "button",
-            name: "Next Arrow",
-            props: { action: "carousel-next" },
-            style: {
-              base: {
-                position: "absolute", right: "{space.2}", top: "50%", transform: { translateY: "-50%" }, zIndex: 10,
-                width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center",
-                background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "50%" },
-                border: { style: "solid", width: "1px", color: "{color.border}" },
-                boxShadow: { x: "0", y: "2px", blur: "4px", color: "rgba(0,0,0,0.1)" }, cursor: "pointer",
-              },
-            },
-            children: [
-              { id: "iconNext", kind: "element", tag: "icon", name: "Icon", props: { name: "ChevronRight" }, style: { base: { width: "16px", height: "16px", color: "{color.text}" } } }
-            ]
-          }
-        ]
-      },
-      {
-        id: "carouselDots",
-        kind: "element",
-        tag: "stack",
-        name: "Pagination",
-        visibleIf: { key: dotsKey, equals: true },
+        name: "Controls",
         style: {
-          base: { display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: "{space.2}", margin: { t: "{space.2}" } },
+          base: {
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            margin: { t: "{space.4}" },
+          },
         },
         children: [
           {
-            id: "dot",
+            id: "carouselArrows",
             kind: "element",
-            tag: "button",
-            name: "Dot",
-            repeat: { source: "self", path: itemsPath },
-            props: { action: "carousel-dot" },
+            tag: "stack",
+            name: "Arrows",
+            visibleIf: { key: "showArrows", equals: true },
             style: {
-              base: { width: "8px", height: "8px", borderRadius: { all: "50%" }, background: { kind: "color", color: "{color.border}" }, cursor: "pointer", padding: { all: "0" }, border: { style: "none", width: "0" } }
-            }
+              base: { display: "flex", flexDirection: "row", gap: "{space.2}" },
+            },
+            children: [
+              {
+                id: "arrowPrev",
+                kind: "element",
+                tag: "button",
+                name: "Prev Arrow",
+                props: { action: "carousel-prev" },
+                style: {
+                  base: {
+                    width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center",
+                    background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "50%" },
+                    border: { style: "solid", width: "1px", color: "{color.border}" },
+                    boxShadow: { x: "0", y: "2px", blur: "4px", color: "rgba(0,0,0,0.1)" }, cursor: "pointer",
+                  },
+                },
+                children: [
+                  { id: "iconPrev", kind: "element", tag: "icon", name: "Icon", props: { name: "ChevronLeft" }, style: { base: { width: "16px", height: "16px", color: "{color.text}" } } }
+                ]
+              },
+              {
+                id: "arrowNext",
+                kind: "element",
+                tag: "button",
+                name: "Next Arrow",
+                props: { action: "carousel-next" },
+                style: {
+                  base: {
+                    width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center",
+                    background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "50%" },
+                    border: { style: "solid", width: "1px", color: "{color.border}" },
+                    boxShadow: { x: "0", y: "2px", blur: "4px", color: "rgba(0,0,0,0.1)" }, cursor: "pointer",
+                  },
+                },
+                children: [
+                  { id: "iconNext", kind: "element", tag: "icon", name: "Icon", props: { name: "ChevronRight" }, style: { base: { width: "16px", height: "16px", color: "{color.text}" } } }
+                ]
+              }
+            ]
+          },
+          {
+            id: "carouselDots",
+            kind: "element",
+            tag: "stack",
+            name: "Pagination",
+            visibleIf: { key: dotsKey, equals: true },
+            style: {
+              base: { display: "flex", flexDirection: "row", alignItems: "center", gap: "{space.2}" },
+            },
+            children: [
+              {
+                id: "carouselDot",
+                kind: "element",
+                tag: "button",
+                name: "Dot",
+                props: { action: "carousel-dot" },
+                repeat: { source: "self", path: itemsPath },
+                style: {
+                  base: {
+                    width: "8px", height: "8px", borderRadius: { all: "50%" }, cursor: "pointer",
+                    background: { kind: "color", color: "{color.border}" },
+                    border: { style: "none" }, padding: { all: "0" },
+                  },
+                  hover: { background: { kind: "color", color: "{color.primary}" } },
+                  active: { background: { kind: "color", color: "{color.primary}" } },
+                },
+              }
+            ]
           }
         ]
       }
-    ]
+    ],
   };
 }

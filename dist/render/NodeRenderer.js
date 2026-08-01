@@ -1,12 +1,15 @@
 "use strict";
+"use client";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CarouselContext = void 0;
 exports.NodeRenderer = NodeRenderer;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const isomorphic_dompurify_1 = __importDefault(require("isomorphic-dompurify"));
 const react_1 = __importDefault(require("react"));
+const embla_carousel_react_1 = __importDefault(require("embla-carousel-react"));
 const widgets_1 = require("../widgets");
 const resolveBinding_1 = require("./resolveBinding");
 const widgets_2 = require("./widgets");
@@ -19,6 +22,13 @@ function NodeRenderer({ node, content, ctx }) {
     if (node.kind === "slot")
         return (0, jsx_runtime_1.jsx)(SlotRenderer, { node: node, content: content, ctx: ctx });
     return null;
+}
+exports.CarouselContext = react_1.default.createContext(null);
+function EmblaCarouselWrapper({ node, content, ctx, dom }) {
+    const align = content?.carouselAlign ?? "start";
+    const [emblaRef, emblaApi] = (0, embla_carousel_react_1.default)({ loop: false, align });
+    const kids = (node.children ?? []).map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)));
+    return ((0, jsx_runtime_1.jsx)(exports.CarouselContext.Provider, { value: { emblaApi, emblaRef }, children: (0, jsx_runtime_1.jsx)("div", { ...dom, children: kids }) }));
 }
 // ─── Elements ────────────────────────────────────────────────────────────────
 const TAG_MAP = {
@@ -36,6 +46,7 @@ const TAG_MAP = {
     embed: "div",
     video: "div",
     carousel: "div",
+    "carousel-root": "div",
 };
 /** HTML void elements — must never be given children or React 19 hard-errors. */
 const VOID_DOM_TAGS = new Set(["img", "hr", "br", "input", "wbr"]);
@@ -66,6 +77,7 @@ const ENGINE_PROPS = new Set([
     "loop",
 ]);
 function ElementRenderer({ node, content, ctx, }) {
+    const ctxEmbla = react_1.default.useContext(exports.CarouselContext);
     if (node.visibleIf) {
         const { key, equals } = node.visibleIf;
         const val = content?.[key] ?? ctx.selfData?.[key];
@@ -105,28 +117,29 @@ function ElementRenderer({ node, content, ctx, }) {
         dom["aria-label"] = node.a11y.label;
     let children = null;
     switch (node.tag) {
+        case "carousel-root": {
+            return (0, jsx_runtime_1.jsx)(EmblaCarouselWrapper, { node: node, content: content, ctx: ctx, dom: dom });
+        }
         case "carousel": {
-            // Carousel relies on native CSS scroll snapping. 
-            // It expects its children to be rendered directly inside a flex container.
-            const trackStyle = {
-                display: "flex",
-                overflowX: "auto",
-                scrollSnapType: "x mandatory",
-                scrollBehavior: "smooth",
-                width: "100%",
-                scrollbarWidth: "none", // Firefox
-                msOverflowStyle: "none", // IE
-            };
+            const perView = content?.carouselSlidesPerView ?? 1.25;
+            const widthPct = 100 / perView;
+            const trackId = `track-${node.id}`;
             const kids = (node.children ?? []).map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)));
-            children = ((0, jsx_runtime_1.jsx)("div", { style: trackStyle, className: "carouselTrack", children: kids.map((kid, idx) => ((0, jsx_runtime_1.jsx)("div", { style: { scrollSnapAlign: "start", flex: "0 0 100%", minWidth: 0 }, children: kid }, idx))) }));
+            children = ((0, jsx_runtime_1.jsxs)("div", { ref: ctxEmbla?.emblaRef, style: { overflow: "hidden", width: "100%" }, className: trackId, children: [(0, jsx_runtime_1.jsx)("style", { children: `.${trackId} > div > * { min-width: ${widthPct}% !important; }` }), (0, jsx_runtime_1.jsx)("div", { ...dom, style: { ...dom.style, overflow: "visible", flexWrap: "nowrap" }, children: kids })] }));
             break;
         }
         case "image": {
-            dom.src = bound ?? props.src ?? "";
+            const src = bound ?? props.src ?? "";
+            if (!src) {
+                if (ctx.isEditing) {
+                    dom["data-empty"] = "true";
+                    return react_1.default.createElement("span", dom);
+                }
+                return null;
+            }
+            dom.src = src;
             dom.alt = props.alt ?? "";
             dom.loading = props.loading ?? "lazy";
-            if (!dom.src)
-                return ctx.isEditing ? (0, jsx_runtime_1.jsx)("span", { ...dom, "data-empty": "true" }) : null;
             break;
         }
         case "icon": {
@@ -207,28 +220,15 @@ function ElementRenderer({ node, content, ctx, }) {
                     e.stopPropagation();
                 }
                 if (action === "carousel-prev") {
-                    const root = e.currentTarget.closest('[class^="n"]');
-                    const track = root?.querySelector('.ncarouselTrack');
-                    if (track) {
-                        track.scrollBy({ left: -track.clientWidth * 0.8, behavior: "smooth" });
-                    }
+                    ctxEmbla?.emblaApi?.scrollPrev();
                     return;
                 }
                 if (action === "carousel-next") {
-                    const root = e.currentTarget.closest('[class^="n"]');
-                    const track = root?.querySelector('.ncarouselTrack');
-                    if (track) {
-                        track.scrollBy({ left: track.clientWidth * 0.8, behavior: "smooth" });
-                    }
+                    ctxEmbla?.emblaApi?.scrollNext();
                     return;
                 }
                 if (action === "carousel-dot") {
-                    const root = e.currentTarget.closest('[class^="n"]');
-                    const track = root?.querySelector('.ncarouselTrack');
-                    const idx = ctx.repeatIndex ?? 0;
-                    if (track && track.children[idx]) {
-                        track.children[idx].scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
-                    }
+                    ctxEmbla?.emblaApi?.scrollTo(ctx.repeatIndex ?? 0);
                     return;
                 }
                 if (ctx.onActionClick)

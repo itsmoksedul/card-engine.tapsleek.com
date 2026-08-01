@@ -1,5 +1,7 @@
+"use client";
 import DOMPurify from "isomorphic-dompurify";
 import React from "react";
+import useEmblaCarousel from "embla-carousel-react";
 import type { ElementNode, Node, SlotNode, WidgetNode } from "../types/node";
 import { getWidgetMeta } from "../widgets";
 import { resolveBinding } from "./resolveBinding";
@@ -39,6 +41,23 @@ export function NodeRenderer({ node, content, ctx }: NodeRendererProps) {
   return null;
 }
 
+export const CarouselContext = React.createContext<{ emblaApi?: any; emblaRef?: any } | null>(null);
+
+function EmblaCarouselWrapper({ node, content, ctx, dom }: any) {
+  const align = content?.carouselAlign ?? "start";
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align });
+  const kids = (node.children ?? []).map((child: any) => (
+    <NodeRenderer key={child.id} node={child} content={content} ctx={ctx} />
+  ));
+  return (
+    <CarouselContext.Provider value={{ emblaApi, emblaRef }}>
+      <div {...dom}>
+        {kids}
+      </div>
+    </CarouselContext.Provider>
+  );
+}
+
 // ─── Elements ────────────────────────────────────────────────────────────────
 
 const TAG_MAP: Record<string, string> = {
@@ -56,6 +75,7 @@ const TAG_MAP: Record<string, string> = {
   embed: "div",
   video: "div",
   carousel: "div",
+  "carousel-root": "div",
 };
 
 /** HTML void elements — must never be given children or React 19 hard-errors. */
@@ -97,6 +117,7 @@ function ElementRenderer({
   content: any;
   ctx: RenderCtx;
 }) {
+  const ctxEmbla = React.useContext(CarouselContext);
   if (node.visibleIf) {
     const { key, equals } = node.visibleIf;
     const val = content?.[key] ?? ctx.selfData?.[key];
@@ -151,40 +172,39 @@ function ElementRenderer({
   let children: React.ReactNode = null;
 
   switch (node.tag) {
+    case "carousel-root": {
+      return <EmblaCarouselWrapper node={node} content={content} ctx={ctx} dom={dom} />;
+    }
     case "carousel": {
-      // Carousel relies on native CSS scroll snapping. 
-      // It expects its children to be rendered directly inside a flex container.
-      const trackStyle: React.CSSProperties = {
-        display: "flex",
-        overflowX: "auto",
-        scrollSnapType: "x mandatory",
-        scrollBehavior: "smooth",
-        width: "100%",
-        scrollbarWidth: "none", // Firefox
-        msOverflowStyle: "none", // IE
-      };
-      
+      const perView = content?.carouselSlidesPerView ?? 1.25;
+      const widthPct = 100 / perView;
+      const trackId = `track-${node.id}`;
+
       const kids = (node.children ?? []).map((child) => (
         <NodeRenderer key={child.id} node={child} content={content} ctx={ctx} />
       ));
-
       children = (
-        <div style={trackStyle} className="carouselTrack">
-          {kids.map((kid, idx) => (
-            <div key={idx} style={{ scrollSnapAlign: "start", flex: "0 0 100%", minWidth: 0 }}>
-              {kid}
-            </div>
-          ))}
+        <div ref={ctxEmbla?.emblaRef} style={{ overflow: "hidden", width: "100%" }} className={trackId}>
+          <style>{`.${trackId} > div > * { min-width: ${widthPct}% !important; }`}</style>
+          <div {...dom} style={{ ...dom.style, overflow: "visible", flexWrap: "nowrap" }}>
+            {kids}
+          </div>
         </div>
       );
       break;
     }
     case "image": {
-      dom.src = bound ?? props.src ?? "";
+      const src = bound ?? props.src ?? "";
+      if (!src) {
+        if (ctx.isEditing) {
+          dom["data-empty"] = "true";
+          return React.createElement("span", dom);
+        }
+        return null;
+      }
+      dom.src = src;
       dom.alt = props.alt ?? "";
       dom.loading = props.loading ?? "lazy";
-      if (!dom.src)
-        return ctx.isEditing ? <span {...dom} data-empty="true" /> : null;
       break;
     }
     case "icon": {
@@ -283,30 +303,17 @@ function ElementRenderer({
         }
 
         if (action === "carousel-prev") {
-          const root = e.currentTarget.closest('[class^="n"]');
-          const track = root?.querySelector('.ncarouselTrack');
-          if (track) {
-            track.scrollBy({ left: -track.clientWidth * 0.8, behavior: "smooth" });
-          }
+          ctxEmbla?.emblaApi?.scrollPrev();
           return;
         }
 
         if (action === "carousel-next") {
-          const root = e.currentTarget.closest('[class^="n"]');
-          const track = root?.querySelector('.ncarouselTrack');
-          if (track) {
-            track.scrollBy({ left: track.clientWidth * 0.8, behavior: "smooth" });
-          }
+          ctxEmbla?.emblaApi?.scrollNext();
           return;
         }
 
         if (action === "carousel-dot") {
-          const root = e.currentTarget.closest('[class^="n"]');
-          const track = root?.querySelector('.ncarouselTrack');
-          const idx = ctx.repeatIndex ?? 0;
-          if (track && track.children[idx]) {
-            track.children[idx].scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
-          }
+          ctxEmbla?.emblaApi?.scrollTo(ctx.repeatIndex ?? 0);
           return;
         }
 

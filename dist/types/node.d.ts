@@ -11,14 +11,14 @@
  */
 import type { StyleSet } from './style';
 /** Tags an admin can place. Layout containers accept children; leaves don't. */
-export type PrimitiveTag = 'frame' | 'stack' | 'grid' | 'heading' | 'text' | 'richtext' | 'image' | 'icon' | 'button' | 'link' | 'divider' | 'spacer' | 'embed' | 'video' | 'carousel';
+export type PrimitiveTag = 'frame' | 'stack' | 'grid' | 'heading' | 'text' | 'richtext' | 'image' | 'icon' | 'button' | 'link' | 'divider' | 'spacer' | 'embed' | 'video' | 'carousel' | 'carousel-root';
 export declare const CONTAINER_TAGS: PrimitiveTag[];
 export declare const VOID_TAGS: PrimitiveTag[];
 /**
  * Native card behaviours an admin can wire onto any `button`/`link`, replacing
  * the hardcoded "SAVE AS CONTACT" button in the old renderer.
  */
-export type NodeAction = 'link' | 'vcard' | 'share' | 'qr' | 'popup' | 'scroll-to' | 'copy';
+export type NodeAction = 'link' | 'vcard' | 'share' | 'qr' | 'popup' | 'scroll-to' | 'copy' | 'carousel-prev' | 'carousel-next' | 'carousel-dot';
 /** Card fields a node can pull its value from. */
 export type CardField = 'fullName' | 'firstName' | 'lastName' | 'bio' | 'jobTitle' | 'companyName' | 'location' | 'profileImage' | 'coverPhoto' | 'companyLogo' | 'publicUrl' | 'vcardUrl' | 'qrUrl' | 'shareUrl';
 export declare const CARD_FIELDS: CardField[];

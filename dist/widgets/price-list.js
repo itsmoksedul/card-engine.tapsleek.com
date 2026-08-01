@@ -141,9 +141,7 @@ exports.meta = {
     designSchema: [
         { key: 'showDots', type: 'boolean', label: 'Show dotted line between title and price' },
         { key: 'showDividers', type: 'boolean', label: 'Show dividers between items' },
-        { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
-        { key: 'showArrows', type: 'boolean', label: 'Show Arrows', visibleIf: { key: 'useCarousel', equals: true } },
-        { key: 'showCarouselDots', type: 'boolean', label: 'Show Pagination', visibleIf: { key: 'useCarousel', equals: true } },
+        ...(0, carousel_parts_1.getCarouselDesignSchema)("showCarouselDots"),
     ],
     contentSchema: [
         { key: 'heading', type: 'text', label: 'Heading', max: 60 },

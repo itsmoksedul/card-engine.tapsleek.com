@@ -1,5 +1,5 @@
 import type { WidgetModule } from "../types/widget";
-import { carouselParts, carouselDefaultPartStyles, createCarouselLayout } from "./carousel-parts";
+import { carouselParts, carouselDefaultPartStyles, createCarouselLayout, getCarouselDesignSchema } from "./carousel-parts";
 
 export const meta: WidgetModule["meta"] = {
   type: "GALLERY",
@@ -43,9 +43,7 @@ export const meta: WidgetModule["meta"] = {
     },
     { key: "showCaption", type: "boolean", label: "Show captions" },
     { key: "lightbox", type: "boolean", label: "Open full size on tap" },
-    { key: "useCarousel", type: "boolean", label: "Enable Carousel" },
-    { key: "showArrows", type: "boolean", label: "Show Arrows", visibleIf: { key: "useCarousel", equals: true } },
-    { key: "showDots", type: "boolean", label: "Show Pagination", visibleIf: { key: "useCarousel", equals: true } },
+    ...getCarouselDesignSchema(),
   ],
   contentSchema: [
     { key: "title", type: "text", label: "Title", max: 60 },

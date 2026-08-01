@@ -148,6 +148,10 @@ export const EMITTERS: Partial<Record<StylePropKey, Emitter>> = {
     "clip",
   ]),
   isolation: enumProp("isolation", ["auto", "isolate"]),
+  scrollSnapType: simple("scroll-snap-type", "keyword"),
+  scrollSnapAlign: simple("scroll-snap-align", "keyword"),
+  scrollbarWidth: simple("scrollbar-width", "keyword"),
+  msOverflowStyle: simple("-ms-overflow-style", "keyword"),
 
   // ── box model ────────────────────────────────────────────────────────────
   width: simple("width", "length"),

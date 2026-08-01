@@ -180,9 +180,7 @@ exports.meta = {
         { key: "layout", type: "select", label: "Layout", options: [{ value: "grid-2", label: "2 columns" }, { value: "grid-3", label: "3 columns" }, { value: "grid-4", label: "4 columns" }] },
         { key: "shape", type: "select", label: "Image shape", options: [{ value: "circle", label: "Circle" }, { value: "square", label: "Square" }, { value: "rounded", label: "Rounded" }] },
         { key: "align", type: "select", label: "Alignment", options: [{ value: "left", label: "Left" }, { value: "center", label: "Center" }] },
-        { key: "useCarousel", type: "boolean", label: "Enable Carousel" },
-        { key: "showArrows", type: "boolean", label: "Show Arrows", visibleIf: { key: "useCarousel", equals: true } },
-        { key: "showDots", type: "boolean", label: "Show Pagination", visibleIf: { key: "useCarousel", equals: true } },
+        ...(0, carousel_parts_1.getCarouselDesignSchema)(),
     ],
     contentSchema: [
         { key: "heading", type: "text", label: "Heading", max: 60 },

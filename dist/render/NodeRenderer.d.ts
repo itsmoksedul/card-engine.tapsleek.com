@@ -22,3 +22,7 @@ export interface NodeRendererProps {
     ctx: RenderCtx;
 }
 export declare function NodeRenderer({ node, content, ctx }: NodeRendererProps): React.JSX.Element | null;
+export declare const CarouselContext: React.Context<{
+    emblaApi?: any;
+    emblaRef?: any;
+} | null>;

@@ -1,5 +1,5 @@
 import type { WidgetModule } from '../types/widget';
-import { carouselParts, carouselDefaultPartStyles, createCarouselLayout } from "./carousel-parts";
+import { carouselParts, carouselDefaultPartStyles, createCarouselLayout, getCarouselDesignSchema } from "./carousel-parts";
 
 export const meta: WidgetModule['meta'] = {
   type: 'PRICE_LIST',
@@ -143,9 +143,7 @@ export const meta: WidgetModule['meta'] = {
   designSchema: [
     { key: 'showDots', type: 'boolean', label: 'Show dotted line between title and price' },
     { key: 'showDividers', type: 'boolean', label: 'Show dividers between items' },
-    { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
-    { key: 'showArrows', type: 'boolean', label: 'Show Arrows', visibleIf: { key: 'useCarousel', equals: true } },
-    { key: 'showCarouselDots', type: 'boolean', label: 'Show Pagination', visibleIf: { key: 'useCarousel', equals: true } },
+    ...getCarouselDesignSchema("showCarouselDots"),
   ],
   contentSchema: [
     { key: 'heading', type: 'text', label: 'Heading', max: 60 },

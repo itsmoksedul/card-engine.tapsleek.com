@@ -1,5 +1,5 @@
 import type { WidgetModule } from '../types/widget';
-import { carouselParts, carouselDefaultPartStyles, createCarouselLayout } from './carousel-parts';
+import { carouselParts, carouselDefaultPartStyles, createCarouselLayout, getCarouselDesignSchema } from './carousel-parts';
 
 export const meta: WidgetModule['meta'] = {
   type: 'VIDEO_GALLERY',
@@ -44,6 +44,7 @@ export const meta: WidgetModule['meta'] = {
         { value: '9/16', label: '9:16 Vertical' },
       ],
     },
+    ...getCarouselDesignSchema(),
   ],
   contentSchema: [
     { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },

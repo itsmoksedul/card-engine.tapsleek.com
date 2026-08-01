@@ -28,9 +28,10 @@ export type PrimitiveTag =
   | 'spacer'
   | 'embed'
   | 'video'
-  | 'carousel';
+  | 'carousel'
+  | 'carousel-root';
 
-export const CONTAINER_TAGS: PrimitiveTag[] = ['frame', 'stack', 'grid', 'link', 'carousel'];
+export const CONTAINER_TAGS: PrimitiveTag[] = ['frame', 'stack', 'grid', 'link', 'carousel', 'carousel-root'];
 
 export const VOID_TAGS: PrimitiveTag[] = [
   'heading',
@@ -56,7 +57,10 @@ export type NodeAction =
   | 'qr'
   | 'popup'
   | 'scroll-to'
-  | 'copy';
+  | 'copy'
+  | 'carousel-prev'
+  | 'carousel-next'
+  | 'carousel-dot';
 
 /** Card fields a node can pull its value from. */
 export type CardField =

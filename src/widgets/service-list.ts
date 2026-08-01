@@ -7,7 +7,7 @@
  * being able to touch anything else.
  */
 import type { WidgetModule } from '../types/widget';
-import { carouselParts, carouselDefaultPartStyles, createCarouselLayout } from './carousel-parts';
+import { carouselParts, carouselDefaultPartStyles, createCarouselLayout, getCarouselDesignSchema } from './carousel-parts';
 
 export const meta: WidgetModule['meta'] = {
   type: 'SERVICE_LIST',
@@ -52,9 +52,7 @@ export const meta: WidgetModule['meta'] = {
     },
     { key: 'showDesc', type: 'boolean', label: 'Show descriptions' },
     { key: 'showPrice', type: 'boolean', label: 'Show price' },
-    { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
-    { key: 'showArrows', type: 'boolean', label: 'Show Arrows', visibleIf: { key: 'useCarousel', equals: true } },
-    { key: 'showDots', type: 'boolean', label: 'Show Pagination', visibleIf: { key: 'useCarousel', equals: true } },
+    ...getCarouselDesignSchema(),
   ],
   contentSchema: [
     { key: 'title', type: 'text', label: 'Title', max: 60 },

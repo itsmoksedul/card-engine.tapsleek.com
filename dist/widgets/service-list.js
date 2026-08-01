@@ -45,9 +45,7 @@ exports.meta = {
         },
         { key: 'showDesc', type: 'boolean', label: 'Show descriptions' },
         { key: 'showPrice', type: 'boolean', label: 'Show price' },
-        { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
-        { key: 'showArrows', type: 'boolean', label: 'Show Arrows', visibleIf: { key: 'useCarousel', equals: true } },
-        { key: 'showDots', type: 'boolean', label: 'Show Pagination', visibleIf: { key: 'useCarousel', equals: true } },
+        ...(0, carousel_parts_1.getCarouselDesignSchema)(),
     ],
     contentSchema: [
         { key: 'title', type: 'text', label: 'Title', max: 60 },
