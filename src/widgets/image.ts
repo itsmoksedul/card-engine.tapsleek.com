@@ -14,7 +14,7 @@ export const meta: WidgetModule['meta'] = {
     { key: 'link', type: 'url', label: 'Link' },
   ],
   defaultDesign: { ratio: '16/9', fit: 'cover', showCaption: false },
-  defaultContent: { src: '', alt: '', caption: '', link: '' },
+  defaultContent: { src: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe', alt: 'Demo image', caption: '', link: '' },
   defaultLayout: {
     id: 'root',
     kind: 'element',
