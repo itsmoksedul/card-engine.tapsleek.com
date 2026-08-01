@@ -36,8 +36,8 @@ exports.meta = {
         { key: 'showDirectionsBtn', type: 'boolean', label: 'Show "Get Directions" button' },
     ],
     contentSchema: [
-        { key: 'label', type: 'text', label: 'Label', max: 60, hint: 'e.g. Our Office' },
-        { key: 'address', type: 'text', label: 'Address to Display', hint: 'Type a full address or landmark.' },
+        { key: 'label', type: 'text', label: 'Label', max: 60 },
+        { key: 'address', type: 'text', label: 'Address to Display' },
     ],
     defaultPartStyles: {
         root: {

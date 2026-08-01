@@ -51,7 +51,7 @@ exports.meta = {
         { key: 'title', type: 'text', label: 'Title', max: 60 },
         { key: 'description', type: 'textarea', label: 'Description', max: 200 },
         {
-            key: 'items', type: 'repeater', label: 'Services', min: 1, max: 24, itemLabel: '{name}',
+            key: 'items', type: 'repeater', label: 'Services', min: 1, max: 24, itemLabel: '{name}', layout: 'service-item',
             fields: [
                 { key: 'image', type: 'image', label: 'Image', ratio: '4/3', maxMB: 3 },
                 { key: 'name', type: 'text', label: 'Name', required: true, max: 60 },

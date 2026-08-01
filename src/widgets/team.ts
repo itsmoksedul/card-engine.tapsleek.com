@@ -205,6 +205,7 @@ export const meta: WidgetModule["meta"] = {
     ...getCarouselDesignSchema(),
   ],
   contentSchema: [
+    { key: "useCarousel", type: "boolean", label: "Enable Carousel" },
     { key: "heading", type: "text", label: "Heading", max: 60 },
     { key: "description", type: "textarea", label: "Description", max: 200 },
     {
@@ -212,6 +213,7 @@ export const meta: WidgetModule["meta"] = {
       type: "repeater",
       label: "Team Members",
       itemLabel: "{name}",
+      layout: "team-item",
       fields: [
         { key: "image", type: "image", label: "Photo" },
         { key: "name", type: "text", label: "Name", max: 50 },

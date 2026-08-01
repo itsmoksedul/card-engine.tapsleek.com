@@ -55,7 +55,6 @@ exports.carouselParts = [
 ];
 function getCarouselDesignSchema(dotsKey = "showDots") {
     return [
-        { key: "useCarousel", type: "boolean", label: "Enable Carousel" },
         { key: "showArrows", type: "boolean", label: "Show Arrows", visibleIf: { key: "useCarousel", equals: true } },
         { key: dotsKey, type: "boolean", label: "Show Pagination", visibleIf: { key: "useCarousel", equals: true } },
         {

@@ -49,7 +49,7 @@ export const meta: WidgetModule['meta'] = {
     { key: 'title', type: 'text', label: 'Title', max: 60 },
     { key: 'description', type: 'textarea', label: 'Description', max: 200 },
     {
-      key: 'items', type: 'repeater', label: 'Testimonials', min: 1, max: 20, itemLabel: '{author}',
+      key: 'items', type: 'repeater', label: 'Testimonials', min: 1, max: 20, itemLabel: '{author}', layout: 'testimonials-item',
       fields: [
         { key: 'quote', type: 'textarea', label: 'Quote', required: true, max: 300 },
         { key: 'author', type: 'text', label: 'Name', required: true, max: 60 },

@@ -70,7 +70,7 @@ export const meta: WidgetModule['meta'] = {
   contentSchema: [
     { 
       key: 'html', 
-      type: 'text', 
+      type: 'textarea', 
       label: 'Embed Code', 
       hint: 'Paste the <iframe> code from Spotify, Calendly, Google Maps, etc.' 
     },

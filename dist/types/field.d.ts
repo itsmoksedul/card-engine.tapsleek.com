@@ -97,7 +97,7 @@ export interface RepeaterField extends FieldBase {
     /** Row title template, e.g. "{name}" — falls back to "Item N". */
     itemLabel?: string;
     default?: Record<string, unknown>[];
-    layout?: 'gallery';
+    layout?: 'gallery' | 'profile' | (string & {});
 }
 export interface GroupField extends FieldBase {
     type: 'group';
