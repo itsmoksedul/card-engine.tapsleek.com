@@ -13,7 +13,7 @@ exports.meta = {
         { key: 'body', type: 'richtext', label: 'Text', max: 4000, toolbar: ['b', 'i', 'link', 'ul', 'ol'] },
     ],
     defaultDesign: { showTitle: true, align: 'left' },
-    defaultContent: { title: 'About', body: '<p>Tell people what you do.</p>' },
+    defaultContent: { title: 'About', body: 'Tell people what you do.' },
     defaultLayout: {
         id: 'root',
         kind: 'element',
@@ -51,7 +51,7 @@ exports.meta = {
                 tag: 'richtext',
                 bind: { source: 'self', path: 'body' },
                 style: {
-                    base: { fontSize: '{size.base}', lineHeight: 1.6, color: '{color.muted}' },
+                    base: { fontSize: '{size.base}', lineHeight: 1.6, color: '{color.muted}', whiteSpace: 'pre-wrap' },
                 },
             }
         ]
