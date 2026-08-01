@@ -62,7 +62,7 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
         renderUserBlocks: () => {
             if (!blocks || blocks.length === 0)
                 return null;
-            const blockCtx = { ...ctx, renderUserBlocks: undefined };
+            const blockCtx = { ...ctx, renderUserBlocks: undefined, isRenderingUserBlocks: true };
             return ((0, jsx_runtime_1.jsx)(react_1.default.Fragment, { children: blocks
                     .filter((b) => b.hidden !== true && b.isVisible !== false)
                     .map((b) => {

@@ -386,10 +386,12 @@ function WidgetRenderer({ node, content, ctx, }) {
         }
         else {
             // Optional block widgets (FAQ, Gallery, Contact Form, Video, Custom HTML, etc.)
-            if (node.id === ctx.placeholderId && ctx.renderUserBlocks && !ctx.injectBefore) {
-                return (0, jsx_runtime_1.jsx)(jsx_runtime_1.Fragment, { children: ctx.renderUserBlocks() });
+            if (!ctx.isRenderingUserBlocks) {
+                if (node.id === ctx.placeholderId && ctx.renderUserBlocks && !ctx.injectBefore) {
+                    return (0, jsx_runtime_1.jsx)(jsx_runtime_1.Fragment, { children: ctx.renderUserBlocks() });
+                }
+                return null;
             }
-            return null;
         }
     }
     const Widget = widgets_2.WIDGET_RENDERERS[node.widget];

@@ -19,6 +19,7 @@ export interface RenderCtx {
   rootId?: string;
   placeholderId?: string | null;
   injectBefore?: boolean;
+  isRenderingUserBlocks?: boolean;
 }
 
 export interface NodeRendererProps {
@@ -499,10 +500,12 @@ function WidgetRenderer({
       }
     } else {
       // Optional block widgets (FAQ, Gallery, Contact Form, Video, Custom HTML, etc.)
-      if (node.id === ctx.placeholderId && ctx.renderUserBlocks && !ctx.injectBefore) {
-        return <>{ctx.renderUserBlocks()}</>;
+      if (!ctx.isRenderingUserBlocks) {
+        if (node.id === ctx.placeholderId && ctx.renderUserBlocks && !ctx.injectBefore) {
+          return <>{ctx.renderUserBlocks()}</>;
+        }
+        return null;
       }
-      return null;
     }
   }
 

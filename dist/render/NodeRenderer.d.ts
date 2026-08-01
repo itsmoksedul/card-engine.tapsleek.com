@@ -13,6 +13,7 @@ export interface RenderCtx {
     rootId?: string;
     placeholderId?: string | null;
     injectBefore?: boolean;
+    isRenderingUserBlocks?: boolean;
 }
 export interface NodeRendererProps {
     node: Node;

@@ -77,7 +77,7 @@ export function CardRenderer({
     injectBefore: placeholder?.injectBefore || false,
     renderUserBlocks: () => {
       if (!blocks || blocks.length === 0) return null;
-      const blockCtx: RenderCtx = { ...ctx, renderUserBlocks: undefined };
+      const blockCtx: RenderCtx = { ...ctx, renderUserBlocks: undefined, isRenderingUserBlocks: true };
       return (
         <React.Fragment>
           {blocks
