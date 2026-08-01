@@ -48,7 +48,8 @@ export const CarouselContext = React.createContext<{
 } | null>(null);
 
 function CarouselProvider({ node, content, ctx, dom }: any) {
-  const align = content?.carouselAlign ?? content?._design?.carouselAlign ?? "start";
+  const align =
+    content?.carouselAlign ?? content?._design?.carouselAlign ?? "start";
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align });
   const [selectedIndex, setSelectedIndex] = React.useState(0);
 
@@ -208,7 +209,11 @@ function ElementRenderer({
       );
     }
     case "carousel": {
-      const perView = Number(content?.carouselSlidesPerView ?? content?._design?.carouselSlidesPerView) || 1.25;
+      const perView =
+        Number(
+          content?.carouselSlidesPerView ??
+            content?._design?.carouselSlidesPerView,
+        ) || 1.25;
       const widthPct = 100 / perView;
       const trackId = `track-${node.id}`;
       const kids = (node.children ?? []).map((child) => (

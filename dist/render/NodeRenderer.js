@@ -144,7 +144,8 @@ function ElementRenderer({ node, content, ctx, }) {
             return ((0, jsx_runtime_1.jsx)(CarouselProvider, { node: node, content: content, ctx: ctx, dom: dom }));
         }
         case "carousel": {
-            const perView = Number(content?.carouselSlidesPerView ?? content?._design?.carouselSlidesPerView) || 1.25;
+            const perView = Number(content?.carouselSlidesPerView ??
+                content?._design?.carouselSlidesPerView) || 1.25;
             const widthPct = 100 / perView;
             const trackId = `track-${node.id}`;
             const kids = (node.children ?? []).map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)));
