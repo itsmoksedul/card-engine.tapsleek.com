@@ -24,7 +24,7 @@ function NodeRenderer({ node, content, ctx }) {
     return null;
 }
 exports.CarouselContext = react_1.default.createContext(null);
-function EmblaCarouselWrapper({ node, content, ctx, dom }) {
+function CarouselProvider({ node, content, ctx, dom }) {
     const align = content?.carouselAlign ?? "start";
     const [emblaRef, emblaApi] = (0, embla_carousel_react_1.default)({ loop: false, align });
     const kids = (node.children ?? []).map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)));
@@ -118,14 +118,19 @@ function ElementRenderer({ node, content, ctx, }) {
     let children = null;
     switch (node.tag) {
         case "carousel-root": {
-            return (0, jsx_runtime_1.jsx)(EmblaCarouselWrapper, { node: node, content: content, ctx: ctx, dom: dom });
+            return (0, jsx_runtime_1.jsx)(CarouselProvider, { node: node, content: content, ctx: ctx, dom: dom });
         }
         case "carousel": {
             const perView = Number(content?.carouselSlidesPerView) || 1.25;
             const widthPct = 100 / perView;
             const trackId = `track-${node.id}`;
             const kids = (node.children ?? []).map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)));
-            children = ((0, jsx_runtime_1.jsxs)("div", { ref: ctxEmbla?.emblaRef, style: { overflow: "hidden", width: "100%" }, className: trackId, children: [(0, jsx_runtime_1.jsx)("style", { children: `.${trackId} > div > * { min-width: ${widthPct}% !important; }` }), (0, jsx_runtime_1.jsx)("div", { ...dom, style: { ...dom.style, overflow: "visible", flexWrap: "nowrap" }, children: kids })] }));
+            return ((0, jsx_runtime_1.jsxs)(react_1.default.Fragment, { children: [(0, jsx_runtime_1.jsx)("style", { dangerouslySetInnerHTML: { __html: `
+            .${trackId} > div {
+              flex: 0 0 ${widthPct}%;
+              min-width: 0;
+            }
+          ` } }), (0, jsx_runtime_1.jsx)("div", { className: "embla", ref: ctxEmbla?.emblaRef, style: { overflow: "hidden" }, children: (0, jsx_runtime_1.jsx)("div", { ...dom, className: `${dom.className} ${trackId}`, children: kids }) })] }));
             break;
         }
         case "image": {

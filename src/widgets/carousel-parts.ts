@@ -204,7 +204,7 @@ export function createCarouselLayout(
         tag: "carousel",
         name: "Carousel Track",
         style: {
-          base: { display: "flex", overflow: "hidden", gap: "{space.3}", padding: { b: "{space.2}" } }
+          base: { display: "flex", gap: "{space.3}", padding: { b: "{space.2}" } }
         },
         children: [
           {

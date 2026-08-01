@@ -81,8 +81,8 @@ function fieldToZod(field, options) {
         case 'boolean':
             return zod_1.z.boolean();
         case 'select': {
-            const values = field.options.map((o) => o.value);
-            const one = zod_1.z.string().refine((v) => values.includes(v), {
+            const values = field.options.map((o) => String(o.value));
+            const one = zod_1.z.coerce.string().refine((v) => values.includes(v), {
                 message: `must be one of: ${values.join(', ')}`,
             });
             return field.multiple ? zod_1.z.array(one).max(values.length) : one;

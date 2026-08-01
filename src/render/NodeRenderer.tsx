@@ -43,7 +43,7 @@ export function NodeRenderer({ node, content, ctx }: NodeRendererProps) {
 
 export const CarouselContext = React.createContext<{ emblaApi?: any; emblaRef?: any } | null>(null);
 
-function EmblaCarouselWrapper({ node, content, ctx, dom }: any) {
+function CarouselProvider({ node, content, ctx, dom }: any) {
   const align = content?.carouselAlign ?? "start";
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align });
   const kids = (node.children ?? []).map((child: any) => (
@@ -173,23 +173,30 @@ function ElementRenderer({
 
   switch (node.tag) {
     case "carousel-root": {
-      return <EmblaCarouselWrapper node={node} content={content} ctx={ctx} dom={dom} />;
+      return <CarouselProvider node={node} content={content} ctx={ctx} dom={dom} />;
     }
     case "carousel": {
       const perView = Number(content?.carouselSlidesPerView) || 1.25;
       const widthPct = 100 / perView;
       const trackId = `track-${node.id}`;
-
       const kids = (node.children ?? []).map((child) => (
         <NodeRenderer key={child.id} node={child} content={content} ctx={ctx} />
       ));
-      children = (
-        <div ref={ctxEmbla?.emblaRef} style={{ overflow: "hidden", width: "100%" }} className={trackId}>
-          <style>{`.${trackId} > div > * { min-width: ${widthPct}% !important; }`}</style>
-          <div {...dom} style={{ ...dom.style, overflow: "visible", flexWrap: "nowrap" }}>
-            {kids}
+
+      return (
+        <React.Fragment>
+          <style dangerouslySetInnerHTML={{ __html: `
+            .${trackId} > div {
+              flex: 0 0 ${widthPct}%;
+              min-width: 0;
+            }
+          ` }} />
+          <div className="embla" ref={ctxEmbla?.emblaRef} style={{ overflow: "hidden" }}>
+            <div {...dom} className={`${dom.className} ${trackId}`}>
+              {kids}
+            </div>
           </div>
-        </div>
+        </React.Fragment>
       );
       break;
     }
