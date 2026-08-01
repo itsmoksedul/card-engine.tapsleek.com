@@ -50,7 +50,6 @@ exports.meta = {
     ],
     contentSchema: [
         { key: "useCarousel", type: "boolean", label: "Enable Carousel" },
-        { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
         { key: "title", type: "text", label: "Title", max: 60 },
         { key: "description", type: "textarea", label: "Description", max: 200 },
         {

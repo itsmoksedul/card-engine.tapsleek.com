@@ -146,6 +146,7 @@ export const meta: WidgetModule['meta'] = {
     ...getCarouselDesignSchema("showCarouselDots"),
   ],
   contentSchema: [
+    { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
     { key: 'heading', type: 'text', label: 'Heading', max: 60 },
     {
       key: 'items', type: 'repeater', label: 'Menu Items', itemLabel: '{title}',
