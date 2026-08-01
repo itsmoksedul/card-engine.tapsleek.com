@@ -241,7 +241,9 @@ function ElementRenderer({
 
       const interceptClick = (e: React.MouseEvent) => {
         e.preventDefault();
-        e.stopPropagation();
+        if (!ctx.isEditing) {
+          e.stopPropagation();
+        }
         if (ctx.onActionClick) ctx.onActionClick(action);
       };
 

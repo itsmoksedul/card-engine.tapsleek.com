@@ -179,7 +179,9 @@ function ElementRenderer({ node, content, ctx, }) {
             dom["data-action"] = action;
             const interceptClick = (e) => {
                 e.preventDefault();
-                e.stopPropagation();
+                if (!ctx.isEditing) {
+                    e.stopPropagation();
+                }
                 if (ctx.onActionClick)
                     ctx.onActionClick(action);
             };
