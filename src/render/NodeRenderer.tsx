@@ -14,6 +14,7 @@ export interface RenderCtx {
   gatedWidgetKeys?: string[];
   track: (event: any) => void;
   selfData?: any;
+  repeatIndex?: number;
   onActionClick?: (action: string) => void;
   renderUserBlocks?: () => React.ReactNode;
   rootId?: string;
@@ -114,7 +115,7 @@ function ElementRenderer({
             key={item.id ?? index}
             node={{ ...node, repeat: undefined }}
             content={content}
-            ctx={{ ...ctx, selfData: item }}
+            ctx={{ ...ctx, selfData: item, repeatIndex: index }}
           />
         ))}
       </React.Fragment>
@@ -280,6 +281,35 @@ function ElementRenderer({
         if (!ctx.isEditing) {
           e.stopPropagation();
         }
+
+        if (action === "carousel-prev") {
+          const root = e.currentTarget.closest('[class^="n"]');
+          const track = root?.querySelector('.carouselTrack');
+          if (track) {
+            track.scrollBy({ left: -track.clientWidth * 0.8, behavior: "smooth" });
+          }
+          return;
+        }
+
+        if (action === "carousel-next") {
+          const root = e.currentTarget.closest('[class^="n"]');
+          const track = root?.querySelector('.carouselTrack');
+          if (track) {
+            track.scrollBy({ left: track.clientWidth * 0.8, behavior: "smooth" });
+          }
+          return;
+        }
+
+        if (action === "carousel-dot") {
+          const root = e.currentTarget.closest('[class^="n"]');
+          const track = root?.querySelector('.carouselTrack');
+          const idx = ctx.repeatIndex ?? 0;
+          if (track && track.children[idx]) {
+            track.children[idx].scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+          }
+          return;
+        }
+
         if (ctx.onActionClick) ctx.onActionClick(action);
       };
 
@@ -319,6 +349,8 @@ function ElementRenderer({
             ctx.track({ type: "CONNECT_CLICK" });
           };
         }
+      } else if (action === "carousel-prev" || action === "carousel-next" || action === "carousel-dot") {
+        dom.onClick = interceptClick;
       } else if (action === "share") {
         if (ctx.isEditing || ctx.onActionClick) {
           dom.onClick = interceptClick;
@@ -342,6 +374,17 @@ function ElementRenderer({
       } else if (action === "popup") {
         dom["data-popup"] = props.popup ?? "";
         if (ctx.onActionClick && !ctx.isEditing) {
+          dom.onClick = interceptClick;
+        } else if (!ctx.isEditing) {
+          dom.onClick = (e: React.MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const el = document.getElementById(props.popup as string);
+            if (el) el.style.display = "flex";
+          };
+        }
+      } else if (action && action !== "link") {
+        if (ctx.isEditing || ctx.onActionClick) {
           dom.onClick = interceptClick;
         }
       }

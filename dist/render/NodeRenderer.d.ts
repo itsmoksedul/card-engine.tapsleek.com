@@ -8,6 +8,7 @@ export interface RenderCtx {
     gatedWidgetKeys?: string[];
     track: (event: any) => void;
     selfData?: any;
+    repeatIndex?: number;
     onActionClick?: (action: string) => void;
     renderUserBlocks?: () => React.ReactNode;
     rootId?: string;

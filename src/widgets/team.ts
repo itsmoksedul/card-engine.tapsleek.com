@@ -143,142 +143,137 @@ export const meta: WidgetModule["meta"] = {
         ],
       },
       {
-        id: "carouselTrack",
+        id: "carouselRoot",
         kind: "element",
-        tag: "carousel",
-        name: "Carousel",
+        tag: "stack",
+        name: "Carousel Container",
         visibleIf: { key: "useCarousel", equals: true },
+        style: {
+          base: { position: "relative", display: "flex", flexDirection: "column", gap: "{space.4}" },
+        },
         children: [
           {
-            id: "carouselItem",
+            id: "carouselTrack",
             kind: "element",
-            tag: "stack",
-            name: "Carousel Item",
-            repeat: { source: "self", path: "items" },
-            style: {
-              base: {
-                display: "flex",
-                flexDirection: "column",
-                gap: "{space.3}",
-                padding: { all: "{space.3}" },
-                alignItems: "center",
-              },
-            },
+            tag: "carousel",
+            name: "Carousel Track",
             children: [
               {
-                id: "c_avatar",
+                id: "carouselItem",
                 kind: "element",
-                tag: "image",
-                name: "Photo",
-                bind: { source: "self", path: "image" },
-                hideIfEmpty: true,
+                tag: "frame",
+                name: "Team Member",
+                repeat: { source: "self", path: "items" },
                 style: {
-                  base: {
-                    width: "80px",
-                    height: "80px",
-                    objectFit: "cover",
-                    borderRadius: { all: "{radius.full}" },
-                  },
-                },
-              },
-              {
-                id: "c_content",
-                kind: "element",
-                tag: "stack",
-                style: {
-                  base: {
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "{space.1}",
-                    alignItems: "center",
-                    textAlign: "center",
-                  },
+                  base: { display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: "{space.3}", padding: { all: "{space.3}" }, background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "{radius.lg}" }, border: { style: "solid", width: "1px", color: "{color.border}" } },
                 },
                 children: [
                   {
-                    id: "c_name",
+                    id: "image",
                     kind: "element",
-                    tag: "text",
-                    name: "Name",
-                    bind: { source: "self", path: "name" },
-                    style: {
-                      base: {
-                        fontSize: "{size.base}",
-                        fontWeight: 600,
-                        color: "{color.text}",
-                      },
-                    },
+                    tag: "image",
+                    name: "Photo",
+                    bind: { source: "self", path: "image" },
+                    style: { base: { width: "80px", height: "80px", borderRadius: { all: "50%" }, objectFit: "cover" } },
                   },
                   {
-                    id: "c_role",
+                    id: "info",
                     kind: "element",
-                    tag: "text",
-                    name: "Role",
-                    hideIfEmpty: true,
-                    bind: { source: "self", path: "role" },
-                    style: {
-                      base: {
-                        fontSize: "{size.sm}",
-                        fontWeight: 500,
-                        color: "{color.primary}",
-                      },
-                    },
-                  },
-                  {
-                    id: "c_bio",
-                    kind: "element",
-                    tag: "text",
-                    name: "Bio",
-                    hideIfEmpty: true,
-                    bind: { source: "self", path: "bio" },
-                    style: {
-                      base: {
-                        fontSize: "{size.sm}",
-                        color: "{color.muted}",
-                        lineHeight: 1.4,
-                      },
-                    },
-                  },
+                    tag: "stack",
+                    name: "Info",
+                    style: { base: { display: "flex", flexDirection: "column", gap: "{space.1}" } },
+                    children: [
+                      { id: "name", kind: "element", tag: "heading", name: "Name", props: { level: 4 }, bind: { source: "self", path: "name" }, style: { base: { fontSize: "{size.base}", fontWeight: 600, color: "{color.text}" } } },
+                      { id: "role", kind: "element", tag: "text", name: "Role", bind: { source: "self", path: "role" }, style: { base: { fontSize: "{size.sm}", color: "{color.primary}", fontWeight: 500 } } },
+                    ]
+                  }
                 ],
-              },
-            ],
+              }
+            ]
           },
-        ],
+          {
+            id: "carouselArrows",
+            kind: "element",
+            tag: "frame",
+            name: "Arrows",
+            visibleIf: { key: "showArrows", equals: true },
+            children: [
+              {
+                id: "arrowPrev",
+                kind: "element",
+                tag: "button",
+                name: "Prev Arrow",
+                props: { action: "carousel-prev" },
+                style: {
+                  base: {
+                    position: "absolute", left: "{space.2}", top: "50%", transform: { translateY: "-50%" }, zIndex: 10,
+                    width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center",
+                    background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "50%" },
+                    border: { style: "solid", width: "1px", color: "{color.border}" },
+                    boxShadow: { x: "0", y: "2px", blur: "4px", color: "rgba(0,0,0,0.1)" }, cursor: "pointer",
+                  },
+                },
+                children: [
+                  { id: "iconPrev", kind: "element", tag: "icon", name: "Icon", props: { name: "ChevronLeft" }, style: { base: { width: "16px", height: "16px", color: "{color.text}" } } }
+                ]
+              },
+              {
+                id: "arrowNext",
+                kind: "element",
+                tag: "button",
+                name: "Next Arrow",
+                props: { action: "carousel-next" },
+                style: {
+                  base: {
+                    position: "absolute", right: "{space.2}", top: "50%", transform: { translateY: "-50%" }, zIndex: 10,
+                    width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center",
+                    background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "50%" },
+                    border: { style: "solid", width: "1px", color: "{color.border}" },
+                    boxShadow: { x: "0", y: "2px", blur: "4px", color: "rgba(0,0,0,0.1)" }, cursor: "pointer",
+                  },
+                },
+                children: [
+                  { id: "iconNext", kind: "element", tag: "icon", name: "Icon", props: { name: "ChevronRight" }, style: { base: { width: "16px", height: "16px", color: "{color.text}" } } }
+                ]
+              }
+            ]
+          },
+          {
+            id: "carouselDots",
+            kind: "element",
+            tag: "stack",
+            name: "Pagination",
+            visibleIf: { key: "showDots", equals: true },
+            style: {
+              base: { display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: "{space.2}", margin: { t: "{space.2}" } },
+            },
+            children: [
+              {
+                id: "dot",
+                kind: "element",
+                tag: "button",
+                name: "Dot",
+                repeat: { source: "self", path: "items" },
+                props: { action: "carousel-dot" },
+                style: {
+                  base: { width: "8px", height: "8px", borderRadius: { all: "50%" }, background: { kind: "color", color: "{color.border}" }, cursor: "pointer", padding: { all: "0" }, border: { style: "none", width: "0" } },
+                },
+              }
+            ]
+          }
+        ]
       },
     ],
   },
   designSchema: [
-    {
-      key: "layout",
-      type: "select",
-      label: "Layout",
-      options: [
-        { value: "grid-2", label: "2 Columns" },
-        { value: "grid-3", label: "3 Columns" },
-        { value: "stack", label: "Vertical Stack" },
-      ],
-    },
-    {
-      key: "align",
-      type: "select",
-      label: "Text Alignment",
-      options: [
-        { value: "center", label: "Center" },
-        { value: "left", label: "Left" },
-      ],
-    },
-    {
-      key: "avatarShape",
-      type: "select",
-      label: "Avatar Shape",
-      options: [
-        { value: "circle", label: "Circle" },
-        { value: "square", label: "Square (Rounded)" },
-      ],
-    },
+    { key: "layout", type: "select", label: "Layout", options: [{ value: "grid-2", label: "2 columns" }, { value: "grid-3", label: "3 columns" }, { value: "grid-4", label: "4 columns" }] },
+    { key: "shape", type: "select", label: "Image shape", options: [{ value: "circle", label: "Circle" }, { value: "square", label: "Square" }, { value: "rounded", label: "Rounded" }] },
+    { key: "align", type: "select", label: "Alignment", options: [{ value: "left", label: "Left" }, { value: "center", label: "Center" }] },
+    { key: "useCarousel", type: "boolean", label: "Enable Carousel" },
+    { key: "showArrows", type: "boolean", label: "Show Arrows", visibleIf: { key: "useCarousel", equals: true } },
+    { key: "showDots", type: "boolean", label: "Show Pagination", visibleIf: { key: "useCarousel", equals: true } },
   ],
   contentSchema: [
-    { key: "useCarousel", type: "boolean", label: "Enable Carousel" },
     { key: "heading", type: "text", label: "Heading", max: 60 },
     {
       key: "items",
@@ -293,9 +288,8 @@ export const meta: WidgetModule["meta"] = {
       ],
     },
   ],
-  defaultDesign: { layout: "grid-2", align: "center", avatarShape: "circle" },
+  defaultDesign: { layout: "grid-3", shape: "circle", align: "center", useCarousel: false, showArrows: true, showDots: true },
   defaultContent: {
-    useCarousel: false,
     heading: "Meet the Team",
     items: [
       {

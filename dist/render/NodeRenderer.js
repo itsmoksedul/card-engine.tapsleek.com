@@ -77,7 +77,7 @@ function ElementRenderer({ node, content, ctx, }) {
         const items = (0, resolveBinding_1.resolveBinding)(node.repeat, ctx.card, content, ctx.selfData);
         if (!Array.isArray(items))
             return null;
-        return ((0, jsx_runtime_1.jsx)(react_1.default.Fragment, { children: items.map((item, index) => ((0, jsx_runtime_1.jsx)(ElementRenderer, { node: { ...node, repeat: undefined }, content: content, ctx: { ...ctx, selfData: item } }, item.id ?? index))) }));
+        return ((0, jsx_runtime_1.jsx)(react_1.default.Fragment, { children: items.map((item, index) => ((0, jsx_runtime_1.jsx)(ElementRenderer, { node: { ...node, repeat: undefined }, content: content, ctx: { ...ctx, selfData: item, repeatIndex: index } }, item.id ?? index))) }));
     }
     const bound = (0, resolveBinding_1.resolveBinding)(node.bind, ctx.card, content, ctx.selfData);
     const props = (node.props ?? {});
@@ -206,6 +206,31 @@ function ElementRenderer({ node, content, ctx, }) {
                 if (!ctx.isEditing) {
                     e.stopPropagation();
                 }
+                if (action === "carousel-prev") {
+                    const root = e.currentTarget.closest('[class^="n"]');
+                    const track = root?.querySelector('.carouselTrack');
+                    if (track) {
+                        track.scrollBy({ left: -track.clientWidth * 0.8, behavior: "smooth" });
+                    }
+                    return;
+                }
+                if (action === "carousel-next") {
+                    const root = e.currentTarget.closest('[class^="n"]');
+                    const track = root?.querySelector('.carouselTrack');
+                    if (track) {
+                        track.scrollBy({ left: track.clientWidth * 0.8, behavior: "smooth" });
+                    }
+                    return;
+                }
+                if (action === "carousel-dot") {
+                    const root = e.currentTarget.closest('[class^="n"]');
+                    const track = root?.querySelector('.carouselTrack');
+                    const idx = ctx.repeatIndex ?? 0;
+                    if (track && track.children[idx]) {
+                        track.children[idx].scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+                    }
+                    return;
+                }
                 if (ctx.onActionClick)
                     ctx.onActionClick(action);
             };
@@ -252,6 +277,9 @@ function ElementRenderer({ node, content, ctx, }) {
                     };
                 }
             }
+            else if (action === "carousel-prev" || action === "carousel-next" || action === "carousel-dot") {
+                dom.onClick = interceptClick;
+            }
             else if (action === "share") {
                 if (ctx.isEditing || ctx.onActionClick) {
                     dom.onClick = interceptClick;
@@ -279,6 +307,20 @@ function ElementRenderer({ node, content, ctx, }) {
             else if (action === "popup") {
                 dom["data-popup"] = props.popup ?? "";
                 if (ctx.onActionClick && !ctx.isEditing) {
+                    dom.onClick = interceptClick;
+                }
+                else if (!ctx.isEditing) {
+                    dom.onClick = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const el = document.getElementById(props.popup);
+                        if (el)
+                            el.style.display = "flex";
+                    };
+                }
+            }
+            else if (action && action !== "link") {
+                if (ctx.isEditing || ctx.onActionClick) {
                     dom.onClick = interceptClick;
                 }
             }

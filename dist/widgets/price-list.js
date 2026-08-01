@@ -113,88 +113,109 @@ exports.meta = {
                 ],
             },
             {
-                id: "carouselTrack",
+                id: "carouselRoot",
                 kind: "element",
-                tag: "carousel",
-                name: "Carousel",
+                tag: "stack",
+                name: "Carousel Container",
                 visibleIf: { key: "useCarousel", equals: true },
+                style: {
+                    base: { position: "relative", display: "flex", flexDirection: "column", gap: "{space.4}" },
+                },
                 children: [
                     {
-                        id: 'c_item',
-                        kind: 'element',
-                        tag: 'stack',
-                        name: "Carousel Item",
-                        repeat: { source: 'self', path: 'items' },
-                        style: {
-                            base: { display: 'flex', flexDirection: 'column', gap: '{space.1}' },
-                        },
+                        id: "carouselTrack",
+                        kind: "element",
+                        tag: "carousel",
+                        name: "Carousel Track",
                         children: [
                             {
-                                id: 'c_titleRow',
-                                kind: 'element',
-                                tag: 'stack',
+                                id: "carouselItem",
+                                kind: "element",
+                                tag: "stack",
+                                name: "Price Item",
+                                repeat: { source: "self", path: "items" },
                                 style: {
-                                    base: { display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '{space.2}', width: '100%' },
+                                    base: { display: "flex", flexDirection: "column", gap: "{space.1}", padding: { all: "{space.3}" }, background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "{radius.lg}" }, border: { style: "solid", width: "1px", color: "{color.border}" } },
                                 },
                                 children: [
                                     {
-                                        id: 'c_title',
-                                        kind: 'element',
-                                        tag: 'text',
-                                        name: 'Title',
-                                        bind: { source: 'self', path: 'title' },
-                                        style: {
-                                            base: { fontSize: '{size.base}', fontWeight: 600, color: '{color.text}' },
-                                        },
+                                        id: "c_titleRow",
+                                        kind: "element",
+                                        tag: "stack",
+                                        style: { base: { display: "flex", flexDirection: "row", alignItems: "baseline", gap: "{space.2}" } },
+                                        children: [
+                                            { id: "c_title", kind: "element", tag: "text", name: "Title", bind: { source: "self", path: "title" }, style: { base: { fontSize: "{size.base}", fontWeight: 600, color: "{color.text}" } } },
+                                            { id: "c_line", kind: "element", tag: "stack", style: { base: { flexGrow: 1, border: { sides: { b: { width: "2px", style: "dotted", color: "{color.border}" } } }, opacity: 0.4, margin: { b: "4px" } } } },
+                                            { id: "c_price", kind: "element", tag: "text", name: "Price", bind: { source: "self", path: "price" }, style: { base: { fontSize: "{size.base}", fontWeight: 700, color: "{color.primary}" } } },
+                                        ]
                                     },
-                                    {
-                                        id: 'c_dots',
-                                        kind: 'element',
-                                        tag: 'stack',
-                                        style: {
-                                            base: {
-                                                flexGrow: 1,
-                                                border: { sides: { b: { width: '2px', style: 'dotted', color: '{color.border}' } } },
-                                                opacity: 0.4,
-                                                margin: { b: '4px' },
-                                            },
-                                        },
-                                    },
-                                    {
-                                        id: 'c_price',
-                                        kind: 'element',
-                                        tag: 'text',
-                                        name: 'Price',
-                                        bind: { source: 'self', path: 'price' },
-                                        style: {
-                                            base: { fontSize: '{size.base}', fontWeight: 700, color: '{color.primary}' },
-                                        },
-                                    },
+                                    { id: "c_description", kind: "element", tag: "text", name: "Description", hideIfEmpty: true, bind: { source: "self", path: "description" }, style: { base: { fontSize: "{size.sm}", color: "{color.muted}", lineHeight: 1.4 } } },
                                 ],
+                            }
+                        ]
+                    },
+                    {
+                        id: "carouselArrows",
+                        kind: "element",
+                        tag: "frame",
+                        name: "Arrows",
+                        visibleIf: { key: "showArrows", equals: true },
+                        children: [
+                            {
+                                id: "arrowPrev",
+                                kind: "element",
+                                tag: "button",
+                                name: "Prev Arrow",
+                                props: { action: "carousel-prev" },
+                                style: {
+                                    base: { position: "absolute", left: "{space.2}", top: "50%", transform: { translateY: "-50%" }, zIndex: 10, width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "50%" }, border: { style: "solid", width: "1px", color: "{color.border}" }, boxShadow: { x: "0", y: "2px", blur: "4px", color: "rgba(0,0,0,0.1)" }, cursor: "pointer" },
+                                },
+                                children: [{ id: "iconPrev", kind: "element", tag: "icon", name: "Icon", props: { name: "ChevronLeft" }, style: { base: { width: "16px", height: "16px", color: "{color.text}" } } }]
                             },
                             {
-                                id: 'c_description',
-                                kind: 'element',
-                                tag: 'text',
-                                name: 'Description',
-                                hideIfEmpty: true,
-                                bind: { source: 'self', path: 'description' },
+                                id: "arrowNext",
+                                kind: "element",
+                                tag: "button",
+                                name: "Next Arrow",
+                                props: { action: "carousel-next" },
                                 style: {
-                                    base: { fontSize: '{size.sm}', color: '{color.muted}', lineHeight: 1.4 },
+                                    base: { position: "absolute", right: "{space.2}", top: "50%", transform: { translateY: "-50%" }, zIndex: 10, width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "50%" }, border: { style: "solid", width: "1px", color: "{color.border}" }, boxShadow: { x: "0", y: "2px", blur: "4px", color: "rgba(0,0,0,0.1)" }, cursor: "pointer" },
                                 },
-                            },
-                        ],
+                                children: [{ id: "iconNext", kind: "element", tag: "icon", name: "Icon", props: { name: "ChevronRight" }, style: { base: { width: "16px", height: "16px", color: "{color.text}" } } }]
+                            }
+                        ]
                     },
-                ],
+                    {
+                        id: "carouselDots",
+                        kind: "element",
+                        tag: "stack",
+                        name: "Pagination",
+                        visibleIf: { key: "showCarouselDots", equals: true },
+                        style: { base: { display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: "{space.2}", margin: { t: "{space.2}" } } },
+                        children: [
+                            {
+                                id: "dot",
+                                kind: "element",
+                                tag: "button",
+                                name: "Dot",
+                                repeat: { source: "self", path: "items" },
+                                props: { action: "carousel-dot" },
+                                style: { base: { width: "8px", height: "8px", borderRadius: { all: "50%" }, background: { kind: "color", color: "{color.border}" }, cursor: "pointer", padding: { all: "0" }, border: { style: "none", width: "0" } } },
+                            }
+                        ]
+                    }
+                ]
             },
         ],
     },
     designSchema: [
         { key: 'showDots', type: 'boolean', label: 'Show dotted line between title and price' },
         { key: 'showDividers', type: 'boolean', label: 'Show dividers between items' },
+        { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
+        { key: 'showArrows', type: 'boolean', label: 'Show Arrows', visibleIf: { key: 'useCarousel', equals: true } },
+        { key: 'showCarouselDots', type: 'boolean', label: 'Show Pagination', visibleIf: { key: 'useCarousel', equals: true } },
     ],
     contentSchema: [
-        { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
         { key: 'heading', type: 'text', label: 'Heading', max: 60 },
         {
             key: 'items', type: 'repeater', label: 'Menu Items', itemLabel: '{title}',
@@ -205,9 +226,8 @@ exports.meta = {
             ]
         }
     ],
-    defaultDesign: { showDots: true, showDividers: false },
+    defaultDesign: { showDots: true, showDividers: false, useCarousel: false, showArrows: true, showCarouselDots: true },
     defaultContent: {
-        useCarousel: false,
         heading: 'Services',
         items: [
             { title: 'Consultation', price: '$50', description: 'Initial 30-minute discovery call.' },
