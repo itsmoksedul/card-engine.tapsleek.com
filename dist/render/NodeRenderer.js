@@ -263,7 +263,7 @@ function ElementRenderer({ node, content, ctx, }) {
     if (VOID_DOM_TAGS.has(tag) || dom.dangerouslySetInnerHTML) {
         return react_1.default.createElement(tag, dom);
     }
-    return react_1.default.createElement(tag, dom, (0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [children, node.children?.map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)))] }));
+    return react_1.default.createElement(tag, dom, (0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [children, node.children?.map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id))), node.id === ctx.rootId && !ctx._blocksInjected?.current && ctx.renderUserBlocks && ctx.renderUserBlocks()] }));
 }
 // ─── Widgets ─────────────────────────────────────────────────────────────────
 /**
@@ -386,13 +386,16 @@ function WidgetRenderer({ node, content, ctx, }) {
         }
         else {
             // Optional block widgets (FAQ, Gallery, Contact Form, Video, Custom HTML, etc.)
-            const hasBlock = ctx.blocks.some((b) => b.type === node.widget ||
-                b.widget === node.widget ||
-                b.type === node.key ||
-                b.widget === node.key);
-            if (!hasBlock) {
+            if (!ctx._blocksInjected)
+                ctx._blocksInjected = { current: false };
+            if (ctx._blocksInjected.current) {
                 return null;
             }
+            ctx._blocksInjected.current = true;
+            if (ctx.renderUserBlocks) {
+                return (0, jsx_runtime_1.jsx)(jsx_runtime_1.Fragment, { children: ctx.renderUserBlocks() });
+            }
+            return null;
         }
     }
     const Widget = widgets_2.WIDGET_RENDERERS[node.widget];

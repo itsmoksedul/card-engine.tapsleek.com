@@ -9,6 +9,11 @@ export interface RenderCtx {
     track: (event: any) => void;
     selfData?: any;
     onActionClick?: (action: string) => void;
+    renderUserBlocks?: () => React.ReactNode;
+    rootId?: string;
+    _blocksInjected?: {
+        current: boolean;
+    };
 }
 export interface NodeRendererProps {
     node: Node;

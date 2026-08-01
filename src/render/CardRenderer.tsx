@@ -45,31 +45,32 @@ export function CardRenderer({
     gatedWidgetKeys,
     track: onTrack || (() => {}),
     onActionClick,
-  };
-
-  // ── User card: render the composed blocks inside the template's root frame ──
-  // Only when there ARE blocks. An empty array must fall through to the template
-  // design (below) — otherwise a freshly created card, whose `blocks` is `[]`,
-  // renders an empty frame instead of the template's Profile/identity widgets.
-  if (blocks && blocks.length > 0) {
-    const rootId = definition.root.id;
-    return (
-      <div className="ts-card" style={themeRootStyle(theme)}>
-        <div className={`n${rootId}`} data-node-id={isEditing ? rootId : undefined}>
+    rootId: definition.root.id,
+    _blocksInjected: { current: false },
+    renderUserBlocks: () => {
+      if (!blocks || blocks.length === 0) return null;
+      return (
+        <React.Fragment>
           {blocks
-            .filter((b) => !b.hidden)
-            .map((b) => (
-              <BlockRenderer key={b.id} definition={definition} block={b} ctx={ctx} />
-            ))}
-        </div>
-        {definition.popups?.map((popup) => (
-          <div key={popup.key} className="ts-popup" hidden>
-            <NodeRenderer node={popup.root} content={content} ctx={ctx} />
-          </div>
-        ))}
-      </div>
-    );
-  }
+            .filter((b) => b.hidden !== true && (b as any).isVisible !== false)
+            .map((b) => {
+              const normalizedBlock: BlockInstance = {
+                ...b,
+                widget: b.widget || (b as any).type,
+              };
+              return (
+                <BlockRenderer
+                  key={b.id}
+                  definition={definition}
+                  block={normalizedBlock}
+                  ctx={ctx} // Wait! `ctx` refers to the outer const, so it will work because JS hoists it
+                />
+              );
+            })}
+        </React.Fragment>
+      );
+    },
+  };
 
   // ── Template design render (admin preview / public page from the tree) ──
   return (
