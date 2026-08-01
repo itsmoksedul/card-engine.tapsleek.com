@@ -245,7 +245,7 @@ function ElementRenderer({
         if (ctx.onActionClick) ctx.onActionClick(action);
       };
 
-      if (action === "link") {
+      if (action === "link" && node.id !== "connectNow" && node.id !== "saveContact") {
         const href = bound ?? props.href;
         if (node.tag === "link") {
           if (ctx.isEditing || ctx.onActionClick) {
@@ -261,15 +261,24 @@ function ElementRenderer({
               window.open(String(href), props.target || "_self");
           }
         }
-      } else if (action === "vcard") {
+      } else if (action === "vcard" || node.id === "saveContact") {
         if (ctx.isEditing || ctx.onActionClick) {
           dom.onClick = interceptClick;
         } else {
-          dom.onClick = () => {
-            const el = document.createElement("a");
-            el.href = "/api/vcard";
-            el.download = "contact.vcf";
-            el.click();
+          dom.onClick = (e: React.MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            ctx.track({ type: "VCARD_DOWNLOAD" });
+          };
+        }
+      } else if (action === "connect" || node.id === "connectNow") {
+        if (ctx.isEditing || ctx.onActionClick) {
+          dom.onClick = interceptClick;
+        } else {
+          dom.onClick = (e: React.MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            ctx.track({ type: "CONNECT_CLICK" });
           };
         }
       } else if (action === "share") {

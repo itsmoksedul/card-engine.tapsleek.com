@@ -177,7 +177,7 @@ exports.meta = {
                 id: "connectNow",
                 tag: "link",
                 name: "Connect Now",
-                props: { action: "link" },
+                props: { action: "connect" },
                 style: {
                     base: {
                         display: "flex",
