@@ -164,7 +164,6 @@ export const carouselDefaultPartStyles: WidgetModule["meta"]["defaultPartStyles"
         background: { kind: "color", color: "{color.border}" },
         cursor: "pointer",
         padding: { all: "0" },
-        border: { style: "none", width: "0" },
       },
     },
     carouselDotActive: {
@@ -175,7 +174,6 @@ export const carouselDefaultPartStyles: WidgetModule["meta"]["defaultPartStyles"
         background: { kind: "color", color: "{color.primary}" },
         cursor: "pointer",
         padding: { all: "0" },
-        border: { style: "none", width: "0" },
       },
     },
   };
@@ -217,7 +215,9 @@ export function createCarouselLayout(
               ...itemNode.style,
               base: {
                 ...(itemNode.style?.base || {}),
-                flex: "0 0 auto",
+                flexGrow: 0,
+                flexShrink: 0,
+                flexBasis: "auto",
                 minWidth: "80%",
               },
             },

@@ -72,6 +72,9 @@ const NODE_ACTIONS = new Set([
   "scroll-to",
   "copy",
   "connect",
+  "carousel-prev",
+  "carousel-next",
+  "carousel-dot",
 ]);
 const POPUP_TRIGGERS = new Set(["onLoad", "afterDelay", "onExit", "manual"]);
 
