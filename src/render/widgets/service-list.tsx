@@ -35,7 +35,7 @@ export function ServiceListRender({ content, design, cls, ctx }: WidgetRenderPro
         {d.showMedia !== false && str(item.image) && (
           <img
             className={cls('itemMedia')}
-            src={str(item.image)}
+            src={str(item.image) || undefined}
             alt=""
             loading="lazy"
             style={{ aspectRatio: d.mediaRatio ?? '4/3' }}

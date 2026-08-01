@@ -15,7 +15,7 @@ export function GalleryRender({ content, design, cls, ctx }: WidgetRenderProps) 
     <figure key={i} className={cls('item')}>
       <img
         className={cls('image')}
-        src={str(item.url)}
+        src={str(item.url) || undefined}
         alt={str(item.caption)}
         loading="lazy"
         style={d.ratio && d.ratio !== 'auto' ? { aspectRatio: d.ratio } : undefined}

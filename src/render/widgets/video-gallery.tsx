@@ -32,7 +32,7 @@ export function VideoGalleryRender({ design, content, cls, ctx }: WidgetRenderPr
       >
         <div style={{ position: 'relative', width: '100%', aspectRatio }}>
           {thumbUrl ? (
-            <img src={thumbUrl} alt={video.caption || 'Video thumbnail'} className={cls('thumbnail')} style={{ height: '100%', width: '100%', objectFit: 'cover', position: 'absolute' }} />
+            <img src={thumbUrl || undefined} alt={video.caption || 'Video thumbnail'} className={cls('thumbnail')} style={{ height: '100%', width: '100%', objectFit: 'cover', position: 'absolute' }} />
           ) : (
             <div className={cls('thumbnail')} style={{ height: '100%', position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <span style={{ fontSize: '12px', color: '#888' }}>No thumbnail</span>

@@ -30,7 +30,7 @@ export function TestimonialsRender({ content, design, cls, ctx }: WidgetRenderPr
 
         <figcaption className={cls('caption')}>
           {d.showAvatar !== false && str(item.avatar) && (
-            <img className={cls('avatar')} src={str(item.avatar)} alt="" loading="lazy" />
+            <img className={cls('avatar')} src={str(item.avatar) || undefined} alt="" loading="lazy" />
           )}
           <span className={cls('author')}>{str(item.author)}</span>
           {str(item.role) && <span className={cls('role')}>{str(item.role)}</span>}
