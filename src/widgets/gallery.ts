@@ -11,7 +11,9 @@ export const meta: WidgetModule["meta"] = {
   interactive: true,
   parts: [
     { key: "root", label: "Container", kind: "container" },
+    { key: "header", label: "Header", kind: "container" },
     { key: "title", label: "Title", kind: "text" },
+    { key: "description", label: "Description", kind: "text" },
     { key: "list", label: "Grid", kind: "list" },
     { key: "item", label: "Image wrapper", kind: "container" },
     { key: "image", label: "Image", kind: "image" },
@@ -47,6 +49,7 @@ export const meta: WidgetModule["meta"] = {
   ],
   contentSchema: [
     { key: "title", type: "text", label: "Title", max: 60 },
+    { key: "description", type: "text", label: "Description", max: 200 },
     {
       key: "items",
       type: "repeater",
@@ -72,6 +75,7 @@ export const meta: WidgetModule["meta"] = {
         borderRadius: { all: "{radius.lg}" },
       },
     },
+    header: { base: { display: "flex", flexDirection: "column", gap: "{space.1}" } },
     title: {
       base: {
         fontFamily: "{font.heading}",
@@ -79,6 +83,9 @@ export const meta: WidgetModule["meta"] = {
         fontWeight: 700,
         color: "{color.text}",
       },
+    },
+    description: {
+      base: { fontSize: "{size.sm}", lineHeight: 1.55, color: "{color.muted}" },
     },
     list: {
       base: {
@@ -122,6 +129,7 @@ export const meta: WidgetModule["meta"] = {
   },
   defaultContent: {
     title: "Gallery",
+    description: "",
     items: [
       { url: "", caption: "Abstract shape" },
       { url: "", caption: "Gallery artwork" },
@@ -144,21 +152,41 @@ export const meta: WidgetModule["meta"] = {
     },
     children: [
       {
-        id: "title",
+        id: "header",
         kind: "element",
-        tag: "heading",
-        name: "Title",
-        props: { level: 3 },
-        bind: { source: "self", path: "title" },
-        hideIfEmpty: true,
-        style: {
-          base: {
-            fontFamily: "{font.heading}",
-            fontSize: "{size.lg}",
-            fontWeight: 700,
-            color: "{color.text}",
+        tag: "stack",
+        name: "Header",
+        style: { base: { display: "flex", flexDirection: "column", gap: "{space.1}" } },
+        children: [
+          {
+            id: "title",
+            kind: "element",
+            tag: "heading",
+            name: "Title",
+            props: { level: 3 },
+            bind: { source: "self", path: "title" },
+            hideIfEmpty: true,
+            style: {
+              base: {
+                fontFamily: "{font.heading}",
+                fontSize: "{size.lg}",
+                fontWeight: 700,
+                color: "{color.text}",
+              },
+            },
           },
-        },
+          {
+            id: "description",
+            kind: "element",
+            tag: "text",
+            name: "Description",
+            bind: { source: "self", path: "description" },
+            hideIfEmpty: true,
+            style: {
+              base: { fontSize: "{size.sm}", lineHeight: 1.55, color: "{color.muted}" },
+            },
+          },
+        ],
       },
       {
         id: "list",
@@ -206,6 +234,7 @@ export const meta: WidgetModule["meta"] = {
                 kind: "element",
                 tag: "text",
                 name: "Caption",
+                visibleIf: { key: "showCaption", equals: true },
                 bind: { source: "self", path: "caption" },
                 hideIfEmpty: true,
                 style: {
@@ -245,6 +274,7 @@ export const meta: WidgetModule["meta"] = {
               kind: "element",
               tag: "text",
               name: "Caption",
+              visibleIf: { key: "showCaption", equals: true },
               bind: { source: "self", path: "caption" },
               hideIfEmpty: true,
               style: {

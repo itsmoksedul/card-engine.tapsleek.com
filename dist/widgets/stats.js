@@ -21,6 +21,38 @@ exports.meta = {
         },
         children: [
             {
+                id: 'header',
+                kind: 'element',
+                tag: 'stack',
+                name: 'Header',
+                style: { base: { display: 'flex', flexDirection: 'column', gap: '{space.1}' } },
+                children: [
+                    {
+                        id: 'title',
+                        kind: 'element',
+                        tag: 'heading',
+                        name: 'Title',
+                        props: { level: 3 },
+                        bind: { source: 'self', path: 'title' },
+                        hideIfEmpty: true,
+                        style: {
+                            base: { fontFamily: '{font.heading}', fontSize: '{size.lg}', fontWeight: 700, color: '{color.text}' },
+                        },
+                    },
+                    {
+                        id: 'description',
+                        kind: 'element',
+                        tag: 'text',
+                        name: 'Description',
+                        bind: { source: 'self', path: 'description' },
+                        hideIfEmpty: true,
+                        style: {
+                            base: { fontSize: '{size.sm}', lineHeight: 1.55, color: '{color.muted}' },
+                        },
+                    },
+                ],
+            },
+            {
                 id: 'list',
                 kind: 'element',
                 tag: 'grid',
@@ -90,6 +122,8 @@ exports.meta = {
         { key: 'showBorders', type: 'boolean', label: 'Show item borders/dividers' },
     ],
     contentSchema: [
+        { key: 'title', type: 'text', label: 'Title', max: 60 },
+        { key: 'description', type: 'text', label: 'Description', max: 200 },
         {
             key: 'items', type: 'repeater', label: 'Statistics', itemLabel: '{label}',
             fields: [
@@ -100,6 +134,8 @@ exports.meta = {
     ],
     defaultDesign: { layout: 'grid-2', align: 'center', showBorders: false },
     defaultContent: {
+        title: '',
+        description: '',
         items: [
             { value: '10K+', label: 'Happy Clients' },
             { value: '5', label: 'Years Active' },
@@ -109,7 +145,7 @@ exports.meta = {
     }
 };
 exports.previews = {
-    empty: { items: [] },
+    empty: { title: '', description: '', items: [] },
     typical: exports.meta.defaultContent,
-    stress: { items: Array(6).fill({ value: '9,999,999+', label: 'Very Long Stat Label That Wraps' }) }
+    stress: { title: 'A'.repeat(60), description: '', items: Array(6).fill({ value: '9,999,999+', label: 'Very Long Stat Label That Wraps' }) }
 };

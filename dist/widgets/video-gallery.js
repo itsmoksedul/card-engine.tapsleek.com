@@ -12,7 +12,9 @@ exports.meta = {
     interactive: true,
     parts: [
         { key: 'root', label: 'Container', kind: 'container' },
+        { key: 'header', label: 'Header', kind: 'container' },
         { key: 'title', label: 'Gallery Title', kind: 'text' },
+        { key: 'description', label: 'Description', kind: 'text' },
         { key: 'grid', label: 'Grid Layout', kind: 'list' },
         { key: 'item', label: 'Video Item', kind: 'button' },
         { key: 'thumbnail', label: 'Thumbnail', kind: 'image' },
@@ -50,6 +52,7 @@ exports.meta = {
     contentSchema: [
         { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
         { key: 'title', type: 'text', label: 'Gallery Title', max: 60 },
+        { key: 'description', type: 'text', label: 'Description', max: 200 },
         {
             key: 'videos', type: 'repeater', label: 'Videos', itemLabel: '{caption}',
             fields: [
@@ -70,6 +73,7 @@ exports.meta = {
                 borderRadius: { all: '{radius.lg}' }
             }
         },
+        header: { base: { display: 'flex', flexDirection: 'column', gap: '{space.1}' } },
         title: {
             base: {
                 fontFamily: '{font.heading}',
@@ -77,6 +81,9 @@ exports.meta = {
                 fontWeight: 700,
                 color: '{color.text}',
             }
+        },
+        description: {
+            base: { fontSize: '{size.sm}', lineHeight: 1.55, color: '{color.muted}' },
         },
         grid: {
             base: {
@@ -135,6 +142,7 @@ exports.meta = {
     defaultContent: {
         useCarousel: false,
         title: 'Featured Videos',
+        description: '',
         videos: [
             { url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', caption: 'Demo Showcase Video', thumbnail: '' }
         ]
@@ -149,16 +157,36 @@ exports.meta = {
         },
         children: [
             {
-                id: 'title',
+                id: 'header',
                 kind: 'element',
-                tag: 'heading',
-                name: 'Gallery Title',
-                props: { level: 3 },
-                bind: { source: 'self', path: 'title' },
-                hideIfEmpty: true,
-                style: {
-                    base: { fontFamily: '{font.heading}', fontSize: '{size.lg}', fontWeight: 700, color: '{color.text}' },
-                },
+                tag: 'stack',
+                name: 'Header',
+                style: { base: { display: 'flex', flexDirection: 'column', gap: '{space.1}' } },
+                children: [
+                    {
+                        id: 'title',
+                        kind: 'element',
+                        tag: 'heading',
+                        name: 'Gallery Title',
+                        props: { level: 3 },
+                        bind: { source: 'self', path: 'title' },
+                        hideIfEmpty: true,
+                        style: {
+                            base: { fontFamily: '{font.heading}', fontSize: '{size.lg}', fontWeight: 700, color: '{color.text}' },
+                        },
+                    },
+                    {
+                        id: 'description',
+                        kind: 'element',
+                        tag: 'text',
+                        name: 'Description',
+                        bind: { source: 'self', path: 'description' },
+                        hideIfEmpty: true,
+                        style: {
+                            base: { fontSize: '{size.sm}', lineHeight: 1.55, color: '{color.muted}' },
+                        },
+                    },
+                ],
             },
             {
                 id: 'grid',

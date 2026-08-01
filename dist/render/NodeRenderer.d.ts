@@ -25,4 +25,5 @@ export declare function NodeRenderer({ node, content, ctx }: NodeRendererProps):
 export declare const CarouselContext: React.Context<{
     emblaApi?: any;
     emblaRef?: any;
+    selectedIndex?: number;
 } | null>;

@@ -12,7 +12,9 @@ exports.meta = {
     interactive: true,
     parts: [
         { key: 'root', label: 'Container', kind: 'container' },
+        { key: 'header', label: 'Header', kind: 'container' },
         { key: 'title', label: 'Title', kind: 'text' },
+        { key: 'description', label: 'Description', kind: 'text' },
         { key: 'list', label: 'List', kind: 'list' },
         { key: 'item', label: 'Item', kind: 'container' },
         { key: 'question', label: 'Question', kind: 'button' },
@@ -33,8 +35,9 @@ exports.meta = {
         },
     ],
     contentSchema: [
-        { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
         { key: 'title', type: 'text', label: 'Title', max: 60 },
+        { key: 'description', type: 'text', label: 'Description', max: 200 },
+        { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
         {
             key: 'items', type: 'repeater', label: 'Questions', min: 1, max: 30, itemLabel: '{question}',
             fields: [
@@ -61,6 +64,10 @@ exports.meta = {
                 fontWeight: 700,
                 color: '{color.text}',
             },
+        },
+        header: { base: { display: 'flex', flexDirection: 'column', gap: '{space.1}' } },
+        description: {
+            base: { fontSize: '{size.sm}', lineHeight: 1.55, color: '{color.muted}' },
         },
         list: { base: { display: 'flex', flexDirection: 'column', gap: '{space.2}' } },
         item: {
@@ -107,6 +114,7 @@ exports.meta = {
     defaultDesign: { openFirst: true, singleOpen: true, marker: 'chevron' },
     defaultContent: {
         title: 'Frequently asked questions',
+        description: '',
         items: [
             { question: 'What is your turnaround time?', answer: 'Most projects wrap in 2-3 weeks.' },
             { question: 'Do you offer ongoing support?', answer: 'Yes, retainer plans are available.' },
@@ -129,16 +137,36 @@ exports.meta = {
         },
         children: [
             {
-                id: 'title',
+                id: 'header',
                 kind: 'element',
-                tag: 'heading',
-                name: 'Title',
-                props: { level: 3 },
-                bind: { source: 'self', path: 'title' },
-                hideIfEmpty: true,
-                style: {
-                    base: { fontFamily: '{font.heading}', fontSize: '{size.lg}', fontWeight: 700, color: '{color.text}' },
-                },
+                tag: 'stack',
+                name: 'Header',
+                style: { base: { display: 'flex', flexDirection: 'column', gap: '{space.1}' } },
+                children: [
+                    {
+                        id: 'title',
+                        kind: 'element',
+                        tag: 'heading',
+                        name: 'Title',
+                        props: { level: 3 },
+                        bind: { source: 'self', path: 'title' },
+                        hideIfEmpty: true,
+                        style: {
+                            base: { fontFamily: '{font.heading}', fontSize: '{size.lg}', fontWeight: 700, color: '{color.text}' },
+                        },
+                    },
+                    {
+                        id: 'description',
+                        kind: 'element',
+                        tag: 'text',
+                        name: 'Description',
+                        bind: { source: 'self', path: 'description' },
+                        hideIfEmpty: true,
+                        style: {
+                            base: { fontSize: '{size.sm}', lineHeight: 1.55, color: '{color.muted}' },
+                        },
+                    },
+                ],
             },
             {
                 id: 'list',

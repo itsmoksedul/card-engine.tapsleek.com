@@ -309,9 +309,15 @@ export function createCarouselLayout(
                     width: "8px", height: "8px", borderRadius: { all: "50%" }, cursor: "pointer",
                     background: { kind: "color", color: "{color.border}" },
                     border: { style: "none" }, padding: { all: "0" },
+                    transition: { property: ["width", "background-color"], duration: 200, easing: "ease" },
                   },
                   hover: { background: { kind: "color", color: "{color.primary}" } },
-                  active: { background: { kind: "color", color: "{color.primary}" } },
+                },
+                activeStyle: {
+                  base: {
+                    width: "20px",
+                    background: { kind: "color", color: "{color.primary}" },
+                  },
                 },
               }
             ]

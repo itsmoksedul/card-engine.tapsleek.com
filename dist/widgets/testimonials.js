@@ -12,7 +12,9 @@ exports.meta = {
     interactive: true,
     parts: [
         { key: 'root', label: 'Container', kind: 'container' },
+        { key: 'header', label: 'Header', kind: 'container' },
         { key: 'title', label: 'Section title', kind: 'text' },
+        { key: 'description', label: 'Section description', kind: 'text' },
         { key: 'list', label: 'List', kind: 'list' },
         { key: 'item', label: 'Testimonial card', kind: 'container' },
         { key: 'mark', label: 'Quote mark', kind: 'icon' },
@@ -46,6 +48,7 @@ exports.meta = {
     ],
     contentSchema: [
         { key: 'title', type: 'text', label: 'Title', max: 60 },
+        { key: 'description', type: 'text', label: 'Description', max: 200 },
         {
             key: 'items', type: 'repeater', label: 'Testimonials', min: 1, max: 20, itemLabel: '{author}',
             fields: [
@@ -61,6 +64,7 @@ exports.meta = {
         root: {
             base: { display: 'flex', flexDirection: 'column', gap: '{space.3}' },
         },
+        header: { base: { display: 'flex', flexDirection: 'column', gap: '{space.1}' } },
         title: {
             base: {
                 fontFamily: '{font.heading}',
@@ -68,6 +72,9 @@ exports.meta = {
                 fontWeight: 700,
                 color: '{color.text}',
             },
+        },
+        description: {
+            base: { fontSize: '{size.sm}', lineHeight: 1.55, color: '{color.muted}' },
         },
         list: { base: { display: 'flex', flexDirection: 'column', gap: '{space.3}' } },
         item: {
@@ -121,6 +128,7 @@ exports.meta = {
     defaultDesign: { layout: 'stack', showAvatar: true, showRating: true, quoteMark: 'icon', useCarousel: false, showArrows: true, showDots: true },
     defaultContent: {
         title: 'What clients say',
+        description: '',
         items: [
             { author: 'Jane Doe', role: 'CEO, Acme Corp', quote: 'Tapsleek made connecting with clients seamless and beautiful.', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb', rating: 5 },
             { author: 'John Smith', role: 'Founder, Startup', quote: 'Highly recommended for any modern professional.', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d', rating: 5 },
@@ -136,16 +144,36 @@ exports.meta = {
         },
         children: [
             {
-                id: 'title',
+                id: 'header',
                 kind: 'element',
-                tag: 'heading',
-                name: 'Section title',
-                props: { level: 3 },
-                bind: { source: 'self', path: 'title' },
-                hideIfEmpty: true,
-                style: {
-                    base: { fontFamily: '{font.heading}', fontSize: '{size.lg}', fontWeight: 700, color: '{color.text}' },
-                },
+                tag: 'stack',
+                name: 'Header',
+                style: { base: { display: 'flex', flexDirection: 'column', gap: '{space.1}' } },
+                children: [
+                    {
+                        id: 'title',
+                        kind: 'element',
+                        tag: 'heading',
+                        name: 'Section title',
+                        props: { level: 3 },
+                        bind: { source: 'self', path: 'title' },
+                        hideIfEmpty: true,
+                        style: {
+                            base: { fontFamily: '{font.heading}', fontSize: '{size.lg}', fontWeight: 700, color: '{color.text}' },
+                        },
+                    },
+                    {
+                        id: 'description',
+                        kind: 'element',
+                        tag: 'text',
+                        name: 'Description',
+                        bind: { source: 'self', path: 'description' },
+                        hideIfEmpty: true,
+                        style: {
+                            base: { fontSize: '{size.sm}', lineHeight: 1.55, color: '{color.muted}' },
+                        },
+                    },
+                ],
             },
             {
                 id: 'list',

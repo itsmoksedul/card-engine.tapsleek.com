@@ -30,7 +30,7 @@ export function GalleryRender({ content, design, cls, ctx }: WidgetRenderProps) 
     <div className={cls('root')}>
       {str(c.title) && <h2 className={cls('title')}>{str(c.title)}</h2>}
       
-      {c.useCarousel ? (
+      {d.useCarousel ? (
         <NativeCarousel cls={cls} items={renderedItems} layout={layout} />
       ) : (
         <div className={cls('list')} data-layout={layout}>

@@ -97,7 +97,12 @@ function compileCss(def, options = {}) {
                     produced += decls.length;
                 }
             }
-            // widget parts → `.ts-card .n<id> .p-<part>`
+            // activeStyle — emitted as `.p-<id>Active` for dynamic active state
+            // e.g. the currently-selected carousel dot gets this class at runtime
+            if ((0, node_1.isElement)(node) && node.activeStyle) {
+                const activeId = `p-${node.id}Active`;
+                produced += pushStyleSet(node.activeStyle, `.${scope} .${activeId}`, bucket, states);
+            }
             if ((0, node_1.isWidget)(node)) {
                 // Merge defaultPartStyles (from widget meta) with node.partStyles so
                 // that widgets using the React render component (no layout tree) still
@@ -138,6 +143,11 @@ function compileCss(def, options = {}) {
                                 states.push({ selector: `${layoutSel}:${state}`, decls });
                                 produced += decls.length;
                             }
+                        }
+                        // activeStyle → emitted as .p-<id>Active
+                        if (layoutNode.activeStyle) {
+                            const activeSel = `.${scope} .p-${layoutNode.id}Active`;
+                            produced += pushStyleSet(layoutNode.activeStyle, activeSel, bucket, states);
                         }
                     });
                 }

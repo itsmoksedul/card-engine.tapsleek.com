@@ -1,7 +1,7 @@
 "use client";
+import useEmblaCarousel from "embla-carousel-react";
 import DOMPurify from "isomorphic-dompurify";
 import React from "react";
-import useEmblaCarousel from "embla-carousel-react";
 import type { ElementNode, Node, SlotNode, WidgetNode } from "../types/node";
 import { getWidgetMeta } from "../widgets";
 import { resolveBinding } from "./resolveBinding";
@@ -41,19 +41,35 @@ export function NodeRenderer({ node, content, ctx }: NodeRendererProps) {
   return null;
 }
 
-export const CarouselContext = React.createContext<{ emblaApi?: any; emblaRef?: any } | null>(null);
+export const CarouselContext = React.createContext<{
+  emblaApi?: any;
+  emblaRef?: any;
+  selectedIndex?: number;
+} | null>(null);
 
 function CarouselProvider({ node, content, ctx, dom }: any) {
-  const align = content?.carouselAlign ?? "start";
+  const align = content?._design?.carouselAlign ?? "start";
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align });
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!emblaApi) return;
+    const onSelect = () => {
+      setSelectedIndex(emblaApi.selectedScrollSnap());
+    };
+    emblaApi.on("select", onSelect);
+    onSelect();
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
+  }, [emblaApi]);
+
   const kids = (node.children ?? []).map((child: any) => (
     <NodeRenderer key={child.id} node={child} content={content} ctx={ctx} />
   ));
   return (
-    <CarouselContext.Provider value={{ emblaApi, emblaRef }}>
-      <div {...dom}>
-        {kids}
-      </div>
+    <CarouselContext.Provider value={{ emblaApi, emblaRef, selectedIndex }}>
+      <div {...dom}>{kids}</div>
     </CarouselContext.Provider>
   );
 }
@@ -157,7 +173,17 @@ function ElementRenderer({
         ? `h${clampLevel(props.level)}`
         : TAG_MAP[node.tag] || "div";
 
-  const dom: Record<string, any> = { className: `n${node.id} p-${node.id}` };
+  let isCarouselDotActive = false;
+  if (
+    props.action === "carousel-dot" &&
+    ctxEmbla?.selectedIndex === ctx.repeatIndex
+  ) {
+    isCarouselDotActive = true;
+  }
+
+  const dom: Record<string, any> = {
+    className: `n${node.id} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}`,
+  };
 
   // Only forward attributes the DOM actually understands.
   for (const [key, value] of Object.entries(props)) {
@@ -173,10 +199,12 @@ function ElementRenderer({
 
   switch (node.tag) {
     case "carousel-root": {
-      return <CarouselProvider node={node} content={content} ctx={ctx} dom={dom} />;
+      return (
+        <CarouselProvider node={node} content={content} ctx={ctx} dom={dom} />
+      );
     }
     case "carousel": {
-      const perView = Number(content?.carouselSlidesPerView) || 1.25;
+      const perView = Number(content?._design?.carouselSlidesPerView) || 1.25;
       const widthPct = 100 / perView;
       const trackId = `track-${node.id}`;
       const kids = (node.children ?? []).map((child) => (
@@ -185,13 +213,21 @@ function ElementRenderer({
 
       return (
         <React.Fragment>
-          <style dangerouslySetInnerHTML={{ __html: `
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
             .${trackId} > div {
               flex: 0 0 ${widthPct}%;
               min-width: 0;
             }
-          ` }} />
-          <div className="embla" ref={ctxEmbla?.emblaRef} style={{ overflow: "hidden" }}>
+          `,
+            }}
+          />
+          <div
+            className="embla"
+            ref={ctxEmbla?.emblaRef}
+            style={{ overflow: "hidden" }}
+          >
             <div {...dom} className={`${dom.className} ${trackId}`}>
               {kids}
             </div>
@@ -212,6 +248,15 @@ function ElementRenderer({
       dom.src = src;
       dom.alt = props.alt ?? "";
       dom.loading = props.loading ?? "lazy";
+
+      const ratio = content?._design?.ratio;
+      if (ratio && ratio !== "auto") {
+        dom.style = { ...dom.style, aspectRatio: ratio };
+      }
+      const fit = content?._design?.fit;
+      if (fit) {
+        dom.style = { ...dom.style, objectFit: fit };
+      }
       break;
     }
     case "icon": {
@@ -219,7 +264,9 @@ function ElementRenderer({
       // static prop. Bound wins so an icon leaf renders the user's chosen icon.
       const iconName = bound ?? props.name ?? "";
       dom["data-icon"] =
-        typeof iconName === "string" ? iconName : (iconName as any)?.name ?? "";
+        typeof iconName === "string"
+          ? iconName
+          : ((iconName as any)?.name ?? "");
       dom["aria-hidden"] = true;
       if (props.strokeWidth) {
         dom.style = { ...dom.style, strokeWidth: props.strokeWidth };
@@ -327,7 +374,11 @@ function ElementRenderer({
         if (ctx.onActionClick) ctx.onActionClick(action);
       };
 
-      if (action === "link" && node.id !== "connectNow" && node.id !== "saveContact") {
+      if (
+        action === "link" &&
+        node.id !== "connectNow" &&
+        node.id !== "saveContact"
+      ) {
         const href = bound ?? props.href;
         if (node.tag === "link") {
           if (ctx.isEditing || ctx.onActionClick) {
@@ -363,7 +414,11 @@ function ElementRenderer({
             ctx.track({ type: "CONNECT_CLICK" });
           };
         }
-      } else if (action === "carousel-prev" || action === "carousel-next" || action === "carousel-dot") {
+      } else if (
+        action === "carousel-prev" ||
+        action === "carousel-next" ||
+        action === "carousel-dot"
+      ) {
         dom.onClick = interceptClick;
       } else if (action === "share") {
         if (ctx.isEditing || ctx.onActionClick) {
@@ -429,7 +484,10 @@ function ElementRenderer({
       {node.children?.map((child) => (
         <NodeRenderer key={child.id} node={child} content={content} ctx={ctx} />
       ))}
-      {node.id === ctx.rootId && !ctx.placeholderId && ctx.renderUserBlocks && ctx.renderUserBlocks()}
+      {node.id === ctx.rootId &&
+        !ctx.placeholderId &&
+        ctx.renderUserBlocks &&
+        ctx.renderUserBlocks()}
     </>,
   );
 }
@@ -482,7 +540,10 @@ function GatedWidgetUpsell({
   );
 }
 
-function mergeLayoutTrees(instance: ElementNode, defaultLayout: ElementNode): ElementNode {
+function mergeLayoutTrees(
+  instance: ElementNode,
+  defaultLayout: ElementNode,
+): ElementNode {
   const merged: ElementNode = { ...instance };
   const defaultChildrenMap = new Map<string, ElementNode>();
   if (defaultLayout.children) {
@@ -607,7 +668,11 @@ function WidgetRenderer({
     } else {
       // Optional block widgets (FAQ, Gallery, Contact Form, Video, Custom HTML, etc.)
       if (!ctx.isRenderingUserBlocks) {
-        if (node.id === ctx.placeholderId && ctx.renderUserBlocks && !ctx.injectBefore) {
+        if (
+          node.id === ctx.placeholderId &&
+          ctx.renderUserBlocks &&
+          !ctx.injectBefore
+        ) {
           return <>{ctx.renderUserBlocks()}</>;
         }
         return null;
@@ -636,7 +701,7 @@ function WidgetRenderer({
     ? undefined
     : node.layout && widgetMeta?.defaultLayout
       ? mergeLayoutTrees(node.layout, widgetMeta.defaultLayout)
-      : node.layout ?? widgetMeta?.defaultLayout;
+      : (node.layout ?? widgetMeta?.defaultLayout);
 
   // Deprecated widgets or widgets without a custom renderer fall back to layout tree.
   if (layout) {
@@ -689,16 +754,17 @@ function WidgetRenderer({
       data-node-id={ctx.isEditing ? node.id : undefined}
       data-widget={node.widget}
     >
-      <Widget
-        content={widgetContent}
-        design={design}
-        cls={cls}
-        ctx={ctx}
-      />
+      <Widget content={widgetContent} design={design} cls={cls} ctx={ctx} />
     </div>
   );
 
-  if (!ctx.isEditing && Array.isArray(ctx.blocks) && node.id === ctx.placeholderId && ctx.injectBefore && ctx.renderUserBlocks) {
+  if (
+    !ctx.isEditing &&
+    Array.isArray(ctx.blocks) &&
+    node.id === ctx.placeholderId &&
+    ctx.injectBefore &&
+    ctx.renderUserBlocks
+  ) {
     return (
       <React.Fragment>
         {ctx.renderUserBlocks()}

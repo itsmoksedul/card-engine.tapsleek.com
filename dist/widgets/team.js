@@ -25,20 +25,40 @@ exports.meta = {
         },
         children: [
             {
-                id: "heading",
+                id: "header",
                 kind: "element",
-                tag: "heading",
-                props: { level: 3 },
-                hideIfEmpty: true,
-                bind: { source: "self", path: "heading" },
-                style: {
-                    base: {
-                        fontFamily: "{font.heading}",
-                        fontSize: "{size.lg}",
-                        fontWeight: 700,
-                        color: "{color.text}",
+                tag: "stack",
+                name: "Header",
+                style: { base: { display: "flex", flexDirection: "column", gap: "{space.1}" } },
+                children: [
+                    {
+                        id: "heading",
+                        kind: "element",
+                        tag: "heading",
+                        props: { level: 3 },
+                        hideIfEmpty: true,
+                        bind: { source: "self", path: "heading" },
+                        style: {
+                            base: {
+                                fontFamily: "{font.heading}",
+                                fontSize: "{size.lg}",
+                                fontWeight: 700,
+                                color: "{color.text}",
+                            },
+                        },
                     },
-                },
+                    {
+                        id: "description",
+                        kind: "element",
+                        tag: "text",
+                        name: "Description",
+                        bind: { source: "self", path: "description" },
+                        hideIfEmpty: true,
+                        style: {
+                            base: { fontSize: "{size.sm}", lineHeight: 1.55, color: "{color.muted}" },
+                        },
+                    },
+                ],
             },
             {
                 id: "list",
@@ -184,6 +204,7 @@ exports.meta = {
     ],
     contentSchema: [
         { key: "heading", type: "text", label: "Heading", max: 60 },
+        { key: "description", type: "text", label: "Description", max: 200 },
         {
             key: "items",
             type: "repeater",
@@ -200,19 +221,10 @@ exports.meta = {
     defaultDesign: { layout: "grid-3", shape: "circle", align: "center", useCarousel: false, showArrows: true, showDots: true },
     defaultContent: {
         heading: "Meet the Team",
+        description: "",
         items: [
-            {
-                name: "Alice Smith",
-                role: "Founder & CEO",
-                image: "",
-                bio: "10+ years scaling tech startups.",
-            },
-            {
-                name: "Bob Jones",
-                role: "Head of Design",
-                image: "",
-                bio: "Obsessed with typography.",
-            },
+            { name: "Alice Smith", role: "Founder & CEO", image: "", bio: "10+ years scaling tech startups." },
+            { name: "Bob Jones", role: "Head of Design", image: "", bio: "Obsessed with typography." },
         ],
     },
 };

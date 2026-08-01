@@ -71,6 +71,11 @@ export interface ElementNode extends BaseNode {
     /** If set, repeats this element for each item in the bound array. */
     repeat?: Binding;
     children?: Node[];
+    /**
+     * An alternate style set applied when this node is in its "active" state
+     * (e.g. the currently-selected carousel dot). Compiled to `.p-<id>Active`.
+     */
+    activeStyle?: StyleSet;
 }
 export interface WidgetNode extends BaseNode {
     kind: 'widget';

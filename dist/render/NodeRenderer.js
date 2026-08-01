@@ -7,9 +7,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CarouselContext = void 0;
 exports.NodeRenderer = NodeRenderer;
 const jsx_runtime_1 = require("react/jsx-runtime");
+const embla_carousel_react_1 = __importDefault(require("embla-carousel-react"));
 const isomorphic_dompurify_1 = __importDefault(require("isomorphic-dompurify"));
 const react_1 = __importDefault(require("react"));
-const embla_carousel_react_1 = __importDefault(require("embla-carousel-react"));
 const widgets_1 = require("../widgets");
 const resolveBinding_1 = require("./resolveBinding");
 const widgets_2 = require("./widgets");
@@ -25,10 +25,23 @@ function NodeRenderer({ node, content, ctx }) {
 }
 exports.CarouselContext = react_1.default.createContext(null);
 function CarouselProvider({ node, content, ctx, dom }) {
-    const align = content?.carouselAlign ?? "start";
+    const align = content?._design?.carouselAlign ?? "start";
     const [emblaRef, emblaApi] = (0, embla_carousel_react_1.default)({ loop: false, align });
+    const [selectedIndex, setSelectedIndex] = react_1.default.useState(0);
+    react_1.default.useEffect(() => {
+        if (!emblaApi)
+            return;
+        const onSelect = () => {
+            setSelectedIndex(emblaApi.selectedScrollSnap());
+        };
+        emblaApi.on("select", onSelect);
+        onSelect();
+        return () => {
+            emblaApi.off("select", onSelect);
+        };
+    }, [emblaApi]);
     const kids = (node.children ?? []).map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)));
-    return ((0, jsx_runtime_1.jsx)(exports.CarouselContext.Provider, { value: { emblaApi, emblaRef }, children: (0, jsx_runtime_1.jsx)("div", { ...dom, children: kids }) }));
+    return ((0, jsx_runtime_1.jsx)(exports.CarouselContext.Provider, { value: { emblaApi, emblaRef, selectedIndex }, children: (0, jsx_runtime_1.jsx)("div", { ...dom, children: kids }) }));
 }
 // ─── Elements ────────────────────────────────────────────────────────────────
 const TAG_MAP = {
@@ -102,7 +115,14 @@ function ElementRenderer({ node, content, ctx, }) {
         : node.tag === "heading"
             ? `h${clampLevel(props.level)}`
             : TAG_MAP[node.tag] || "div";
-    const dom = { className: `n${node.id} p-${node.id}` };
+    let isCarouselDotActive = false;
+    if (props.action === "carousel-dot" &&
+        ctxEmbla?.selectedIndex === ctx.repeatIndex) {
+        isCarouselDotActive = true;
+    }
+    const dom = {
+        className: `n${node.id} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}`,
+    };
     // Only forward attributes the DOM actually understands.
     for (const [key, value] of Object.entries(props)) {
         if (ENGINE_PROPS.has(key))
@@ -118,19 +138,21 @@ function ElementRenderer({ node, content, ctx, }) {
     let children = null;
     switch (node.tag) {
         case "carousel-root": {
-            return (0, jsx_runtime_1.jsx)(CarouselProvider, { node: node, content: content, ctx: ctx, dom: dom });
+            return ((0, jsx_runtime_1.jsx)(CarouselProvider, { node: node, content: content, ctx: ctx, dom: dom }));
         }
         case "carousel": {
-            const perView = Number(content?.carouselSlidesPerView) || 1.25;
+            const perView = Number(content?._design?.carouselSlidesPerView) || 1.25;
             const widthPct = 100 / perView;
             const trackId = `track-${node.id}`;
             const kids = (node.children ?? []).map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)));
-            return ((0, jsx_runtime_1.jsxs)(react_1.default.Fragment, { children: [(0, jsx_runtime_1.jsx)("style", { dangerouslySetInnerHTML: { __html: `
+            return ((0, jsx_runtime_1.jsxs)(react_1.default.Fragment, { children: [(0, jsx_runtime_1.jsx)("style", { dangerouslySetInnerHTML: {
+                            __html: `
             .${trackId} > div {
               flex: 0 0 ${widthPct}%;
               min-width: 0;
             }
-          ` } }), (0, jsx_runtime_1.jsx)("div", { className: "embla", ref: ctxEmbla?.emblaRef, style: { overflow: "hidden" }, children: (0, jsx_runtime_1.jsx)("div", { ...dom, className: `${dom.className} ${trackId}`, children: kids }) })] }));
+          `,
+                        } }), (0, jsx_runtime_1.jsx)("div", { className: "embla", ref: ctxEmbla?.emblaRef, style: { overflow: "hidden" }, children: (0, jsx_runtime_1.jsx)("div", { ...dom, className: `${dom.className} ${trackId}`, children: kids }) })] }));
             break;
         }
         case "image": {
@@ -145,6 +167,14 @@ function ElementRenderer({ node, content, ctx, }) {
             dom.src = src;
             dom.alt = props.alt ?? "";
             dom.loading = props.loading ?? "lazy";
+            const ratio = content?._design?.ratio;
+            if (ratio && ratio !== "auto") {
+                dom.style = { ...dom.style, aspectRatio: ratio };
+            }
+            const fit = content?._design?.fit;
+            if (fit) {
+                dom.style = { ...dom.style, objectFit: fit };
+            }
             break;
         }
         case "icon": {
@@ -152,7 +182,9 @@ function ElementRenderer({ node, content, ctx, }) {
             // static prop. Bound wins so an icon leaf renders the user's chosen icon.
             const iconName = bound ?? props.name ?? "";
             dom["data-icon"] =
-                typeof iconName === "string" ? iconName : iconName?.name ?? "";
+                typeof iconName === "string"
+                    ? iconName
+                    : (iconName?.name ?? "");
             dom["aria-hidden"] = true;
             if (props.strokeWidth) {
                 dom.style = { ...dom.style, strokeWidth: props.strokeWidth };
@@ -239,7 +271,9 @@ function ElementRenderer({ node, content, ctx, }) {
                 if (ctx.onActionClick)
                     ctx.onActionClick(action);
             };
-            if (action === "link" && node.id !== "connectNow" && node.id !== "saveContact") {
+            if (action === "link" &&
+                node.id !== "connectNow" &&
+                node.id !== "saveContact") {
                 const href = bound ?? props.href;
                 if (node.tag === "link") {
                     if (ctx.isEditing || ctx.onActionClick) {
@@ -282,7 +316,9 @@ function ElementRenderer({ node, content, ctx, }) {
                     };
                 }
             }
-            else if (action === "carousel-prev" || action === "carousel-next" || action === "carousel-dot") {
+            else if (action === "carousel-prev" ||
+                action === "carousel-next" ||
+                action === "carousel-dot") {
                 dom.onClick = interceptClick;
             }
             else if (action === "share") {
@@ -347,7 +383,10 @@ function ElementRenderer({ node, content, ctx, }) {
     if (VOID_DOM_TAGS.has(tag) || dom.dangerouslySetInnerHTML) {
         return react_1.default.createElement(tag, dom);
     }
-    return react_1.default.createElement(tag, dom, (0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [children, node.children?.map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id))), node.id === ctx.rootId && !ctx.placeholderId && ctx.renderUserBlocks && ctx.renderUserBlocks()] }));
+    return react_1.default.createElement(tag, dom, (0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [children, node.children?.map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id))), node.id === ctx.rootId &&
+                !ctx.placeholderId &&
+                ctx.renderUserBlocks &&
+                ctx.renderUserBlocks()] }));
 }
 // ─── Widgets ─────────────────────────────────────────────────────────────────
 /**
@@ -473,7 +512,9 @@ function WidgetRenderer({ node, content, ctx, }) {
         else {
             // Optional block widgets (FAQ, Gallery, Contact Form, Video, Custom HTML, etc.)
             if (!ctx.isRenderingUserBlocks) {
-                if (node.id === ctx.placeholderId && ctx.renderUserBlocks && !ctx.injectBefore) {
+                if (node.id === ctx.placeholderId &&
+                    ctx.renderUserBlocks &&
+                    !ctx.injectBefore) {
                     return (0, jsx_runtime_1.jsx)(jsx_runtime_1.Fragment, { children: ctx.renderUserBlocks() });
                 }
                 return null;
@@ -497,7 +538,7 @@ function WidgetRenderer({ node, content, ctx, }) {
         ? undefined
         : node.layout && widgetMeta?.defaultLayout
             ? mergeLayoutTrees(node.layout, widgetMeta.defaultLayout)
-            : node.layout ?? widgetMeta?.defaultLayout;
+            : (node.layout ?? widgetMeta?.defaultLayout);
     // Deprecated widgets or widgets without a custom renderer fall back to layout tree.
     if (layout) {
         const mergedLayout = {
@@ -521,7 +562,11 @@ function WidgetRenderer({ node, content, ctx, }) {
     const design = node.design ?? {};
     const cls = (part) => `p-${part}`;
     const renderedWidget = ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, "data-widget": node.widget, children: (0, jsx_runtime_1.jsx)(Widget, { content: widgetContent, design: design, cls: cls, ctx: ctx }) }));
-    if (!ctx.isEditing && Array.isArray(ctx.blocks) && node.id === ctx.placeholderId && ctx.injectBefore && ctx.renderUserBlocks) {
+    if (!ctx.isEditing &&
+        Array.isArray(ctx.blocks) &&
+        node.id === ctx.placeholderId &&
+        ctx.injectBefore &&
+        ctx.renderUserBlocks) {
         return ((0, jsx_runtime_1.jsxs)(react_1.default.Fragment, { children: [ctx.renderUserBlocks(), renderedWidget] }));
     }
     return renderedWidget;

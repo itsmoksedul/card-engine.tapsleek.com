@@ -24,6 +24,38 @@ export const meta: WidgetModule['meta'] = {
     },
     children: [
       {
+        id: 'sectionHeader',
+        kind: 'element',
+        tag: 'stack',
+        name: 'Header',
+        style: { base: { display: 'flex', flexDirection: 'column', gap: '{space.1}' } },
+        children: [
+          {
+            id: 'sectionTitle',
+            kind: 'element',
+            tag: 'heading',
+            name: 'Title',
+            props: { level: 3 },
+            bind: { source: 'self', path: 'title' },
+            hideIfEmpty: true,
+            style: {
+              base: { fontFamily: '{font.heading}', fontSize: '{size.lg}', fontWeight: 700, color: '{color.text}' },
+            },
+          },
+          {
+            id: 'sectionDesc',
+            kind: 'element',
+            tag: 'text',
+            name: 'Description',
+            bind: { source: 'self', path: 'description' },
+            hideIfEmpty: true,
+            style: {
+              base: { fontSize: '{size.sm}', lineHeight: 1.55, color: '{color.muted}' },
+            },
+          },
+        ],
+      },
+      {
         id: 'list',
         kind: 'element',
         tag: 'grid',
@@ -101,6 +133,8 @@ export const meta: WidgetModule['meta'] = {
   designSchema: [],
   defaultDesign: {},
   contentSchema: [
+    { key: 'title', type: 'text', label: 'Title', max: 60 },
+    { key: 'description', type: 'text', label: 'Description', max: 200 },
     {
       key: 'items',
       type: 'repeater',
@@ -114,6 +148,8 @@ export const meta: WidgetModule['meta'] = {
     },
   ],
   defaultContent: {
+    title: '',
+    description: '',
     items: [
       { icon: 'Zap', title: 'Fast', description: 'Lightning fast performance.' },
       { icon: 'Shield', title: 'Secure', description: 'Enterprise grade security.' },
@@ -122,7 +158,7 @@ export const meta: WidgetModule['meta'] = {
 };
 
 export const previews = {
-  empty: { items: [] },
+  empty: { title: '', description: '', items: [] },
   typical: meta.defaultContent,
-  stress: { items: Array(6).fill({ icon: 'Star', title: 'Very Long Feature Title', description: 'A long description that might wrap to multiple lines and cause layout issues.' }) },
+  stress: { title: 'A'.repeat(60), description: '', items: Array(6).fill({ icon: 'Star', title: 'Very Long Feature Title', description: 'A long description that might wrap to multiple lines and cause layout issues.' }) },
 };
