@@ -11,9 +11,7 @@ export interface RenderCtx {
     onActionClick?: (action: string) => void;
     renderUserBlocks?: () => React.ReactNode;
     rootId?: string;
-    _blocksInjected?: {
-        current: boolean;
-    };
+    placeholderId?: string | null;
 }
 export interface NodeRendererProps {
     node: Node;

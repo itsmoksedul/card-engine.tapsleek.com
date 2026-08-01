@@ -1,6 +1,7 @@
 import React from 'react';
 import type { TemplateDefinition } from '../types/definition';
 import type { BlockInstance, CardTheme } from '../types/block';
+import { walkNodes, isWidget } from '../types/node';
 import { NodeRenderer, type RenderCtx } from './NodeRenderer';
 import { BlockRenderer } from './BlockRenderer';
 
@@ -37,6 +38,34 @@ export function CardRenderer({
   blocks,
   theme,
 }: CardRendererProps) {
+  const placeholderId = React.useMemo(() => {
+    if (isEditing || !blocks || blocks.length === 0) return null;
+    let id: string | null = null;
+    walkNodes(definition.root, (n) => {
+      if (id) return;
+      if (isWidget(n)) {
+        const w = (n.widget || '').toUpperCase();
+        const isCoreWidget = [
+          'PROFILE',
+          'CONNECT_BUTTONS',
+          'HEADER',
+          'NAV',
+          'CONTACT_LINKS',
+          'CONTACT_BUTTONS',
+          'LINK_BUTTONS',
+          'CUSTOM_LINKS',
+          'LINKS',
+          'SOCIAL_ICONS',
+          'SOCIAL_LINKS',
+          'SOCIAL',
+          'COPYRIGHT',
+        ].includes(w);
+        if (!isCoreWidget) id = n.id;
+      }
+    });
+    return id;
+  }, [definition.root, isEditing, blocks]);
+
   const ctx: RenderCtx = {
     card,
     links,
@@ -46,9 +75,10 @@ export function CardRenderer({
     track: onTrack || (() => {}),
     onActionClick,
     rootId: definition.root.id,
-    _blocksInjected: { current: false },
+    placeholderId,
     renderUserBlocks: () => {
       if (!blocks || blocks.length === 0) return null;
+      const blockCtx: RenderCtx = { ...ctx, renderUserBlocks: undefined };
       return (
         <React.Fragment>
           {blocks
@@ -63,7 +93,7 @@ export function CardRenderer({
                   key={b.id}
                   definition={definition}
                   block={normalizedBlock}
-                  ctx={ctx} // Wait! `ctx` refers to the outer const, so it will work because JS hoists it
+                  ctx={blockCtx}
                 />
               );
             })}

@@ -6,9 +6,40 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CardRenderer = CardRenderer;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = __importDefault(require("react"));
+const node_1 = require("../types/node");
 const NodeRenderer_1 = require("./NodeRenderer");
 const BlockRenderer_1 = require("./BlockRenderer");
 function CardRenderer({ definition, content, card, links, isEditing, gatedWidgetKeys, onTrack, onActionClick, blocks, theme, }) {
+    const placeholderId = react_1.default.useMemo(() => {
+        if (isEditing || !blocks || blocks.length === 0)
+            return null;
+        let id = null;
+        (0, node_1.walkNodes)(definition.root, (n) => {
+            if (id)
+                return;
+            if ((0, node_1.isWidget)(n)) {
+                const w = (n.widget || '').toUpperCase();
+                const isCoreWidget = [
+                    'PROFILE',
+                    'CONNECT_BUTTONS',
+                    'HEADER',
+                    'NAV',
+                    'CONTACT_LINKS',
+                    'CONTACT_BUTTONS',
+                    'LINK_BUTTONS',
+                    'CUSTOM_LINKS',
+                    'LINKS',
+                    'SOCIAL_ICONS',
+                    'SOCIAL_LINKS',
+                    'SOCIAL',
+                    'COPYRIGHT',
+                ].includes(w);
+                if (!isCoreWidget)
+                    id = n.id;
+            }
+        });
+        return id;
+    }, [definition.root, isEditing, blocks]);
     const ctx = {
         card,
         links,
@@ -18,10 +49,11 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
         track: onTrack || (() => { }),
         onActionClick,
         rootId: definition.root.id,
-        _blocksInjected: { current: false },
+        placeholderId,
         renderUserBlocks: () => {
             if (!blocks || blocks.length === 0)
                 return null;
+            const blockCtx = { ...ctx, renderUserBlocks: undefined };
             return ((0, jsx_runtime_1.jsx)(react_1.default.Fragment, { children: blocks
                     .filter((b) => b.hidden !== true && b.isVisible !== false)
                     .map((b) => {
@@ -29,7 +61,7 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
                         ...b,
                         widget: b.widget || b.type,
                     };
-                    return ((0, jsx_runtime_1.jsx)(BlockRenderer_1.BlockRenderer, { definition: definition, block: normalizedBlock, ctx: ctx }, b.id));
+                    return ((0, jsx_runtime_1.jsx)(BlockRenderer_1.BlockRenderer, { definition: definition, block: normalizedBlock, ctx: blockCtx }, b.id));
                 }) }));
         },
     };

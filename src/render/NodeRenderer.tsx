@@ -17,7 +17,7 @@ export interface RenderCtx {
   onActionClick?: (action: string) => void;
   renderUserBlocks?: () => React.ReactNode;
   rootId?: string;
-  _blocksInjected?: { current: boolean };
+  placeholderId?: string | null;
 }
 
 export interface NodeRendererProps {
@@ -323,7 +323,7 @@ function ElementRenderer({
       {node.children?.map((child) => (
         <NodeRenderer key={child.id} node={child} content={content} ctx={ctx} />
       ))}
-      {node.id === ctx.rootId && !ctx._blocksInjected?.current && ctx.renderUserBlocks && ctx.renderUserBlocks()}
+      {node.id === ctx.rootId && !ctx.placeholderId && ctx.renderUserBlocks && ctx.renderUserBlocks()}
     </>,
   );
 }
@@ -498,18 +498,9 @@ function WidgetRenderer({
       }
     } else {
       // Optional block widgets (FAQ, Gallery, Contact Form, Video, Custom HTML, etc.)
-      if (!ctx._blocksInjected) ctx._blocksInjected = { current: false };
-      
-      if (ctx._blocksInjected.current) {
-        return null;
-      }
-
-      ctx._blocksInjected.current = true;
-
-      if (ctx.renderUserBlocks) {
+      if (node.id === ctx.placeholderId && ctx.renderUserBlocks) {
         return <>{ctx.renderUserBlocks()}</>;
       }
-
       return null;
     }
   }
