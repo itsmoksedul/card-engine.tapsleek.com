@@ -1,6 +1,6 @@
 "use client";
-import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
+import useEmblaCarousel from "embla-carousel-react";
 import DOMPurify from "isomorphic-dompurify";
 import React from "react";
 import type { ElementNode, Node, SlotNode, WidgetNode } from "../types/node";
@@ -55,10 +55,19 @@ function CarouselProvider({ node, content, ctx, dom }: any) {
   const autoplayDelay = Number(content?._design?.carouselAutoplayDelay) || 3000;
 
   const plugins = React.useMemo(() => {
-    return autoplay ? [Autoplay({ delay: autoplayDelay, stopOnInteraction: true })] : [];
+    return [
+      Autoplay({
+        delay: autoplayDelay,
+        stopOnInteraction: true,
+        active: autoplay,
+      }),
+    ];
   }, [autoplay, autoplayDelay]);
 
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop, align }, plugins);
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { loop, align, containScroll: false },
+    plugins,
+  );
   const [selectedIndex, setSelectedIndex] = React.useState(0);
 
   React.useEffect(() => {
@@ -75,9 +84,17 @@ function CarouselProvider({ node, content, ctx, dom }: any) {
 
   React.useEffect(() => {
     if (emblaApi) {
-      emblaApi.reInit({ loop, align }, plugins);
+      emblaApi.reInit({ loop, align, containScroll: false }, plugins);
+      const autoplayPlugin = emblaApi.plugins().autoplay;
+      if (autoplayPlugin) {
+        if (autoplay) {
+          autoplayPlugin.play();
+        } else {
+          autoplayPlugin.stop();
+        }
+      }
     }
-  }, [emblaApi, align, loop, plugins]);
+  }, [emblaApi, align, loop, plugins, autoplay]);
 
   const kids = (node.children ?? []).map((child: any) => (
     <NodeRenderer key={child.id} node={child} content={content} ctx={ctx} />
@@ -151,9 +168,7 @@ function ElementRenderer({
   const ctxEmbla = React.useContext(CarouselContext);
   if (node.visibleIf) {
     const { key, equals } = node.visibleIf;
-    const val =
-      content?._design?.[key] ??
-      ctx.selfData?.[key];
+    const val = content?._design?.[key] ?? ctx.selfData?.[key];
     const isVisible = val === equals || (equals === false && !val);
     if (!isVisible) return null;
   }
@@ -741,7 +756,10 @@ function WidgetRenderer({
       >
         <NodeRenderer
           node={mergedLayout}
-          content={{ [node.key]: widgetContent, _design: { ...(node.design || {}), ...(widgetContent || {}) } }}
+          content={{
+            [node.key]: widgetContent,
+            _design: { ...(node.design || {}), ...(widgetContent || {}) },
+          }}
           ctx={{ ...ctx, selfData: widgetContent }}
         />
       </div>

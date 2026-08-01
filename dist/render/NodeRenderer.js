@@ -7,8 +7,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CarouselContext = void 0;
 exports.NodeRenderer = NodeRenderer;
 const jsx_runtime_1 = require("react/jsx-runtime");
-const embla_carousel_react_1 = __importDefault(require("embla-carousel-react"));
 const embla_carousel_autoplay_1 = __importDefault(require("embla-carousel-autoplay"));
+const embla_carousel_react_1 = __importDefault(require("embla-carousel-react"));
 const isomorphic_dompurify_1 = __importDefault(require("isomorphic-dompurify"));
 const react_1 = __importDefault(require("react"));
 const widgets_1 = require("../widgets");
@@ -31,9 +31,15 @@ function CarouselProvider({ node, content, ctx, dom }) {
     const autoplay = content?._design?.carouselAutoplay === true;
     const autoplayDelay = Number(content?._design?.carouselAutoplayDelay) || 3000;
     const plugins = react_1.default.useMemo(() => {
-        return autoplay ? [(0, embla_carousel_autoplay_1.default)({ delay: autoplayDelay, stopOnInteraction: true })] : [];
+        return [
+            (0, embla_carousel_autoplay_1.default)({
+                delay: autoplayDelay,
+                stopOnInteraction: true,
+                active: autoplay,
+            }),
+        ];
     }, [autoplay, autoplayDelay]);
-    const [emblaRef, emblaApi] = (0, embla_carousel_react_1.default)({ loop, align }, plugins);
+    const [emblaRef, emblaApi] = (0, embla_carousel_react_1.default)({ loop, align, containScroll: false }, plugins);
     const [selectedIndex, setSelectedIndex] = react_1.default.useState(0);
     react_1.default.useEffect(() => {
         if (!emblaApi)
@@ -49,9 +55,18 @@ function CarouselProvider({ node, content, ctx, dom }) {
     }, [emblaApi]);
     react_1.default.useEffect(() => {
         if (emblaApi) {
-            emblaApi.reInit({ loop, align }, plugins);
+            emblaApi.reInit({ loop, align, containScroll: false }, plugins);
+            const autoplayPlugin = emblaApi.plugins().autoplay;
+            if (autoplayPlugin) {
+                if (autoplay) {
+                    autoplayPlugin.play();
+                }
+                else {
+                    autoplayPlugin.stop();
+                }
+            }
         }
-    }, [emblaApi, align, loop, plugins]);
+    }, [emblaApi, align, loop, plugins, autoplay]);
     const kids = (node.children ?? []).map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)));
     return ((0, jsx_runtime_1.jsx)(exports.CarouselContext.Provider, { value: { emblaApi, emblaRef, selectedIndex }, children: (0, jsx_runtime_1.jsx)("div", { ...dom, children: kids }) }));
 }
@@ -105,8 +120,7 @@ function ElementRenderer({ node, content, ctx, }) {
     const ctxEmbla = react_1.default.useContext(exports.CarouselContext);
     if (node.visibleIf) {
         const { key, equals } = node.visibleIf;
-        const val = content?._design?.[key] ??
-            ctx.selfData?.[key];
+        const val = content?._design?.[key] ?? ctx.selfData?.[key];
         const isVisible = val === equals || (equals === false && !val);
         if (!isVisible)
             return null;
@@ -565,7 +579,10 @@ function WidgetRenderer({ node, content, ctx, }) {
                 },
             },
         };
-        return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-widget": node.widget, "data-node-id": ctx.isEditing ? node.id : undefined, children: (0, jsx_runtime_1.jsx)(NodeRenderer, { node: mergedLayout, content: { [node.key]: widgetContent, _design: { ...(node.design || {}), ...(widgetContent || {}) } }, ctx: { ...ctx, selfData: widgetContent } }) }));
+        return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-widget": node.widget, "data-node-id": ctx.isEditing ? node.id : undefined, children: (0, jsx_runtime_1.jsx)(NodeRenderer, { node: mergedLayout, content: {
+                    [node.key]: widgetContent,
+                    _design: { ...(node.design || {}), ...(widgetContent || {}) },
+                }, ctx: { ...ctx, selfData: widgetContent } }) }));
     }
     // No layout and no custom Widget renderer — this shouldn't happen in normal flow
     // (all widgets have either a layout or a renderer), but handle it gracefully.
