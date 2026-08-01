@@ -8,6 +8,7 @@ export interface LinkTypeDef {
     placeholder?: string;
     tier?: "free" | "pro";
     color?: string;
+    prefix?: string;
 }
 export declare const LINK_CATALOG: LinkTypeDef[];
 export declare const LINK_CATEGORIES: {

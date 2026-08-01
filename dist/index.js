@@ -37,3 +37,4 @@ __exportStar(require("./render/CardRenderer"), exports);
 __exportStar(require("./render/NodeRenderer"), exports);
 __exportStar(require("./render/BlockRenderer"), exports);
 __exportStar(require("./render/resolveBinding"), exports);
+__exportStar(require("./render/widgets/icon-helper"), exports);
