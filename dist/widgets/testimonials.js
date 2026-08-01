@@ -48,7 +48,7 @@ exports.meta = {
     ],
     contentSchema: [
         { key: 'title', type: 'text', label: 'Title', max: 60 },
-        { key: 'description', type: 'text', label: 'Description', max: 200 },
+        { key: 'description', type: 'textarea', label: 'Description', max: 200 },
         {
             key: 'items', type: 'repeater', label: 'Testimonials', min: 1, max: 20, itemLabel: '{author}',
             fields: [

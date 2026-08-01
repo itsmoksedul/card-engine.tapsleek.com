@@ -204,7 +204,7 @@ exports.meta = {
     ],
     contentSchema: [
         { key: "heading", type: "text", label: "Heading", max: 60 },
-        { key: "description", type: "text", label: "Description", max: 200 },
+        { key: "description", type: "textarea", label: "Description", max: 200 },
         {
             key: "items",
             type: "repeater",

@@ -35,7 +35,7 @@ export const meta: WidgetModule['meta'] = {
   ],
   contentSchema: [
     { key: 'title', type: 'text', label: 'Title', max: 60 },
-    { key: 'description', type: 'text', label: 'Description', max: 200 },
+    { key: 'description', type: 'textarea', label: 'Description', max: 200 },
     { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
     {
       key: 'items', type: 'repeater', label: 'Questions', min: 1, max: 30, itemLabel: '{question}',

@@ -123,7 +123,7 @@ exports.meta = {
     ],
     contentSchema: [
         { key: 'title', type: 'text', label: 'Title', max: 60 },
-        { key: 'description', type: 'text', label: 'Description', max: 200 },
+        { key: 'description', type: 'textarea', label: 'Description', max: 200 },
         {
             key: 'items', type: 'repeater', label: 'Statistics', itemLabel: '{label}',
             fields: [
