@@ -7,18 +7,22 @@ exports.CardRenderer = CardRenderer;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = __importDefault(require("react"));
 const node_1 = require("../types/node");
-const NodeRenderer_1 = require("./NodeRenderer");
 const BlockRenderer_1 = require("./BlockRenderer");
+const NodeRenderer_1 = require("./NodeRenderer");
 function CardRenderer({ definition, content, card, links, isEditing, gatedWidgetKeys, onTrack, onActionClick, blocks, theme, }) {
-    const placeholderId = react_1.default.useMemo(() => {
+    const placeholder = react_1.default.useMemo(() => {
         if (isEditing || !blocks || blocks.length === 0)
             return null;
-        let id = null;
+        let optionalId = null;
+        let copyrightId = null;
         (0, node_1.walkNodes)(definition.root, (n) => {
-            if (id)
+            if (optionalId)
                 return;
             if ((0, node_1.isWidget)(n)) {
                 const w = (n.widget || '').toUpperCase();
+                if (w === 'COPYRIGHT' && !copyrightId) {
+                    copyrightId = n.id;
+                }
                 const isCoreWidget = [
                     'PROFILE',
                     'CONNECT_BUTTONS',
@@ -35,10 +39,14 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
                     'COPYRIGHT',
                 ].includes(w);
                 if (!isCoreWidget)
-                    id = n.id;
+                    optionalId = n.id;
             }
         });
-        return id;
+        if (optionalId)
+            return { id: optionalId, injectBefore: false };
+        if (copyrightId)
+            return { id: copyrightId, injectBefore: true };
+        return null;
     }, [definition.root, isEditing, blocks]);
     const ctx = {
         card,
@@ -49,7 +57,8 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
         track: onTrack || (() => { }),
         onActionClick,
         rootId: definition.root.id,
-        placeholderId,
+        placeholderId: placeholder?.id || null,
+        injectBefore: placeholder?.injectBefore || false,
         renderUserBlocks: () => {
             if (!blocks || blocks.length === 0)
                 return null;

@@ -18,6 +18,7 @@ export interface RenderCtx {
   renderUserBlocks?: () => React.ReactNode;
   rootId?: string;
   placeholderId?: string | null;
+  injectBefore?: boolean;
 }
 
 export interface NodeRendererProps {
@@ -498,7 +499,7 @@ function WidgetRenderer({
       }
     } else {
       // Optional block widgets (FAQ, Gallery, Contact Form, Video, Custom HTML, etc.)
-      if (node.id === ctx.placeholderId && ctx.renderUserBlocks) {
+      if (node.id === ctx.placeholderId && ctx.renderUserBlocks && !ctx.injectBefore) {
         return <>{ctx.renderUserBlocks()}</>;
       }
       return null;
@@ -570,7 +571,10 @@ function WidgetRenderer({
     );
   }
 
-  return (
+  const design = node.design ?? {};
+  const cls = (part: string) => `p-${part}`;
+
+  const renderedWidget = (
     <div
       className={`n${node.id}`}
       data-node-id={ctx.isEditing ? node.id : undefined}
@@ -578,12 +582,23 @@ function WidgetRenderer({
     >
       <Widget
         content={widgetContent}
-        design={node.design ?? {}}
-        cls={(part: string) => `p-${part}`}
+        design={design}
+        cls={cls}
         ctx={ctx}
       />
     </div>
   );
+
+  if (!ctx.isEditing && Array.isArray(ctx.blocks) && node.id === ctx.placeholderId && ctx.injectBefore && ctx.renderUserBlocks) {
+    return (
+      <React.Fragment>
+        {ctx.renderUserBlocks()}
+        {renderedWidget}
+      </React.Fragment>
+    );
+  }
+
+  return renderedWidget;
 }
 
 // ─── Slots ───────────────────────────────────────────────────────────────────

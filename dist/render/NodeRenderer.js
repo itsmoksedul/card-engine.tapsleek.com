@@ -386,7 +386,7 @@ function WidgetRenderer({ node, content, ctx, }) {
         }
         else {
             // Optional block widgets (FAQ, Gallery, Contact Form, Video, Custom HTML, etc.)
-            if (node.id === ctx.placeholderId && ctx.renderUserBlocks) {
+            if (node.id === ctx.placeholderId && ctx.renderUserBlocks && !ctx.injectBefore) {
                 return (0, jsx_runtime_1.jsx)(jsx_runtime_1.Fragment, { children: ctx.renderUserBlocks() });
             }
             return null;
@@ -430,7 +430,13 @@ function WidgetRenderer({ node, content, ctx, }) {
     if (!Widget) {
         return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, "data-widget": node.widget, children: ctx.isEditing ? `Unknown widget: ${node.widget}` : null }));
     }
-    return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, "data-widget": node.widget, children: (0, jsx_runtime_1.jsx)(Widget, { content: widgetContent, design: node.design ?? {}, cls: (part) => `p-${part}`, ctx: ctx }) }));
+    const design = node.design ?? {};
+    const cls = (part) => `p-${part}`;
+    const renderedWidget = ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, "data-widget": node.widget, children: (0, jsx_runtime_1.jsx)(Widget, { content: widgetContent, design: design, cls: cls, ctx: ctx }) }));
+    if (!ctx.isEditing && Array.isArray(ctx.blocks) && node.id === ctx.placeholderId && ctx.injectBefore && ctx.renderUserBlocks) {
+        return ((0, jsx_runtime_1.jsxs)(react_1.default.Fragment, { children: [ctx.renderUserBlocks(), renderedWidget] }));
+    }
+    return renderedWidget;
 }
 // ─── Slots ───────────────────────────────────────────────────────────────────
 function SlotRenderer({ node, content, ctx, }) {

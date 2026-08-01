@@ -1,9 +1,9 @@
 import React from 'react';
-import type { TemplateDefinition } from '../types/definition';
 import type { BlockInstance, CardTheme } from '../types/block';
-import { walkNodes, isWidget } from '../types/node';
-import { NodeRenderer, type RenderCtx } from './NodeRenderer';
+import type { TemplateDefinition } from '../types/definition';
+import { isWidget, walkNodes } from '../types/node';
 import { BlockRenderer } from './BlockRenderer';
+import { NodeRenderer, type RenderCtx } from './NodeRenderer';
 
 export interface CardRendererProps {
   definition: TemplateDefinition;
@@ -14,15 +14,7 @@ export interface CardRendererProps {
   gatedWidgetKeys?: string[];
   onTrack?: (event: any) => void;
   onActionClick?: (action: string) => void;
-  /**
-   * v2.1 — a user card renders its own ordered BLOCKS instead of the template's
-   * node tree. Each block is styled by the template (via `tsb-<type>` presets);
-   * the template still supplies the root frame's layout and the design tokens.
-   * Omit `blocks` to render the template design directly (admin preview / a card
-   * that has no composed content yet).
-   */
   blocks?: BlockInstance[];
-  /** v2.1 — the card owner's global theme; applied at the root. */
   theme?: CardTheme;
 }
 
@@ -38,13 +30,17 @@ export function CardRenderer({
   blocks,
   theme,
 }: CardRendererProps) {
-  const placeholderId = React.useMemo(() => {
+  const placeholder = React.useMemo(() => {
     if (isEditing || !blocks || blocks.length === 0) return null;
-    let id: string | null = null;
+    let optionalId: string | null = null;
+    let copyrightId: string | null = null;
     walkNodes(definition.root, (n) => {
-      if (id) return;
+      if (optionalId) return;
       if (isWidget(n)) {
         const w = (n.widget || '').toUpperCase();
+        if (w === 'COPYRIGHT' && !copyrightId) {
+          copyrightId = n.id;
+        }
         const isCoreWidget = [
           'PROFILE',
           'CONNECT_BUTTONS',
@@ -60,10 +56,12 @@ export function CardRenderer({
           'SOCIAL',
           'COPYRIGHT',
         ].includes(w);
-        if (!isCoreWidget) id = n.id;
+        if (!isCoreWidget) optionalId = n.id;
       }
     });
-    return id;
+    if (optionalId) return { id: optionalId, injectBefore: false };
+    if (copyrightId) return { id: copyrightId, injectBefore: true };
+    return null;
   }, [definition.root, isEditing, blocks]);
 
   const ctx: RenderCtx = {
@@ -75,7 +73,8 @@ export function CardRenderer({
     track: onTrack || (() => {}),
     onActionClick,
     rootId: definition.root.id,
-    placeholderId,
+    placeholderId: placeholder?.id || null,
+    injectBefore: placeholder?.injectBefore || false,
     renderUserBlocks: () => {
       if (!blocks || blocks.length === 0) return null;
       const blockCtx: RenderCtx = { ...ctx, renderUserBlocks: undefined };

@@ -12,6 +12,7 @@ export interface RenderCtx {
     renderUserBlocks?: () => React.ReactNode;
     rootId?: string;
     placeholderId?: string | null;
+    injectBefore?: boolean;
 }
 export interface NodeRendererProps {
     node: Node;
