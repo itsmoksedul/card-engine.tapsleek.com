@@ -7,6 +7,7 @@
  * being able to touch anything else.
  */
 import type { WidgetModule } from '../types/widget';
+import { carouselParts, carouselDefaultPartStyles } from './carousel-parts';
 
 export const meta: WidgetModule['meta'] = {
   type: 'SERVICE_LIST',
@@ -28,6 +29,7 @@ export const meta: WidgetModule['meta'] = {
     { key: 'itemDesc', label: 'Item description', kind: 'text', visibleIf: { key: 'showDesc', equals: true } },
     { key: 'itemPrice', label: 'Item price', kind: 'text' },
     { key: 'itemLink', label: 'Item link', kind: 'text' },
+    ...carouselParts,
   ],
   designSchema: [
     {
@@ -36,7 +38,6 @@ export const meta: WidgetModule['meta'] = {
         { value: 'list', label: 'List' },
         { value: 'grid-2', label: '2 columns' },
         { value: 'grid-3', label: '3 columns' },
-        { value: 'carousel', label: 'Carousel' },
       ],
     },
     { key: 'showMedia', type: 'boolean', label: 'Show images' },
@@ -51,11 +52,11 @@ export const meta: WidgetModule['meta'] = {
     },
     { key: 'showDesc', type: 'boolean', label: 'Show descriptions' },
     { key: 'showPrice', type: 'boolean', label: 'Show price' },
-    { key: 'autoplay', type: 'boolean', label: 'Autoplay', visibleIf: { key: 'layout', equals: 'carousel' } },
   ],
   contentSchema: [
-    { key: 'title', type: 'text', label: 'Section title', max: 60 },
-    { key: 'description', type: 'textarea', label: 'Section description', max: 240 },
+    { key: "useCarousel", type: "boolean", label: "Enable Carousel" },
+    { key: 'title', type: 'text', label: 'Title', max: 60 },
+    { key: 'description', type: 'text', label: 'Description', max: 200 },
     {
       key: 'items', type: 'repeater', label: 'Services', min: 1, max: 24, itemLabel: '{name}',
       fields: [
@@ -116,6 +117,7 @@ export const meta: WidgetModule['meta'] = {
     itemLink: {
       base: { fontSize: '{size.xs}', fontWeight: 600, color: '{color.primary}' },
     },
+    ...carouselDefaultPartStyles,
   },
   defaultDesign: {
     layout: 'grid-2',

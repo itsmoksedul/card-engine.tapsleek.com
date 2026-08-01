@@ -1,4 +1,5 @@
 import type { WidgetModule } from '../types/widget';
+import { carouselParts, carouselDefaultPartStyles } from './carousel-parts';
 
 export const meta: WidgetModule['meta'] = {
   type: 'FAQ',
@@ -16,6 +17,7 @@ export const meta: WidgetModule['meta'] = {
     { key: 'question', label: 'Question', kind: 'button' },
     { key: 'chevron', label: 'Chevron', kind: 'icon' },
     { key: 'answer', label: 'Answer', kind: 'text' },
+    ...carouselParts,
   ],
   designSchema: [
     { key: 'openFirst', type: 'boolean', label: 'Open the first item' },
@@ -30,6 +32,7 @@ export const meta: WidgetModule['meta'] = {
     },
   ],
   contentSchema: [
+    { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
     { key: 'title', type: 'text', label: 'Title', max: 60 },
     {
       key: 'items', type: 'repeater', label: 'Questions', min: 1, max: 30, itemLabel: '{question}',

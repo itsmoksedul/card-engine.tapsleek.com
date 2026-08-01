@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.previews = exports.migrations = exports.meta = void 0;
+const carousel_parts_1 = require("./carousel-parts");
 exports.meta = {
     type: 'SERVICE_LIST',
     label: 'Services',
@@ -21,6 +22,7 @@ exports.meta = {
         { key: 'itemDesc', label: 'Item description', kind: 'text', visibleIf: { key: 'showDesc', equals: true } },
         { key: 'itemPrice', label: 'Item price', kind: 'text' },
         { key: 'itemLink', label: 'Item link', kind: 'text' },
+        ...carousel_parts_1.carouselParts,
     ],
     designSchema: [
         {
@@ -29,7 +31,6 @@ exports.meta = {
                 { value: 'list', label: 'List' },
                 { value: 'grid-2', label: '2 columns' },
                 { value: 'grid-3', label: '3 columns' },
-                { value: 'carousel', label: 'Carousel' },
             ],
         },
         { key: 'showMedia', type: 'boolean', label: 'Show images' },
@@ -44,11 +45,11 @@ exports.meta = {
         },
         { key: 'showDesc', type: 'boolean', label: 'Show descriptions' },
         { key: 'showPrice', type: 'boolean', label: 'Show price' },
-        { key: 'autoplay', type: 'boolean', label: 'Autoplay', visibleIf: { key: 'layout', equals: 'carousel' } },
     ],
     contentSchema: [
-        { key: 'title', type: 'text', label: 'Section title', max: 60 },
-        { key: 'description', type: 'textarea', label: 'Section description', max: 240 },
+        { key: "useCarousel", type: "boolean", label: "Enable Carousel" },
+        { key: 'title', type: 'text', label: 'Title', max: 60 },
+        { key: 'description', type: 'text', label: 'Description', max: 200 },
         {
             key: 'items', type: 'repeater', label: 'Services', min: 1, max: 24, itemLabel: '{name}',
             fields: [
@@ -109,6 +110,7 @@ exports.meta = {
         itemLink: {
             base: { fontSize: '{size.xs}', fontWeight: 600, color: '{color.primary}' },
         },
+        ...carousel_parts_1.carouselDefaultPartStyles,
     },
     defaultDesign: {
         layout: 'grid-2',

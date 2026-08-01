@@ -1,4 +1,5 @@
 import type { WidgetModule } from '../types/widget';
+import { carouselParts, carouselDefaultPartStyles } from './carousel-parts';
 
 export const meta: WidgetModule['meta'] = {
   type: 'VIDEO_GALLERY',
@@ -16,6 +17,7 @@ export const meta: WidgetModule['meta'] = {
     { key: 'thumbnail', label: 'Thumbnail', kind: 'image' },
     { key: 'playIcon', label: 'Play Icon', kind: 'icon' },
     { key: 'caption', label: 'Caption', kind: 'text' },
+    ...carouselParts,
   ],
   designSchema: [
     {
@@ -44,7 +46,8 @@ export const meta: WidgetModule['meta'] = {
     },
   ],
   contentSchema: [
-    { key: 'title', type: 'text', label: 'Title', max: 100 },
+    { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
+    { key: 'title', type: 'text', label: 'Gallery Title', max: 60 },
     {
       key: 'videos', type: 'repeater', label: 'Videos', itemLabel: '{caption}',
       fields: [
@@ -124,6 +127,7 @@ export const meta: WidgetModule['meta'] = {
         fontWeight: 500
       } 
     },
+    ...carouselDefaultPartStyles,
   },
   defaultDesign: { layout: 'grid', columns: '2', aspectRatio: '16/9' },
   defaultContent: {

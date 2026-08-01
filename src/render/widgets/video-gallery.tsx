@@ -1,5 +1,6 @@
 import React from 'react';
-import { asArray, EmptyState, navProps, type WidgetRenderProps } from './shared';
+import { asArray, EmptyState, navProps, str, type WidgetRenderProps } from './shared';
+import { NativeCarousel } from '../components/NativeCarousel';
 
 function getYoutubeId(url: string) {
   const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
@@ -16,46 +17,49 @@ export function VideoGalleryRender({ design, content, cls, ctx }: WidgetRenderPr
     return <EmptyState cls={cls} ctx={ctx} label="No videos in gallery" />;
   }
 
-  const isGrid = d.layout === 'grid';
-  const columns = Number(d.columns) || 2;
-  const gridTemplateColumns = isGrid ? `repeat(${columns}, minmax(0, 1fr))` : '1fr';
+  const layout = d.layout ?? 'grid';
   const aspectRatio = d.aspectRatio ?? '16/9';
+
+  const renderedItems = videos.map((video, i) => {
+    const ytId = getYoutubeId(video.url || '');
+    const thumbUrl = video.thumbnail || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
+
+    return (
+      <a
+        key={i}
+        className={cls('item')}
+        {...navProps(video.url, ctx.isEditing ?? false, '_blank')}
+      >
+        <div style={{ position: 'relative', width: '100%', aspectRatio }}>
+          {thumbUrl ? (
+            <img src={thumbUrl} alt={video.caption || 'Video thumbnail'} className={cls('thumbnail')} style={{ height: '100%', width: '100%', objectFit: 'cover', position: 'absolute' }} />
+          ) : (
+            <div className={cls('thumbnail')} style={{ height: '100%', position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: '12px', color: '#888' }}>No thumbnail</span>
+            </div>
+          )}
+          <div className={cls('playIcon')} data-icon="Play">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </div>
+        </div>
+        {video.caption && <span className={cls('caption')}>{video.caption}</span>}
+      </a>
+    );
+  });
 
   return (
     <div className={cls('root')}>
-      {c.title && <h3 className={cls('title')}>{c.title}</h3>}
+      {str(c.title) && <h2 className={cls('title')}>{str(c.title)}</h2>}
       
-      <div className={cls('grid')} style={{ gridTemplateColumns }}>
-        {videos.map((video, i) => {
-          const ytId = getYoutubeId(video.url || '');
-          // Use custom thumbnail, or fallback to YouTube high-res thumbnail
-          const thumbUrl = video.thumbnail || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
-
-          return (
-            <a
-              key={i}
-              className={cls('item')}
-              {...navProps(video.url, ctx.isEditing ?? false, '_blank')}
-            >
-              <div style={{ position: 'relative', width: '100%', aspectRatio }}>
-                {thumbUrl ? (
-                  <img src={thumbUrl} alt={video.caption || 'Video thumbnail'} className={cls('thumbnail')} style={{ height: '100%', position: 'absolute' }} />
-                ) : (
-                  <div className={cls('thumbnail')} style={{ height: '100%', position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: '12px', color: '#888' }}>No thumbnail</span>
-                  </div>
-                )}
-                <div className={cls('playIcon')} data-icon="Play">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                  </svg>
-                </div>
-              </div>
-              {video.caption && <span className={cls('caption')}>{video.caption}</span>}
-            </a>
-          );
-        })}
-      </div>
+      {c.useCarousel ? (
+        <NativeCarousel cls={cls} items={renderedItems} layout={layout} />
+      ) : (
+        <div className={cls('grid')} data-layout={layout} data-cols={d.columns ?? '2'}>
+          {renderedItems}
+        </div>
+      )}
     </div>
   );
 }

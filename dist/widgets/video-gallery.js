@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.previews = exports.meta = void 0;
+const carousel_parts_1 = require("./carousel-parts");
 exports.meta = {
     type: 'VIDEO_GALLERY',
     label: 'Video Gallery',
@@ -17,6 +18,7 @@ exports.meta = {
         { key: 'thumbnail', label: 'Thumbnail', kind: 'image' },
         { key: 'playIcon', label: 'Play Icon', kind: 'icon' },
         { key: 'caption', label: 'Caption', kind: 'text' },
+        ...carousel_parts_1.carouselParts,
     ],
     designSchema: [
         {
@@ -45,7 +47,8 @@ exports.meta = {
         },
     ],
     contentSchema: [
-        { key: 'title', type: 'text', label: 'Title', max: 100 },
+        { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
+        { key: 'title', type: 'text', label: 'Gallery Title', max: 60 },
         {
             key: 'videos', type: 'repeater', label: 'Videos', itemLabel: '{caption}',
             fields: [
@@ -125,6 +128,7 @@ exports.meta = {
                 fontWeight: 500
             }
         },
+        ...carousel_parts_1.carouselDefaultPartStyles,
     },
     defaultDesign: { layout: 'grid', columns: '2', aspectRatio: '16/9' },
     defaultContent: {

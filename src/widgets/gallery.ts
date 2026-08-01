@@ -1,4 +1,5 @@
 import type { WidgetModule } from "../types/widget";
+import { carouselParts, carouselDefaultPartStyles } from "./carousel-parts";
 
 export const meta: WidgetModule["meta"] = {
   type: "GALLERY",
@@ -15,6 +16,7 @@ export const meta: WidgetModule["meta"] = {
     { key: "item", label: "Image wrapper", kind: "container" },
     { key: "image", label: "Image", kind: "image" },
     { key: "caption", label: "Caption", kind: "text" },
+    ...carouselParts,
   ],
   designSchema: [
     {
@@ -24,7 +26,6 @@ export const meta: WidgetModule["meta"] = {
       options: [
         { value: "grid-2", label: "2 columns" },
         { value: "grid-3", label: "3 columns" },
-        { value: "carousel", label: "Carousel" },
         { value: "masonry", label: "Masonry" },
       ],
     },
@@ -44,6 +45,7 @@ export const meta: WidgetModule["meta"] = {
     { key: "lightbox", type: "boolean", label: "Open full size on tap" },
   ],
   contentSchema: [
+    { key: "useCarousel", type: "boolean", label: "Enable Carousel" },
     { key: "title", type: "text", label: "Title", max: 60 },
     {
       key: "items",

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.previews = exports.meta = void 0;
+const carousel_parts_1 = require("./carousel-parts");
 exports.meta = {
     type: 'FAQ',
     label: 'FAQ',
@@ -17,6 +18,7 @@ exports.meta = {
         { key: 'question', label: 'Question', kind: 'button' },
         { key: 'chevron', label: 'Chevron', kind: 'icon' },
         { key: 'answer', label: 'Answer', kind: 'text' },
+        ...carousel_parts_1.carouselParts,
     ],
     designSchema: [
         { key: 'openFirst', type: 'boolean', label: 'Open the first item' },
@@ -31,6 +33,7 @@ exports.meta = {
         },
     ],
     contentSchema: [
+        { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
         { key: 'title', type: 'text', label: 'Title', max: 60 },
         {
             key: 'items', type: 'repeater', label: 'Questions', min: 1, max: 30, itemLabel: '{question}',

@@ -1,5 +1,6 @@
 import React from 'react';
 import { asArray, EmptyState, str, type WidgetRenderProps } from './shared';
+import { NativeCarousel } from '../components/NativeCarousel';
 
 /**
  * SERVICE_LIST — the reference content widget.
@@ -14,6 +15,43 @@ export function ServiceListRender({ content, design, cls, ctx }: WidgetRenderPro
 
   if (!items.length) return <EmptyState cls={cls} ctx={ctx} label="No services yet" />;
 
+  const layout = d.layout ?? 'grid-2';
+
+  const renderedItems = items.map((item, i) => {
+    const Wrapper: any = str(item.link) ? 'a' : 'div';
+    return (
+      <Wrapper
+        key={i}
+        className={cls('item')}
+        {...(str(item.link)
+          ? {
+              href: str(item.link),
+              target: '_blank',
+              rel: 'noreferrer',
+              onClick: () => ctx.track({ type: 'WIDGET_CLICK', part: 'itemLink', index: i }),
+            }
+          : {})}
+      >
+        {d.showMedia !== false && str(item.image) && (
+          <img
+            className={cls('itemMedia')}
+            src={str(item.image)}
+            alt=""
+            loading="lazy"
+            style={{ aspectRatio: d.mediaRatio ?? '4/3' }}
+          />
+        )}
+        <span className={cls('itemTitle')}>{str(item.name)}</span>
+        {d.showDesc !== false && str(item.description) && (
+          <span className={cls('itemDesc')}>{str(item.description)}</span>
+        )}
+        {d.showPrice && str(item.price) && (
+          <span className={cls('itemPrice')}>{str(item.price)}</span>
+        )}
+      </Wrapper>
+    );
+  });
+
   return (
     <div className={cls('root')}>
       {(str(c.title) || str(c.description)) && (
@@ -23,42 +61,13 @@ export function ServiceListRender({ content, design, cls, ctx }: WidgetRenderPro
         </div>
       )}
 
-      <div className={cls('list')} data-layout={d.layout ?? 'grid-2'}>
-        {items.map((item, i) => {
-          const Wrapper: any = str(item.link) ? 'a' : 'div';
-          return (
-            <Wrapper
-              key={i}
-              className={cls('item')}
-              {...(str(item.link)
-                ? {
-                    href: str(item.link),
-                    target: '_blank',
-                    rel: 'noreferrer',
-                    onClick: () => ctx.track({ type: 'WIDGET_CLICK', part: 'itemLink', index: i }),
-                  }
-                : {})}
-            >
-              {d.showMedia !== false && str(item.image) && (
-                <img
-                  className={cls('itemMedia')}
-                  src={str(item.image)}
-                  alt=""
-                  loading="lazy"
-                  style={{ aspectRatio: d.mediaRatio ?? '4/3' }}
-                />
-              )}
-              <span className={cls('itemTitle')}>{str(item.name)}</span>
-              {d.showDesc !== false && str(item.description) && (
-                <span className={cls('itemDesc')}>{str(item.description)}</span>
-              )}
-              {d.showPrice && str(item.price) && (
-                <span className={cls('itemPrice')}>{str(item.price)}</span>
-              )}
-            </Wrapper>
-          );
-        })}
-      </div>
+      {c.useCarousel ? (
+        <NativeCarousel cls={cls} items={renderedItems} layout={layout} />
+      ) : (
+        <div className={cls('list')} data-layout={layout}>
+          {renderedItems}
+        </div>
+      )}
     </div>
   );
 }

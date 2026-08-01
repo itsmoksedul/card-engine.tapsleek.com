@@ -1,5 +1,6 @@
 import React from 'react';
 import { asArray, EmptyState, type WidgetRenderProps } from './shared';
+import { NativeCarousel } from '../components/NativeCarousel';
 
 export function TeamRender({ design, content, cls, ctx }: WidgetRenderProps) {
   const d = (design ?? {}) as Record<string, any>;
@@ -19,46 +20,52 @@ export function TeamRender({ design, content, cls, ctx }: WidgetRenderProps) {
   if (layout === 'grid-2') gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
   else if (layout === 'grid-3') gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
 
+  const renderedItems = items.map((item, i) => (
+    <div 
+      key={i} 
+      className={cls('item')} 
+      style={{ 
+        alignItems: align === 'center' ? 'center' : 'flex-start',
+        textAlign: align
+      }}
+    >
+      {item.image ? (
+        <img 
+          src={item.image} 
+          alt={item.name || 'Team member'} 
+          className={cls('avatar')}
+          style={{ borderRadius: avatarShape === 'circle' ? '9999px' : '12px' }}
+          loading="lazy"
+        />
+      ) : (
+        <div 
+          className={cls('avatar')} 
+          style={{ 
+            borderRadius: avatarShape === 'circle' ? '9999px' : '12px',
+            backgroundColor: 'var(--tw-border-color, #e2e8f0)' 
+          }} 
+        />
+      )}
+      
+      <div className={cls('content')}>
+        {item.name && <div className={cls('name')}>{item.name}</div>}
+        {item.role && <div className={cls('role')}>{item.role}</div>}
+        {item.bio && <div className={cls('bio')}>{item.bio}</div>}
+      </div>
+    </div>
+  ));
+
   return (
     <div className={cls('root')}>
       {c.heading && <h3 className={cls('heading')}>{c.heading}</h3>}
       
-      <div className={cls('list')} style={{ gridTemplateColumns }}>
-        {items.map((item, i) => (
-          <div 
-            key={i} 
-            className={cls('item')} 
-            style={{ 
-              alignItems: align === 'center' ? 'center' : 'flex-start',
-              textAlign: align
-            }}
-          >
-            {item.image ? (
-              <img 
-                src={item.image} 
-                alt={item.name || 'Team member'} 
-                className={cls('avatar')}
-                style={{ borderRadius: avatarShape === 'circle' ? '9999px' : '12px' }}
-                loading="lazy"
-              />
-            ) : (
-              <div 
-                className={cls('avatar')} 
-                style={{ 
-                  borderRadius: avatarShape === 'circle' ? '9999px' : '12px',
-                  backgroundColor: 'var(--tw-border-color, #e2e8f0)' 
-                }} 
-              />
-            )}
-            
-            <div className={cls('content')}>
-              {item.name && <div className={cls('name')}>{item.name}</div>}
-              {item.role && <div className={cls('role')}>{item.role}</div>}
-              {item.bio && <div className={cls('bio')}>{item.bio}</div>}
-            </div>
-          </div>
-        ))}
-      </div>
+      {c.useCarousel ? (
+        <NativeCarousel cls={cls} items={renderedItems} layout={layout} />
+      ) : (
+        <div className={cls('list')} style={{ gridTemplateColumns }}>
+          {renderedItems}
+        </div>
+      )}
     </div>
   );
 }

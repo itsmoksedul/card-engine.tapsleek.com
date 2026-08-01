@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.previews = exports.migrations = exports.meta = void 0;
+const carousel_parts_1 = require("./carousel-parts");
 exports.meta = {
     type: 'TESTIMONIALS',
     label: 'Testimonials',
@@ -20,14 +21,14 @@ exports.meta = {
         { key: 'caption', label: 'Author row', kind: 'container' },
         { key: 'avatar', label: 'Avatar', kind: 'image' },
         { key: 'author', label: 'Author name', kind: 'text' },
-        { key: 'role', label: 'Author role', kind: 'text' },
+        { key: 'role', label: 'Role', kind: 'text' },
+        ...carousel_parts_1.carouselParts,
     ],
     designSchema: [
         {
             key: 'layout', type: 'select', label: 'Layout',
             options: [
-                { value: 'stack', label: 'Stacked' },
-                { value: 'carousel', label: 'Carousel' },
+                { value: 'stack', label: 'Stack' },
                 { value: 'grid-2', label: '2 columns' },
             ],
         },
@@ -43,7 +44,8 @@ exports.meta = {
         },
     ],
     contentSchema: [
-        { key: 'title', type: 'text', label: 'Section title', max: 60 },
+        { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
+        { key: 'title', type: 'text', label: 'Title', max: 60 },
         {
             key: 'items', type: 'repeater', label: 'Testimonials', min: 1, max: 20, itemLabel: '{author}',
             fields: [
@@ -114,6 +116,7 @@ exports.meta = {
             base: { fontSize: '{size.sm}', fontWeight: 600, color: '{color.text}' },
         },
         role: { base: { fontSize: '{size.xs}', color: '{color.muted}' } },
+        ...carousel_parts_1.carouselDefaultPartStyles,
     },
     defaultDesign: { layout: 'stack', showAvatar: true, showRating: true, quoteMark: 'icon' },
     defaultContent: {

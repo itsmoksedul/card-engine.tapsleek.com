@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.previews = exports.meta = void 0;
+const carousel_parts_1 = require("./carousel-parts");
 exports.meta = {
     type: "GALLERY",
     label: "Gallery",
@@ -16,6 +17,7 @@ exports.meta = {
         { key: "item", label: "Image wrapper", kind: "container" },
         { key: "image", label: "Image", kind: "image" },
         { key: "caption", label: "Caption", kind: "text" },
+        ...carousel_parts_1.carouselParts,
     ],
     designSchema: [
         {
@@ -25,7 +27,6 @@ exports.meta = {
             options: [
                 { value: "grid-2", label: "2 columns" },
                 { value: "grid-3", label: "3 columns" },
-                { value: "carousel", label: "Carousel" },
                 { value: "masonry", label: "Masonry" },
             ],
         },
@@ -45,6 +46,7 @@ exports.meta = {
         { key: "lightbox", type: "boolean", label: "Open full size on tap" },
     ],
     contentSchema: [
+        { key: "useCarousel", type: "boolean", label: "Enable Carousel" },
         { key: "title", type: "text", label: "Title", max: 60 },
         {
             key: "items",
