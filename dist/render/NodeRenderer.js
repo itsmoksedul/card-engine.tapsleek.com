@@ -208,7 +208,7 @@ function ElementRenderer({ node, content, ctx, }) {
                 }
                 if (action === "carousel-prev") {
                     const root = e.currentTarget.closest('[class^="n"]');
-                    const track = root?.querySelector('.carouselTrack');
+                    const track = root?.querySelector('.ncarouselTrack');
                     if (track) {
                         track.scrollBy({ left: -track.clientWidth * 0.8, behavior: "smooth" });
                     }
@@ -216,7 +216,7 @@ function ElementRenderer({ node, content, ctx, }) {
                 }
                 if (action === "carousel-next") {
                     const root = e.currentTarget.closest('[class^="n"]');
-                    const track = root?.querySelector('.carouselTrack');
+                    const track = root?.querySelector('.ncarouselTrack');
                     if (track) {
                         track.scrollBy({ left: track.clientWidth * 0.8, behavior: "smooth" });
                     }
@@ -224,7 +224,7 @@ function ElementRenderer({ node, content, ctx, }) {
                 }
                 if (action === "carousel-dot") {
                     const root = e.currentTarget.closest('[class^="n"]');
-                    const track = root?.querySelector('.carouselTrack');
+                    const track = root?.querySelector('.ncarouselTrack');
                     const idx = ctx.repeatIndex ?? 0;
                     if (track && track.children[idx]) {
                         track.children[idx].scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });

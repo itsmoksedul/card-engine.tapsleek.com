@@ -1,5 +1,5 @@
 import type { WidgetModule } from "../types/widget";
-import { carouselParts, carouselDefaultPartStyles } from "./carousel-parts";
+import { carouselParts, carouselDefaultPartStyles, createCarouselLayout } from "./carousel-parts";
 
 export const meta: WidgetModule["meta"] = {
   type: "GALLERY",
@@ -222,129 +222,41 @@ export const meta: WidgetModule["meta"] = {
           },
         ],
       },
-      {
-        id: "carouselRoot",
-        kind: "element",
-        tag: "stack",
-        name: "Carousel Container",
-        visibleIf: { key: "useCarousel", equals: true },
-        style: {
-          base: { position: "relative", display: "flex", flexDirection: "column", gap: "{space.4}" },
-        },
-        children: [
-          {
-            id: "carouselTrack",
-            kind: "element",
-            tag: "carousel",
-            name: "Carousel Track",
-            children: [
-              {
-                id: "carouselItem",
-                kind: "element",
-                tag: "frame",
-                name: "Carousel Item",
-                repeat: { source: "self", path: "items" },
-                style: {
-                  base: { overflow: "hidden", borderRadius: { all: "{radius.md}" } },
-                },
-                children: [
-                  {
-                    id: "image",
-                    kind: "element",
-                    tag: "image",
-                    name: "Image",
-                    bind: { source: "self", path: "url" },
-                    style: {
-                      base: { width: "100%", aspectRatio: "1/1", objectFit: "cover" },
-                    },
-                  },
-                  {
-                    id: "caption",
-                    kind: "element",
-                    tag: "text",
-                    name: "Caption",
-                    bind: { source: "self", path: "caption" },
-                    hideIfEmpty: true,
-                    style: {
-                      base: { fontSize: "{size.xs}", color: "{color.muted}", padding: { t: "{space.1}" } },
-                    },
-                  },
-                ],
-              },
-            ],
+      createCarouselLayout(
+        {
+          id: "carouselItem",
+          kind: "element",
+          tag: "frame",
+          name: "Carousel Item",
+          style: {
+            base: { overflow: "hidden", borderRadius: { all: "{radius.md}" } },
           },
-          {
-            id: "carouselArrows",
-            kind: "element",
-            tag: "frame",
-            name: "Arrows",
-            visibleIf: { key: "showArrows", equals: true },
-            children: [
-              {
-                id: "arrowPrev",
-                kind: "element",
-                tag: "button",
-                name: "Prev Arrow",
-                props: { action: "carousel-prev" },
-                style: {
-                  base: {
-                    position: "absolute", left: "{space.2}", top: "50%", transform: { translateY: "-50%" }, zIndex: 10,
-                    width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center",
-                    background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "50%" },
-                    border: { style: "solid", width: "1px", color: "{color.border}" },
-                    boxShadow: { x: "0", y: "2px", blur: "4px", color: "rgba(0,0,0,0.1)" }, cursor: "pointer",
-                  },
-                },
-                children: [
-                  { id: "iconPrev", kind: "element", tag: "icon", name: "Icon", props: { name: "ChevronLeft" }, style: { base: { width: "16px", height: "16px", color: "{color.text}" } } }
-                ]
+          children: [
+            {
+              id: "image",
+              kind: "element",
+              tag: "image",
+              name: "Image",
+              bind: { source: "self", path: "url" },
+              style: {
+                base: { width: "100%", aspectRatio: "1/1", objectFit: "cover" },
               },
-              {
-                id: "arrowNext",
-                kind: "element",
-                tag: "button",
-                name: "Next Arrow",
-                props: { action: "carousel-next" },
-                style: {
-                  base: {
-                    position: "absolute", right: "{space.2}", top: "50%", transform: { translateY: "-50%" }, zIndex: 10,
-                    width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center",
-                    background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "50%" },
-                    border: { style: "solid", width: "1px", color: "{color.border}" },
-                    boxShadow: { x: "0", y: "2px", blur: "4px", color: "rgba(0,0,0,0.1)" }, cursor: "pointer",
-                  },
-                },
-                children: [
-                  { id: "iconNext", kind: "element", tag: "icon", name: "Icon", props: { name: "ChevronRight" }, style: { base: { width: "16px", height: "16px", color: "{color.text}" } } }
-                ]
-              }
-            ]
-          },
-          {
-            id: "carouselDots",
-            kind: "element",
-            tag: "stack",
-            name: "Pagination",
-            visibleIf: { key: "showDots", equals: true },
-            style: {
-              base: { display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: "{space.2}", margin: { t: "{space.2}" } },
             },
-            children: [
-              {
-                id: "dot",
-                kind: "element",
-                tag: "button",
-                name: "Dot",
-                repeat: { source: "self", path: "items" },
-                props: { action: "carousel-dot" },
-                style: {
-                  base: { width: "8px", height: "8px", borderRadius: { all: "50%" }, background: { kind: "color", color: "{color.border}" }, cursor: "pointer", padding: { all: "0" }, border: { style: "none", width: "0" } },
-                },
-              }
-            ]
-          }
-        ],
-      },
+            {
+              id: "caption",
+              kind: "element",
+              tag: "text",
+              name: "Caption",
+              bind: { source: "self", path: "caption" },
+              hideIfEmpty: true,
+              style: {
+                base: { fontSize: "{size.xs}", color: "{color.muted}", padding: { t: "{space.1}" } },
+              },
+            },
+          ],
+        },
+        { itemsPath: "items", dotsKey: "showDots" }
+      ),
     ],
   },
 };

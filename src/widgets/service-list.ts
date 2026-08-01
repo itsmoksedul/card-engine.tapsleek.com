@@ -7,7 +7,7 @@
  * being able to touch anything else.
  */
 import type { WidgetModule } from '../types/widget';
-import { carouselParts, carouselDefaultPartStyles } from './carousel-parts';
+import { carouselParts, carouselDefaultPartStyles, createCarouselLayout } from './carousel-parts';
 
 export const meta: WidgetModule['meta'] = {
   type: 'SERVICE_LIST',
@@ -267,78 +267,40 @@ export const meta: WidgetModule['meta'] = {
           },
         ],
       },
-      {
-        id: "carouselRoot",
-        kind: "element",
-        tag: "stack",
-        name: "Carousel Container",
-        visibleIf: { key: "useCarousel", equals: true },
-        style: { base: { position: "relative", display: "flex", flexDirection: "column", gap: "{space.4}" } },
-        children: [
-          {
-            id: 'carouselTrack',
-            kind: 'element',
-            tag: 'carousel',
-            name: 'Carousel Track',
-            children: [
-              {
-                id: 'c_item',
-                kind: 'element',
-                tag: 'stack',
-                name: 'Service Item',
-                repeat: { source: 'self', path: 'items' },
-                style: {
-                  base: { display: 'flex', flexDirection: 'column', gap: '{space.3}', padding: { all: '{space.4}' }, background: { kind: 'color', color: '{color.surface}' }, borderRadius: { all: '{radius.md}' }, border: { style: 'solid', width: '1px', color: '{color.border}' } },
+      createCarouselLayout(
+        {
+          id: 'c_item',
+          kind: 'element',
+          tag: 'stack',
+          name: 'Service Item',
+          style: {
+            base: { display: 'flex', flexDirection: 'column', gap: '{space.3}', padding: { all: '{space.4}' }, background: { kind: 'color', color: '{color.surface}' }, borderRadius: { all: '{radius.md}' }, border: { style: 'solid', width: '1px', color: '{color.border}' } },
+          },
+          children: [
+            { id: 'c_media', kind: 'element', tag: 'image', bind: { source: 'self', path: 'image' }, hideIfEmpty: true, style: { base: { width: '100%', height: '140px', objectFit: 'cover', borderRadius: { all: '{radius.md}' } } } },
+            {
+              id: 'c_content',
+              kind: 'element',
+              tag: 'stack',
+              style: { base: { display: 'flex', flexDirection: 'column', gap: '{space.2}', flexGrow: 1 } },
+              children: [
+                {
+                  id: 'c_header',
+                  kind: 'element',
+                  tag: 'stack',
+                  style: { base: { display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: '{space.2}' } },
+                  children: [
+                    { id: 'c_itemTitle', kind: 'element', tag: 'heading', props: { level: 4 }, bind: { source: 'self', path: 'name' }, style: { base: { fontSize: '{size.base}', fontWeight: 600, color: '{color.text}' } } },
+                    { id: 'c_itemPrice', kind: 'element', tag: 'text', bind: { source: 'self', path: 'price' }, hideIfEmpty: true, style: { base: { fontSize: '{size.base}', fontWeight: 600, color: '{color.primary}' } } },
+                  ],
                 },
-                children: [
-                  { id: 'c_media', kind: 'element', tag: 'image', bind: { source: 'self', path: 'image' }, hideIfEmpty: true, style: { base: { width: '100%', height: '140px', objectFit: 'cover', borderRadius: { all: '{radius.md}' } } } },
-                  {
-                    id: 'c_content',
-                    kind: 'element',
-                    tag: 'stack',
-                    style: { base: { display: 'flex', flexDirection: 'column', gap: '{space.2}', flexGrow: 1 } },
-                    children: [
-                      {
-                        id: 'c_header',
-                        kind: 'element',
-                        tag: 'stack',
-                        style: { base: { display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: '{space.2}' } },
-                        children: [
-                          { id: 'c_itemTitle', kind: 'element', tag: 'heading', props: { level: 4 }, bind: { source: 'self', path: 'name' }, style: { base: { fontSize: '{size.base}', fontWeight: 600, color: '{color.text}' } } },
-                          { id: 'c_itemPrice', kind: 'element', tag: 'text', bind: { source: 'self', path: 'price' }, hideIfEmpty: true, style: { base: { fontSize: '{size.base}', fontWeight: 600, color: '{color.primary}' } } },
-                        ],
-                      },
-                      { id: 'c_itemDesc', kind: 'element', tag: 'text', bind: { source: 'self', path: 'description' }, hideIfEmpty: true, style: { base: { fontSize: '{size.sm}', color: '{color.muted}', lineHeight: 1.4 } } },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            id: "carouselArrows",
-            kind: "element",
-            tag: "frame",
-            name: "Arrows",
-            visibleIf: { key: "showArrows", equals: true },
-            children: [
-              { id: "arrowPrev", kind: "element", tag: "button", name: "Prev Arrow", props: { action: "carousel-prev" }, style: { base: { position: "absolute", left: "{space.2}", top: "50%", transform: { translateY: "-50%" }, zIndex: 10, width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "50%" }, border: { style: "solid", width: "1px", color: "{color.border}" }, boxShadow: { x: "0", y: "2px", blur: "4px", color: "rgba(0,0,0,0.1)" }, cursor: "pointer" } }, children: [{ id: "iconPrev", kind: "element", tag: "icon", name: "Icon", props: { name: "ChevronLeft" }, style: { base: { width: "16px", height: "16px", color: "{color.text}" } } }] },
-              { id: "arrowNext", kind: "element", tag: "button", name: "Next Arrow", props: { action: "carousel-next" }, style: { base: { position: "absolute", right: "{space.2}", top: "50%", transform: { translateY: "-50%" }, zIndex: 10, width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "50%" }, border: { style: "solid", width: "1px", color: "{color.border}" }, boxShadow: { x: "0", y: "2px", blur: "4px", color: "rgba(0,0,0,0.1)" }, cursor: "pointer" } }, children: [{ id: "iconNext", kind: "element", tag: "icon", name: "Icon", props: { name: "ChevronRight" }, style: { base: { width: "16px", height: "16px", color: "{color.text}" } } }] }
-            ]
-          },
-          {
-            id: "carouselDots",
-            kind: "element",
-            tag: "stack",
-            name: "Pagination",
-            visibleIf: { key: "showDots", equals: true },
-            style: { base: { display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: "{space.2}", margin: { t: "{space.2}" } } },
-            children: [
-              { id: "dot", kind: "element", tag: "button", name: "Dot", repeat: { source: "self", path: "items" }, props: { action: "carousel-dot" }, style: { base: { width: "8px", height: "8px", borderRadius: { all: "50%" }, background: { kind: "color", color: "{color.border}" }, cursor: "pointer", padding: { all: "0" }, border: { style: "none", width: "0" } } } }
-            ]
-          }
-        ]
-      },
+                { id: 'c_itemDesc', kind: 'element', tag: 'text', bind: { source: 'self', path: 'description' }, hideIfEmpty: true, style: { base: { fontSize: '{size.sm}', color: '{color.muted}', lineHeight: 1.4 } } },
+              ],
+            },
+          ],
+        },
+        { itemsPath: "items", dotsKey: "showDots" }
+      ),
     ],
   },
 };

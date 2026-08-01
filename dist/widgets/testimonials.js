@@ -226,69 +226,28 @@ exports.meta = {
                     },
                 ],
             },
-            {
-                id: "carouselRoot",
-                kind: "element",
-                tag: "stack",
-                name: "Carousel Container",
-                visibleIf: { key: "useCarousel", equals: true },
-                style: { base: { position: "relative", display: "flex", flexDirection: "column", gap: "{space.4}" } },
+            (0, carousel_parts_1.createCarouselLayout)({
+                id: 'c_item',
+                kind: 'element',
+                tag: 'frame',
+                name: 'Testimonial card',
+                style: { base: { display: 'flex', flexDirection: 'column', gap: '{space.2}', padding: { all: '{space.4}' }, background: { kind: 'color', color: '{color.surface}' }, border: { width: '1px', style: 'solid', color: '{color.border}' }, borderRadius: { all: '{radius.md}' } } },
                 children: [
+                    { id: 'c_quote', kind: 'element', tag: 'text', name: 'Quote text', bind: { source: 'self', path: 'quote' }, style: { base: { fontSize: '{size.sm}', lineHeight: 1.6, color: '{color.text}', fontStyle: 'italic' } } },
                     {
-                        id: 'carouselTrack',
+                        id: 'c_caption',
                         kind: 'element',
-                        tag: 'carousel',
-                        name: 'Carousel Track',
+                        tag: 'stack',
+                        name: 'Author row',
+                        style: { base: { display: 'flex', alignItems: 'center', gap: '{space.2}', margin: { t: '{space.1}' } } },
                         children: [
-                            {
-                                id: 'c_item',
-                                kind: 'element',
-                                tag: 'frame',
-                                name: 'Testimonial card',
-                                repeat: { source: 'self', path: 'items' },
-                                style: { base: { display: 'flex', flexDirection: 'column', gap: '{space.2}', padding: { all: '{space.4}' }, background: { kind: 'color', color: '{color.surface}' }, border: { width: '1px', style: 'solid', color: '{color.border}' }, borderRadius: { all: '{radius.md}' } } },
-                                children: [
-                                    { id: 'c_quote', kind: 'element', tag: 'text', name: 'Quote text', bind: { source: 'self', path: 'quote' }, style: { base: { fontSize: '{size.sm}', lineHeight: 1.6, color: '{color.text}', fontStyle: 'italic' } } },
-                                    {
-                                        id: 'c_caption',
-                                        kind: 'element',
-                                        tag: 'stack',
-                                        name: 'Author row',
-                                        style: { base: { display: 'flex', alignItems: 'center', gap: '{space.2}', margin: { t: '{space.1}' } } },
-                                        children: [
-                                            { id: 'c_avatar', kind: 'element', tag: 'image', name: 'Avatar', bind: { source: 'self', path: 'avatar' }, hideIfEmpty: true, style: { base: { width: '32px', height: '32px', borderRadius: { all: '{radius.full}' }, objectFit: 'cover' } } },
-                                            { id: 'c_author', kind: 'element', tag: 'text', name: 'Author name', bind: { source: 'self', path: 'author' }, style: { base: { fontSize: '{size.xs}', fontWeight: 600, color: '{color.text}' } } },
-                                            { id: 'c_role', kind: 'element', tag: 'text', name: 'Author role', bind: { source: 'self', path: 'role' }, hideIfEmpty: true, style: { base: { fontSize: '{size.xs}', color: '{color.muted}' } } },
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        id: "carouselArrows",
-                        kind: "element",
-                        tag: "frame",
-                        name: "Arrows",
-                        visibleIf: { key: "showArrows", equals: true },
-                        children: [
-                            { id: "arrowPrev", kind: "element", tag: "button", name: "Prev Arrow", props: { action: "carousel-prev" }, style: { base: { position: "absolute", left: "{space.2}", top: "50%", transform: { translateY: "-50%" }, zIndex: 10, width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "50%" }, border: { style: "solid", width: "1px", color: "{color.border}" }, boxShadow: { x: "0", y: "2px", blur: "4px", color: "rgba(0,0,0,0.1)" }, cursor: "pointer" } }, children: [{ id: "iconPrev", kind: "element", tag: "icon", name: "Icon", props: { name: "ChevronLeft" }, style: { base: { width: "16px", height: "16px", color: "{color.text}" } } }] },
-                            { id: "arrowNext", kind: "element", tag: "button", name: "Next Arrow", props: { action: "carousel-next" }, style: { base: { position: "absolute", right: "{space.2}", top: "50%", transform: { translateY: "-50%" }, zIndex: 10, width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "50%" }, border: { style: "solid", width: "1px", color: "{color.border}" }, boxShadow: { x: "0", y: "2px", blur: "4px", color: "rgba(0,0,0,0.1)" }, cursor: "pointer" } }, children: [{ id: "iconNext", kind: "element", tag: "icon", name: "Icon", props: { name: "ChevronRight" }, style: { base: { width: "16px", height: "16px", color: "{color.text}" } } }] }
-                        ]
-                    },
-                    {
-                        id: "carouselDots",
-                        kind: "element",
-                        tag: "stack",
-                        name: "Pagination",
-                        visibleIf: { key: "showDots", equals: true },
-                        style: { base: { display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: "{space.2}", margin: { t: "{space.2}" } } },
-                        children: [
-                            { id: "dot", kind: "element", tag: "button", name: "Dot", repeat: { source: "self", path: "items" }, props: { action: "carousel-dot" }, style: { base: { width: "8px", height: "8px", borderRadius: { all: "50%" }, background: { kind: "color", color: "{color.border}" }, cursor: "pointer", padding: { all: "0" }, border: { style: "none", width: "0" } } } }
+                            { id: 'c_avatar', kind: 'element', tag: 'image', name: 'Avatar', bind: { source: 'self', path: 'avatar' }, hideIfEmpty: true, style: { base: { width: '32px', height: '32px', borderRadius: { all: '{radius.full}' }, objectFit: 'cover' } } },
+                            { id: 'c_author', kind: 'element', tag: 'text', name: 'Author name', bind: { source: 'self', path: 'author' }, style: { base: { fontSize: '{size.xs}', fontWeight: 600, color: '{color.text}' } } },
+                            { id: 'c_role', kind: 'element', tag: 'text', name: 'Author role', bind: { source: 'self', path: 'role' }, hideIfEmpty: true, style: { base: { fontSize: '{size.xs}', color: '{color.muted}' } } },
                         ]
                     }
                 ]
-            },
+            }, { itemsPath: "items", dotsKey: "showDots" }),
         ],
     },
 };
