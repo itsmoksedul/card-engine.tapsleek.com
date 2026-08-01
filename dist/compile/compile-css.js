@@ -163,10 +163,23 @@ function compileCss(def, options = {}) {
             ? registry_1.WIDGET_TYPES
             : templateWidgetTypes(def);
         for (const type of types) {
-            const { partStyles, layout } = (0, resolve_design_1.resolveBlockDesign)(def, type);
+            const { partStyles, layout, rootStyle, rootHidden } = (0, resolve_design_1.resolveBlockDesign)(def, type);
             const sel = `.${scope} .${(0, resolve_design_1.blockClass)(type)}`;
             if (partStyles && Object.keys(partStyles).length) {
                 compilePartStyles(partStyles, sel, bucket, states, warnings);
+            }
+            if (rootStyle || rootHidden) {
+                for (const bp of ["base", "sm", "md"]) {
+                    const props = mergeHidden(rootStyle?.[bp], rootHidden?.[bp]);
+                    const decls = (0, declarations_1.declarationsFor)(props);
+                    if (decls.length)
+                        bucket[bp].push({ selector: sel, decls });
+                }
+                for (const state of style_1.STATE_KEYS) {
+                    const decls = (0, declarations_1.declarationsFor)(rootStyle?.[state]);
+                    if (decls.length)
+                        states.push({ selector: `${sel}:${state}`, decls });
+                }
             }
             if (layout) {
                 (0, node_1.walkTreeOrder)(layout, (layoutNode) => {

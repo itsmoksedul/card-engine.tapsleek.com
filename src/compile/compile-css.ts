@@ -254,10 +254,22 @@ export function compileCss(
         ? WIDGET_TYPES
         : templateWidgetTypes(def);
     for (const type of types) {
-      const { partStyles, layout } = resolveBlockDesign(def, type);
+      const { partStyles, layout, rootStyle, rootHidden } = resolveBlockDesign(def, type);
       const sel = `.${scope} .${blockClass(type)}`;
       if (partStyles && Object.keys(partStyles).length) {
         compilePartStyles(partStyles, sel, bucket, states, warnings);
+      }
+      if (rootStyle || rootHidden) {
+        for (const bp of ["base", "sm", "md"] as const) {
+          const props = mergeHidden(rootStyle?.[bp], rootHidden?.[bp]);
+          const decls = declarationsFor(props);
+          if (decls.length) bucket[bp].push({ selector: sel, decls });
+        }
+        for (const state of STATE_KEYS) {
+          const decls = declarationsFor(rootStyle?.[state]);
+          if (decls.length)
+            states.push({ selector: `${sel}:${state}`, decls });
+        }
       }
       if (layout) {
         walkTreeOrder(layout, (layoutNode) => {

@@ -19,6 +19,8 @@ export interface BlockDesign {
     design: Record<string, unknown>;
     partStyles: Record<string, StyleSet>;
     layout?: ElementNode;
+    rootStyle?: StyleSet;
+    rootHidden?: Partial<Record<'base' | 'sm' | 'md', boolean>>;
 }
 /**
  * The `(design, partStyles)` a user block of `type` should render with, given

@@ -26,7 +26,7 @@ function templateInstance(def, type) {
         const matches = [];
         (0, node_1.walkTreeOrder)(root, (n) => {
             if ((0, node_1.isWidget)(n) && n.widget === type) {
-                matches.push({ design: n.design, partStyles: n.partStyles, layout: n.layout });
+                matches.push({ design: n.design, partStyles: n.partStyles, layout: n.layout, rootStyle: n.style, rootHidden: n.hidden });
             }
         });
         if (matches.length)
@@ -45,6 +45,8 @@ function resolveBlockDesign(def, type) {
         design: { ...(meta?.defaultDesign ?? {}), ...(inst?.design ?? {}) },
         partStyles: inst?.partStyles ?? meta?.defaultPartStyles ?? {},
         layout: inst?.layout ?? meta?.defaultLayout,
+        rootStyle: inst?.rootStyle,
+        rootHidden: inst?.rootHidden,
     };
 }
 /**
