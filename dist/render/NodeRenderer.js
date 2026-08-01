@@ -174,9 +174,15 @@ function ElementRenderer({ node, content, ctx, }) {
             const kids = (node.children ?? []).map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)));
             return ((0, jsx_runtime_1.jsxs)(react_1.default.Fragment, { children: [(0, jsx_runtime_1.jsx)("style", { dangerouslySetInnerHTML: {
                             __html: `
+            .${trackId} {
+              gap: 0 !important;
+              margin-left: calc(-1 * var(--space-3, 0.75rem)) !important;
+            }
             .${trackId} > div {
-              flex: 0 0 ${widthPct}%;
-              min-width: 0;
+              flex: 0 0 ${widthPct}% !important;
+              min-width: 0 !important;
+              padding-left: var(--space-3, 0.75rem) !important;
+              box-sizing: border-box !important;
             }
           `,
                         } }), (0, jsx_runtime_1.jsx)("div", { className: "embla", ref: ctxEmbla?.emblaRef, style: { overflow: "hidden" }, children: (0, jsx_runtime_1.jsx)("div", { ...dom, className: `${dom.className} ${trackId}`, children: kids }) })] }));

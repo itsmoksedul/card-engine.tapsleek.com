@@ -248,9 +248,15 @@ function ElementRenderer({
           <style
             dangerouslySetInnerHTML={{
               __html: `
+            .${trackId} {
+              gap: 0 !important;
+              margin-left: calc(-1 * var(--space-3, 0.75rem)) !important;
+            }
             .${trackId} > div {
-              flex: 0 0 ${widthPct}%;
-              min-width: 0;
+              flex: 0 0 ${widthPct}% !important;
+              min-width: 0 !important;
+              padding-left: var(--space-3, 0.75rem) !important;
+              box-sizing: border-box !important;
             }
           `,
             }}
