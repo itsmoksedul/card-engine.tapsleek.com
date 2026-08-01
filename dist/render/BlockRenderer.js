@@ -20,8 +20,9 @@ function BlockRenderer({ definition, block, ctx, }) {
     const { design, layout } = (0, resolve_design_1.resolveBlockDesign)(definition, block.widget);
     const meta = (0, registry_1.getWidgetMeta)(block.widget);
     const content = block.content ?? meta?.defaultContent ?? {};
+    const mergedDesign = { ...(design || {}), ...(content || {}) };
     if (layout) {
-        return ((0, jsx_runtime_1.jsx)("div", { className: (0, resolve_design_1.blockClass)(block.widget), "data-widget": block.widget, "data-block-id": ctx.isEditing ? block.id : undefined, children: (0, jsx_runtime_1.jsx)(NodeRenderer_1.NodeRenderer, { node: layout, content: { [block.id]: content }, ctx: { ...ctx, selfData: content } }) }));
+        return ((0, jsx_runtime_1.jsx)("div", { className: (0, resolve_design_1.blockClass)(block.widget), "data-widget": block.widget, "data-block-id": ctx.isEditing ? block.id : undefined, children: (0, jsx_runtime_1.jsx)(NodeRenderer_1.NodeRenderer, { node: layout, content: { [block.id]: content, _design: mergedDesign }, ctx: { ...ctx, selfData: content } }) }));
     }
     if (!Widget) {
         return ((0, jsx_runtime_1.jsx)("div", { className: (0, resolve_design_1.blockClass)(block.widget), "data-block-id": ctx.isEditing ? block.id : undefined, children: ctx.isEditing ? `Unknown widget: ${block.widget}` : null }));

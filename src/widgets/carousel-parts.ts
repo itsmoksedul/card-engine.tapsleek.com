@@ -79,6 +79,30 @@ export function getCarouselDesignSchema(dotsKey = "showDots"): any[] {
         { value: "end", label: "End" },
       ],
     },
+    {
+      key: "carouselLoop",
+      type: "boolean",
+      label: "Infinite Loop",
+      visibleIf: { key: "useCarousel", equals: true },
+    },
+    {
+      key: "carouselAutoplay",
+      type: "boolean",
+      label: "Autoplay",
+      visibleIf: { key: "useCarousel", equals: true },
+    },
+    {
+      key: "carouselAutoplayDelay",
+      type: "select",
+      label: "Autoplay Speed",
+      visibleIf: { key: "carouselAutoplay", equals: true },
+      options: [
+        { value: "2000", label: "2 Seconds" },
+        { value: "3000", label: "3 Seconds" },
+        { value: "5000", label: "5 Seconds" },
+        { value: "7000", label: "7 Seconds" },
+      ],
+    },
   ];
 }
 

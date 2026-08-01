@@ -28,6 +28,7 @@ export function BlockRenderer({
   const { design, layout } = resolveBlockDesign(definition, block.widget);
   const meta = getWidgetMeta(block.widget);
   const content = (block.content as Record<string, unknown>) ?? meta?.defaultContent ?? {};
+  const mergedDesign = { ...(design || {}), ...(content || {}) };
 
   if (layout) {
     return (
@@ -38,7 +39,7 @@ export function BlockRenderer({
       >
         <NodeRenderer
           node={layout}
-          content={{ [block.id]: content }}
+          content={{ [block.id]: content, _design: mergedDesign }}
           ctx={{ ...ctx, selfData: content }}
         />
       </div>

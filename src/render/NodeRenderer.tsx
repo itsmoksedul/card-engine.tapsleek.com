@@ -1,5 +1,6 @@
 "use client";
 import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 import DOMPurify from "isomorphic-dompurify";
 import React from "react";
 import type { ElementNode, Node, SlotNode, WidgetNode } from "../types/node";
@@ -48,9 +49,16 @@ export const CarouselContext = React.createContext<{
 } | null>(null);
 
 function CarouselProvider({ node, content, ctx, dom }: any) {
-  const align =
-    content?.carouselAlign ?? content?._design?.carouselAlign ?? "start";
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align });
+  const align = content?._design?.carouselAlign ?? "start";
+  const loop = content?._design?.carouselLoop === true;
+  const autoplay = content?._design?.carouselAutoplay === true;
+  const autoplayDelay = Number(content?._design?.carouselAutoplayDelay) || 3000;
+
+  const plugins = React.useMemo(() => {
+    return autoplay ? [Autoplay({ delay: autoplayDelay, stopOnInteraction: true })] : [];
+  }, [autoplay, autoplayDelay]);
+
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop, align }, plugins);
   const [selectedIndex, setSelectedIndex] = React.useState(0);
 
   React.useEffect(() => {
@@ -64,6 +72,12 @@ function CarouselProvider({ node, content, ctx, dom }: any) {
       emblaApi.off("select", onSelect);
     };
   }, [emblaApi]);
+
+  React.useEffect(() => {
+    if (emblaApi) {
+      emblaApi.reInit({ loop, align }, plugins);
+    }
+  }, [emblaApi, align, loop, plugins]);
 
   const kids = (node.children ?? []).map((child: any) => (
     <NodeRenderer key={child.id} node={child} content={content} ctx={ctx} />
@@ -138,10 +152,8 @@ function ElementRenderer({
   if (node.visibleIf) {
     const { key, equals } = node.visibleIf;
     const val =
-      content?.[key] ??
       content?._design?.[key] ??
-      ctx.selfData?.[key] ??
-      ctx.selfData?._design?.[key];
+      ctx.selfData?.[key];
     const isVisible = val === equals || (equals === false && !val);
     if (!isVisible) return null;
   }
@@ -209,11 +221,7 @@ function ElementRenderer({
       );
     }
     case "carousel": {
-      const perView =
-        Number(
-          content?.carouselSlidesPerView ??
-            content?._design?.carouselSlidesPerView,
-        ) || 1.25;
+      const perView = Number(content?._design?.carouselSlidesPerView) || 1.25;
       const widthPct = 100 / perView;
       const trackId = `track-${node.id}`;
       const kids = (node.children ?? []).map((child) => (
@@ -258,11 +266,11 @@ function ElementRenderer({
       dom.alt = props.alt ?? "";
       dom.loading = props.loading ?? "lazy";
 
-      const ratio = content?.ratio ?? content?._design?.ratio;
+      const ratio = content?._design?.ratio;
       if (ratio && ratio !== "auto") {
         dom.style = { ...dom.style, aspectRatio: ratio };
       }
-      const fit = content?.fit ?? content?._design?.fit;
+      const fit = content?._design?.fit;
       if (fit) {
         dom.style = { ...dom.style, objectFit: fit };
       }
@@ -733,7 +741,7 @@ function WidgetRenderer({
       >
         <NodeRenderer
           node={mergedLayout}
-          content={{ [node.key]: widgetContent, _design: node.design }}
+          content={{ [node.key]: widgetContent, _design: { ...(node.design || {}), ...(widgetContent || {}) } }}
           ctx={{ ...ctx, selfData: widgetContent }}
         />
       </div>

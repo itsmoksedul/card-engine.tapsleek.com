@@ -66,8 +66,7 @@ export function resolveBinding(
         return formatLinkUrl(selfData.type, urlVal);
       }
       if (binding.path === "icon") {
-        const showIcon = content?.showIcon ?? content?._design?.showIcon;
-        if (showIcon === false) return "";
+        if (content?._design?.showIcon === false) return "";
         if (selfData.icon) return selfData.icon;
         const catalogItem = LINK_CATALOG.find((l) => l.type === selfData.type);
         if (catalogItem?.iconName) return catalogItem.iconName;
@@ -79,8 +78,7 @@ export function resolveBinding(
         return selfData.type || "";
       }
       if (binding.path === "value") {
-        const showValue = content?.showValue ?? content?._design?.showValue;
-        if (showValue === false) return "";
+        if (content?._design?.showValue === false) return "";
         let raw = selfData.value || selfData.url || "";
         if (typeof raw === "string") {
           raw = raw.replace(/^tel:/, '').replace(/^mailto:/, '').replace(/^https:\/\/wa\.me\//, '');
