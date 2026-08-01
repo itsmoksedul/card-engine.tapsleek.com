@@ -88,6 +88,7 @@ export const EMITTERS: Partial<Record<StylePropKey, Emitter>> = {
   gap: simple("gap", "length"),
   rowGap: simple("row-gap", "length"),
   columnGap: simple("column-gap", "length"),
+  flex: simple("flex", "gridTemplate"),
   flexGrow: int("flex-grow", 0, 100),
   flexShrink: int("flex-shrink", 0, 100),
   flexBasis: simple("flex-basis", "length"),

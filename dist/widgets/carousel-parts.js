@@ -64,11 +64,11 @@ function getCarouselDesignSchema(dotsKey = "showDots") {
             label: "Slides Per View",
             visibleIf: { key: "useCarousel", equals: true },
             options: [
-                { value: 1.25, label: "1 (with peek)" },
-                { value: 2.25, label: "2 (with peek)" },
-                { value: 1, label: "1 (Full)" },
-                { value: 2, label: "2 (Full)" },
-                { value: 3, label: "3 (Full)" },
+                { value: "1.25", label: "1 (with peek)" },
+                { value: "2.25", label: "2 (with peek)" },
+                { value: "1", label: "1 (Full)" },
+                { value: "2", label: "2 (Full)" },
+                { value: "3", label: "3 (Full)" },
             ],
         },
         {

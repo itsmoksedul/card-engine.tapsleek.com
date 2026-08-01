@@ -156,6 +156,8 @@ function border(b) {
     }
     if (w && st)
         out.push(['border', `${w} ${st} ${c ?? 'currentColor'}`]);
+    else if (st)
+        out.push(['border-style', st]);
     else if (c)
         out.push(['border-color', c]);
     return out;

@@ -148,6 +148,7 @@ export interface StyleProps {
   flexGrow?: number;
   flexShrink?: number;
   flexBasis?: StyleValue;
+  flex?: StyleValue;
   gridTemplateColumns?: string;
   gridTemplateRows?: string;
   gridColumn?: string;

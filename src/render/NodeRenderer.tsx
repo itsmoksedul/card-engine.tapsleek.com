@@ -176,7 +176,7 @@ function ElementRenderer({
       return <EmblaCarouselWrapper node={node} content={content} ctx={ctx} dom={dom} />;
     }
     case "carousel": {
-      const perView = content?.carouselSlidesPerView ?? 1.25;
+      const perView = Number(content?.carouselSlidesPerView) || 1.25;
       const widthPct = 100 / perView;
       const trackId = `track-${node.id}`;
 
