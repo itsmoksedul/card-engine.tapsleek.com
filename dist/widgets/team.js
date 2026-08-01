@@ -43,6 +43,7 @@ exports.meta = {
                 id: "list",
                 kind: "element",
                 tag: "grid",
+                visibleIf: { key: "useCarousel", equals: false },
                 style: {
                     base: {
                         display: "grid",
@@ -142,6 +143,109 @@ exports.meta = {
                     },
                 ],
             },
+            {
+                id: "carouselTrack",
+                kind: "element",
+                tag: "carousel",
+                name: "Carousel",
+                visibleIf: { key: "useCarousel", equals: true },
+                children: [
+                    {
+                        id: "carouselItem",
+                        kind: "element",
+                        tag: "stack",
+                        name: "Carousel Item",
+                        repeat: { source: "self", path: "items" },
+                        style: {
+                            base: {
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "{space.3}",
+                                padding: { all: "{space.3}" },
+                                alignItems: "center",
+                            },
+                        },
+                        children: [
+                            {
+                                id: "c_avatar",
+                                kind: "element",
+                                tag: "image",
+                                name: "Photo",
+                                bind: { source: "self", path: "image" },
+                                hideIfEmpty: true,
+                                style: {
+                                    base: {
+                                        width: "80px",
+                                        height: "80px",
+                                        objectFit: "cover",
+                                        borderRadius: { all: "{radius.full}" },
+                                    },
+                                },
+                            },
+                            {
+                                id: "c_content",
+                                kind: "element",
+                                tag: "stack",
+                                style: {
+                                    base: {
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        gap: "{space.1}",
+                                        alignItems: "center",
+                                        textAlign: "center",
+                                    },
+                                },
+                                children: [
+                                    {
+                                        id: "c_name",
+                                        kind: "element",
+                                        tag: "text",
+                                        name: "Name",
+                                        bind: { source: "self", path: "name" },
+                                        style: {
+                                            base: {
+                                                fontSize: "{size.base}",
+                                                fontWeight: 600,
+                                                color: "{color.text}",
+                                            },
+                                        },
+                                    },
+                                    {
+                                        id: "c_role",
+                                        kind: "element",
+                                        tag: "text",
+                                        name: "Role",
+                                        hideIfEmpty: true,
+                                        bind: { source: "self", path: "role" },
+                                        style: {
+                                            base: {
+                                                fontSize: "{size.sm}",
+                                                fontWeight: 500,
+                                                color: "{color.primary}",
+                                            },
+                                        },
+                                    },
+                                    {
+                                        id: "c_bio",
+                                        kind: "element",
+                                        tag: "text",
+                                        name: "Bio",
+                                        hideIfEmpty: true,
+                                        bind: { source: "self", path: "bio" },
+                                        style: {
+                                            base: {
+                                                fontSize: "{size.sm}",
+                                                color: "{color.muted}",
+                                                lineHeight: 1.4,
+                                            },
+                                        },
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
         ],
     },
     designSchema: [
@@ -175,6 +279,7 @@ exports.meta = {
         },
     ],
     contentSchema: [
+        { key: "useCarousel", type: "boolean", label: "Enable Carousel" },
         { key: "heading", type: "text", label: "Heading", max: 60 },
         {
             key: "items",
@@ -191,6 +296,7 @@ exports.meta = {
     ],
     defaultDesign: { layout: "grid-2", align: "center", avatarShape: "circle" },
     defaultContent: {
+        useCarousel: false,
         heading: "Meet the Team",
         items: [
             {

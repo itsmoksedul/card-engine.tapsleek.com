@@ -132,6 +132,7 @@ exports.meta = {
     },
     defaultDesign: { layout: 'grid', columns: '2', aspectRatio: '16/9' },
     defaultContent: {
+        useCarousel: false,
         title: 'Featured Videos',
         videos: [
             { url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', caption: 'Demo Showcase Video', thumbnail: '' }
@@ -163,6 +164,7 @@ exports.meta = {
                 kind: 'element',
                 tag: 'grid',
                 name: 'Grid Layout',
+                visibleIf: { key: 'useCarousel', equals: false },
                 style: { base: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '{space.3}' } },
                 children: [
                     {
@@ -193,6 +195,54 @@ exports.meta = {
                             },
                             {
                                 id: 'caption',
+                                kind: 'element',
+                                tag: 'text',
+                                name: 'Caption',
+                                bind: { source: 'self', path: 'caption' },
+                                hideIfEmpty: true,
+                                style: {
+                                    base: { fontSize: '{size.xs}', fontWeight: 500, color: '{color.text}' },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                id: "carouselTrack",
+                kind: "element",
+                tag: "carousel",
+                name: "Carousel",
+                visibleIf: { key: "useCarousel", equals: true },
+                children: [
+                    {
+                        id: 'c_item',
+                        kind: 'element',
+                        tag: 'frame',
+                        name: 'Video Item',
+                        repeat: { source: 'self', path: 'videos' },
+                        style: {
+                            base: {
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '{space.1}',
+                                overflow: 'hidden',
+                                borderRadius: { all: '{radius.md}' },
+                            },
+                        },
+                        children: [
+                            {
+                                id: 'c_thumbnail',
+                                kind: 'element',
+                                tag: 'image',
+                                name: 'Thumbnail',
+                                bind: { source: 'self', path: 'thumbnail' },
+                                style: {
+                                    base: { width: '100%', aspectRatio: '16/9', objectFit: 'cover' },
+                                },
+                            },
+                            {
+                                id: 'c_caption',
                                 kind: 'element',
                                 tag: 'text',
                                 name: 'Caption',

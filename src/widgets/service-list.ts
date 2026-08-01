@@ -128,6 +128,7 @@ export const meta: WidgetModule['meta'] = {
     autoplay: false,
   },
   defaultContent: {
+    useCarousel: false,
     title: 'Our Services',
     description: '',
     items: [
@@ -181,6 +182,7 @@ export const meta: WidgetModule['meta'] = {
         kind: 'element',
         tag: 'grid',
         name: 'List',
+        visibleIf: { key: 'useCarousel', equals: false },
         style: { base: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '{space.3}' } },
         children: [
           {
@@ -248,6 +250,92 @@ export const meta: WidgetModule['meta'] = {
               },
               {
                 id: 'itemLink',
+                kind: 'element',
+                tag: 'link',
+                name: 'Item link',
+                bind: { source: 'self', path: 'link' },
+                props: { action: 'link', label: 'Learn more' },
+                hideIfEmpty: true,
+                style: {
+                  base: { fontSize: '{size.xs}', fontWeight: 600, color: '{color.primary}' },
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "carouselTrack",
+        kind: "element",
+        tag: "carousel",
+        name: "Carousel",
+        visibleIf: { key: "useCarousel", equals: true },
+        children: [
+          {
+            id: 'c_item',
+            kind: 'element',
+            tag: 'frame',
+            name: 'Carousel Item',
+            repeat: { source: 'self', path: 'items' },
+            style: {
+              base: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '{space.1}',
+                padding: { all: '{space.3}' },
+                background: { kind: 'color', color: '{color.surface}' },
+                border: { width: '1px', style: 'solid', color: '{color.border}' },
+                borderRadius: { all: '{radius.md}' },
+              },
+            },
+            children: [
+              {
+                id: 'c_itemMedia',
+                kind: 'element',
+                tag: 'image',
+                name: 'Item image',
+                bind: { source: 'self', path: 'image' },
+                hideIfEmpty: true,
+                style: {
+                  base: { width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: { all: '{radius.sm}' }, margin: { b: '{space.2}' } },
+                },
+              },
+              {
+                id: 'c_itemTitle',
+                kind: 'element',
+                tag: 'heading',
+                name: 'Item title',
+                props: { level: 4 },
+                bind: { source: 'self', path: 'name' },
+                hideIfEmpty: true,
+                style: {
+                  base: { fontSize: '{size.sm}', fontWeight: 600, color: '{color.text}' },
+                },
+              },
+              {
+                id: 'c_itemDesc',
+                kind: 'element',
+                tag: 'text',
+                name: 'Item description',
+                bind: { source: 'self', path: 'description' },
+                hideIfEmpty: true,
+                style: {
+                  base: { fontSize: '{size.xs}', lineHeight: 1.5, color: '{color.muted}' },
+                },
+              },
+              {
+                id: 'c_itemPrice',
+                kind: 'element',
+                tag: 'text',
+                name: 'Item price',
+                bind: { source: 'self', path: 'price' },
+                hideIfEmpty: true,
+                style: {
+                  base: { fontSize: '{size.sm}', fontWeight: 700, color: '{color.primary}' },
+                },
+              },
+              {
+                id: 'c_itemLink',
                 kind: 'element',
                 tag: 'link',
                 name: 'Item link',

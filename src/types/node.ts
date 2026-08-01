@@ -27,9 +27,10 @@ export type PrimitiveTag =
   | 'divider'
   | 'spacer'
   | 'embed'
-  | 'video';
+  | 'video'
+  | 'carousel';
 
-export const CONTAINER_TAGS: PrimitiveTag[] = ['frame', 'stack', 'grid', 'link'];
+export const CONTAINER_TAGS: PrimitiveTag[] = ['frame', 'stack', 'grid', 'link', 'carousel'];
 
 export const VOID_TAGS: PrimitiveTag[] = [
   'heading',
@@ -116,6 +117,8 @@ export interface BaseNode {
   /** Per-breakpoint hiding, compiled to `display:none` in the right media query. */
   hidden?: Partial<Record<'base' | 'sm' | 'md', boolean>>;
   a11y?: NodeA11y;
+  /** Hide this node if a specific value is found in the widget's content/design */
+  visibleIf?: { key: string; equals: unknown };
 }
 
 export interface ElementNode extends BaseNode {

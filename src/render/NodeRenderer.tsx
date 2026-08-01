@@ -54,6 +54,7 @@ const TAG_MAP: Record<string, string> = {
   spacer: "div",
   embed: "div",
   video: "div",
+  carousel: "div",
 };
 
 /** HTML void elements — must never be given children or React 19 hard-errors. */
@@ -95,6 +96,13 @@ function ElementRenderer({
   content: any;
   ctx: RenderCtx;
 }) {
+  if (node.visibleIf) {
+    const { key, equals } = node.visibleIf;
+    const val = content?.[key] ?? ctx.selfData?.[key];
+    const isVisible = val === equals || (equals === false && !val);
+    if (!isVisible) return null;
+  }
+
   if (node.repeat) {
     const items = resolveBinding(node.repeat, ctx.card, content, ctx.selfData);
     if (!Array.isArray(items)) return null;
@@ -142,6 +150,34 @@ function ElementRenderer({
   let children: React.ReactNode = null;
 
   switch (node.tag) {
+    case "carousel": {
+      // Carousel relies on native CSS scroll snapping. 
+      // It expects its children to be rendered directly inside a flex container.
+      const trackStyle: React.CSSProperties = {
+        display: "flex",
+        overflowX: "auto",
+        scrollSnapType: "x mandatory",
+        scrollBehavior: "smooth",
+        width: "100%",
+        scrollbarWidth: "none", // Firefox
+        msOverflowStyle: "none", // IE
+      };
+      
+      const kids = (node.children ?? []).map((child) => (
+        <NodeRenderer key={child.id} node={child} content={content} ctx={ctx} />
+      ));
+
+      children = (
+        <div style={trackStyle} className="carouselTrack">
+          {kids.map((kid, idx) => (
+            <div key={idx} style={{ scrollSnapAlign: "start", flex: "0 0 100%", minWidth: 0 }}>
+              {kid}
+            </div>
+          ))}
+        </div>
+      );
+      break;
+    }
     case "image": {
       dom.src = bound ?? props.src ?? "";
       dom.alt = props.alt ?? "";

@@ -43,6 +43,7 @@ exports.meta = {
                 id: 'list',
                 kind: 'element',
                 tag: 'stack',
+                visibleIf: { key: 'useCarousel', equals: false },
                 style: {
                     base: { display: 'flex', flexDirection: 'column', gap: '{space.3}' },
                 },
@@ -111,6 +112,81 @@ exports.meta = {
                     },
                 ],
             },
+            {
+                id: "carouselTrack",
+                kind: "element",
+                tag: "carousel",
+                name: "Carousel",
+                visibleIf: { key: "useCarousel", equals: true },
+                children: [
+                    {
+                        id: 'c_item',
+                        kind: 'element',
+                        tag: 'stack',
+                        name: "Carousel Item",
+                        repeat: { source: 'self', path: 'items' },
+                        style: {
+                            base: { display: 'flex', flexDirection: 'column', gap: '{space.1}' },
+                        },
+                        children: [
+                            {
+                                id: 'c_titleRow',
+                                kind: 'element',
+                                tag: 'stack',
+                                style: {
+                                    base: { display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '{space.2}', width: '100%' },
+                                },
+                                children: [
+                                    {
+                                        id: 'c_title',
+                                        kind: 'element',
+                                        tag: 'text',
+                                        name: 'Title',
+                                        bind: { source: 'self', path: 'title' },
+                                        style: {
+                                            base: { fontSize: '{size.base}', fontWeight: 600, color: '{color.text}' },
+                                        },
+                                    },
+                                    {
+                                        id: 'c_dots',
+                                        kind: 'element',
+                                        tag: 'stack',
+                                        style: {
+                                            base: {
+                                                flexGrow: 1,
+                                                border: { sides: { b: { width: '2px', style: 'dotted', color: '{color.border}' } } },
+                                                opacity: 0.4,
+                                                margin: { b: '4px' },
+                                            },
+                                        },
+                                    },
+                                    {
+                                        id: 'c_price',
+                                        kind: 'element',
+                                        tag: 'text',
+                                        name: 'Price',
+                                        bind: { source: 'self', path: 'price' },
+                                        style: {
+                                            base: { fontSize: '{size.base}', fontWeight: 700, color: '{color.primary}' },
+                                        },
+                                    },
+                                ],
+                            },
+                            {
+                                id: 'c_description',
+                                kind: 'element',
+                                tag: 'text',
+                                name: 'Description',
+                                hideIfEmpty: true,
+                                bind: { source: 'self', path: 'description' },
+                                style: {
+                                    base: { fontSize: '{size.sm}', color: '{color.muted}', lineHeight: 1.4 },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
         ],
     },
     designSchema: [
@@ -118,6 +194,7 @@ exports.meta = {
         { key: 'showDividers', type: 'boolean', label: 'Show dividers between items' },
     ],
     contentSchema: [
+        { key: 'useCarousel', type: 'boolean', label: 'Enable Carousel' },
         { key: 'heading', type: 'text', label: 'Heading', max: 60 },
         {
             key: 'items', type: 'repeater', label: 'Menu Items', itemLabel: '{title}',
@@ -130,6 +207,7 @@ exports.meta = {
     ],
     defaultDesign: { showDots: true, showDividers: false },
     defaultContent: {
+        useCarousel: false,
         heading: 'Services',
         items: [
             { title: 'Consultation', price: '$50', description: 'Initial 30-minute discovery call.' },

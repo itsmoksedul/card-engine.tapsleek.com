@@ -35,6 +35,7 @@ const TAG_MAP = {
     spacer: "div",
     embed: "div",
     video: "div",
+    carousel: "div",
 };
 /** HTML void elements — must never be given children or React 19 hard-errors. */
 const VOID_DOM_TAGS = new Set(["img", "hr", "br", "input", "wbr"]);
@@ -65,6 +66,13 @@ const ENGINE_PROPS = new Set([
     "loop",
 ]);
 function ElementRenderer({ node, content, ctx, }) {
+    if (node.visibleIf) {
+        const { key, equals } = node.visibleIf;
+        const val = content?.[key] ?? ctx.selfData?.[key];
+        const isVisible = val === equals || (equals === false && !val);
+        if (!isVisible)
+            return null;
+    }
     if (node.repeat) {
         const items = (0, resolveBinding_1.resolveBinding)(node.repeat, ctx.card, content, ctx.selfData);
         if (!Array.isArray(items))
@@ -97,6 +105,22 @@ function ElementRenderer({ node, content, ctx, }) {
         dom["aria-label"] = node.a11y.label;
     let children = null;
     switch (node.tag) {
+        case "carousel": {
+            // Carousel relies on native CSS scroll snapping. 
+            // It expects its children to be rendered directly inside a flex container.
+            const trackStyle = {
+                display: "flex",
+                overflowX: "auto",
+                scrollSnapType: "x mandatory",
+                scrollBehavior: "smooth",
+                width: "100%",
+                scrollbarWidth: "none", // Firefox
+                msOverflowStyle: "none", // IE
+            };
+            const kids = (node.children ?? []).map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)));
+            children = ((0, jsx_runtime_1.jsx)("div", { style: trackStyle, className: "carouselTrack", children: kids.map((kid, idx) => ((0, jsx_runtime_1.jsx)("div", { style: { scrollSnapAlign: "start", flex: "0 0 100%", minWidth: 0 }, children: kid }, idx))) }));
+            break;
+        }
         case "image": {
             dom.src = bound ?? props.src ?? "";
             dom.alt = props.alt ?? "";

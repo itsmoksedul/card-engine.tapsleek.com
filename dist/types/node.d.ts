@@ -11,7 +11,7 @@
  */
 import type { StyleSet } from './style';
 /** Tags an admin can place. Layout containers accept children; leaves don't. */
-export type PrimitiveTag = 'frame' | 'stack' | 'grid' | 'heading' | 'text' | 'richtext' | 'image' | 'icon' | 'button' | 'link' | 'divider' | 'spacer' | 'embed' | 'video';
+export type PrimitiveTag = 'frame' | 'stack' | 'grid' | 'heading' | 'text' | 'richtext' | 'image' | 'icon' | 'button' | 'link' | 'divider' | 'spacer' | 'embed' | 'video' | 'carousel';
 export declare const CONTAINER_TAGS: PrimitiveTag[];
 export declare const VOID_TAGS: PrimitiveTag[];
 /**
@@ -54,6 +54,11 @@ export interface BaseNode {
     /** Per-breakpoint hiding, compiled to `display:none` in the right media query. */
     hidden?: Partial<Record<'base' | 'sm' | 'md', boolean>>;
     a11y?: NodeA11y;
+    /** Hide this node if a specific value is found in the widget's content/design */
+    visibleIf?: {
+        key: string;
+        equals: unknown;
+    };
 }
 export interface ElementNode extends BaseNode {
     kind: 'element';

@@ -118,6 +118,7 @@ export const meta: WidgetModule["meta"] = {
     lightbox: true,
   },
   defaultContent: {
+    useCarousel: false,
     title: "Gallery",
     items: [
       { url: "", caption: "Abstract shape" },
@@ -162,6 +163,7 @@ export const meta: WidgetModule["meta"] = {
         kind: "element",
         tag: "grid",
         name: "Grid",
+        visibleIf: { key: "useCarousel", equals: false },
         style: {
           base: {
             display: "grid",
@@ -175,6 +177,59 @@ export const meta: WidgetModule["meta"] = {
             kind: "element",
             tag: "frame",
             name: "Image wrapper",
+            repeat: { source: "self", path: "items" },
+            style: {
+              base: {
+                overflow: "hidden",
+                borderRadius: { all: "{radius.md}" },
+              },
+            },
+            children: [
+              {
+                id: "image",
+                kind: "element",
+                tag: "image",
+                name: "Image",
+                bind: { source: "self", path: "url" },
+                style: {
+                  base: {
+                    width: "100%",
+                    aspectRatio: "1/1",
+                    objectFit: "cover",
+                  },
+                },
+              },
+              {
+                id: "caption",
+                kind: "element",
+                tag: "text",
+                name: "Caption",
+                bind: { source: "self", path: "caption" },
+                hideIfEmpty: true,
+                style: {
+                  base: {
+                    fontSize: "{size.xs}",
+                    color: "{color.muted}",
+                    padding: { t: "{space.1}" },
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "carouselTrack",
+        kind: "element",
+        tag: "carousel",
+        name: "Carousel",
+        visibleIf: { key: "useCarousel", equals: true },
+        children: [
+          {
+            id: "carouselItem",
+            kind: "element",
+            tag: "frame",
+            name: "Carousel Item",
             repeat: { source: "self", path: "items" },
             style: {
               base: {
