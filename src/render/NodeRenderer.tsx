@@ -48,7 +48,7 @@ export const CarouselContext = React.createContext<{
 } | null>(null);
 
 function CarouselProvider({ node, content, ctx, dom }: any) {
-  const align = content?._design?.carouselAlign ?? "start";
+  const align = content?.carouselAlign ?? content?._design?.carouselAlign ?? "start";
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align });
   const [selectedIndex, setSelectedIndex] = React.useState(0);
 
@@ -136,7 +136,11 @@ function ElementRenderer({
   const ctxEmbla = React.useContext(CarouselContext);
   if (node.visibleIf) {
     const { key, equals } = node.visibleIf;
-    const val = content?.[key] ?? ctx.selfData?.[key];
+    const val =
+      content?.[key] ??
+      content?._design?.[key] ??
+      ctx.selfData?.[key] ??
+      ctx.selfData?._design?.[key];
     const isVisible = val === equals || (equals === false && !val);
     if (!isVisible) return null;
   }
@@ -204,7 +208,7 @@ function ElementRenderer({
       );
     }
     case "carousel": {
-      const perView = Number(content?._design?.carouselSlidesPerView) || 1.25;
+      const perView = Number(content?.carouselSlidesPerView ?? content?._design?.carouselSlidesPerView) || 1.25;
       const widthPct = 100 / perView;
       const trackId = `track-${node.id}`;
       const kids = (node.children ?? []).map((child) => (
@@ -249,11 +253,11 @@ function ElementRenderer({
       dom.alt = props.alt ?? "";
       dom.loading = props.loading ?? "lazy";
 
-      const ratio = content?._design?.ratio;
+      const ratio = content?.ratio ?? content?._design?.ratio;
       if (ratio && ratio !== "auto") {
         dom.style = { ...dom.style, aspectRatio: ratio };
       }
-      const fit = content?._design?.fit;
+      const fit = content?.fit ?? content?._design?.fit;
       if (fit) {
         dom.style = { ...dom.style, objectFit: fit };
       }

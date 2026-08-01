@@ -25,7 +25,7 @@ function NodeRenderer({ node, content, ctx }) {
 }
 exports.CarouselContext = react_1.default.createContext(null);
 function CarouselProvider({ node, content, ctx, dom }) {
-    const align = content?._design?.carouselAlign ?? "start";
+    const align = content?.carouselAlign ?? content?._design?.carouselAlign ?? "start";
     const [emblaRef, emblaApi] = (0, embla_carousel_react_1.default)({ loop: false, align });
     const [selectedIndex, setSelectedIndex] = react_1.default.useState(0);
     react_1.default.useEffect(() => {
@@ -93,7 +93,10 @@ function ElementRenderer({ node, content, ctx, }) {
     const ctxEmbla = react_1.default.useContext(exports.CarouselContext);
     if (node.visibleIf) {
         const { key, equals } = node.visibleIf;
-        const val = content?.[key] ?? ctx.selfData?.[key];
+        const val = content?.[key] ??
+            content?._design?.[key] ??
+            ctx.selfData?.[key] ??
+            ctx.selfData?._design?.[key];
         const isVisible = val === equals || (equals === false && !val);
         if (!isVisible)
             return null;
@@ -141,7 +144,7 @@ function ElementRenderer({ node, content, ctx, }) {
             return ((0, jsx_runtime_1.jsx)(CarouselProvider, { node: node, content: content, ctx: ctx, dom: dom }));
         }
         case "carousel": {
-            const perView = Number(content?._design?.carouselSlidesPerView) || 1.25;
+            const perView = Number(content?.carouselSlidesPerView ?? content?._design?.carouselSlidesPerView) || 1.25;
             const widthPct = 100 / perView;
             const trackId = `track-${node.id}`;
             const kids = (node.children ?? []).map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)));
@@ -167,11 +170,11 @@ function ElementRenderer({ node, content, ctx, }) {
             dom.src = src;
             dom.alt = props.alt ?? "";
             dom.loading = props.loading ?? "lazy";
-            const ratio = content?._design?.ratio;
+            const ratio = content?.ratio ?? content?._design?.ratio;
             if (ratio && ratio !== "auto") {
                 dom.style = { ...dom.style, aspectRatio: ratio };
             }
-            const fit = content?._design?.fit;
+            const fit = content?.fit ?? content?._design?.fit;
             if (fit) {
                 dom.style = { ...dom.style, objectFit: fit };
             }

@@ -58,7 +58,8 @@ function resolveBinding(binding, card, content, selfData) {
                 return formatLinkUrl(selfData.type, urlVal);
             }
             if (binding.path === "icon") {
-                if (content?._design?.showIcon === false)
+                const showIcon = content?.showIcon ?? content?._design?.showIcon;
+                if (showIcon === false)
                     return "";
                 if (selfData.icon)
                     return selfData.icon;
@@ -75,7 +76,8 @@ function resolveBinding(binding, card, content, selfData) {
                 return selfData.type || "";
             }
             if (binding.path === "value") {
-                if (content?._design?.showValue === false)
+                const showValue = content?.showValue ?? content?._design?.showValue;
+                if (showValue === false)
                     return "";
                 let raw = selfData.value || selfData.url || "";
                 if (typeof raw === "string") {
