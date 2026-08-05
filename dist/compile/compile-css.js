@@ -561,6 +561,21 @@ function overrideScope(cardScopeClass) {
     return `.${cardScopeClass},.${cardScopeClass} .ts-card`;
 }
 /**
+ * A neutral muted colour (a grey), pulled from the resolved text colour toward
+ * pure black/white — never toward the theme colour, so secondary text never
+ * takes on a colour tint.
+ */
+function neutralMuted(textHex) {
+    const t = (0, color_utils_1.parseColor)(textHex);
+    if (!t)
+        return textHex;
+    const isLightText = (t.r + t.g + t.b) / 3 > 140;
+    const toward = isLightText
+        ? { r: 0, g: 0, b: 0 }
+        : { r: 255, g: 255, b: 255 };
+    return (0, color_utils_1.rgbString)((0, color_utils_1.mix)(t, toward, 0.4));
+}
+/**
  * v2.1 — a card owner's global Theme → inline override, scoped to the card.
  *
  * Maps the user-facing knobs onto the template's design tokens, so the whole
@@ -589,27 +604,33 @@ function compileCardTheme(theme, cardScopeClass) {
         ? themeRaw
         : (rawColors.primary ?? rawColors.primaryAccent);
     const linkRaw = rawColors.link;
+    // Tint ratios for the card background. The Card Theme colour is applied as a
+    // LIGHT tint over white, so the card stays light and text stays dark —
+    // surfaces (link rows, outline buttons) read as subtle, not saturated fills.
+    const BG_TINT = 0.12;
+    const SURFACE_TINT = 0.06;
+    const BORDER_TINT = 0.22;
     const derived = {};
-    // Button pattern: solid primary, auto-contrasted label.
+    // Button pattern: solid button colour, auto-contrasted label (dark/light).
     const accent = (0, color_utils_1.parseColor)(accentRaw);
     if (accent) {
         const solid = (0, color_utils_1.blendOverWhite)(accent);
         derived.primary = (0, color_utils_1.rgbString)(solid);
         derived.onPrimary = (0, color_utils_1.contrastText)(solid);
     }
-    // Card background pattern: the Card Theme colour IS the card background
-    // (solid), with a slightly elevated surface, a subtle border, and
-    // auto-contrasted text/muted so any theme stays legible.
+    // Card background pattern: a subtle tint of the Card Theme colour. Text and
+    // muted are ALWAYS neutral (dark or light) — never the theme colour — so
+    // copy stays readable regardless of the theme.
     const themeColor = (0, color_utils_1.parseColor)(themeRaw);
     if (themeColor) {
-        const bg = (0, color_utils_1.blendOverWhite)(themeColor);
-        const text = (0, color_utils_1.contrastText)(bg);
-        const textRgb = (0, color_utils_1.parseColor)(text);
-        derived.bg = (0, color_utils_1.rgbString)(bg);
-        derived.surface = (0, color_utils_1.rgbString)((0, color_utils_1.mix)(bg, textRgb, 0.06)); // subtle elevation
-        derived.border = (0, color_utils_1.rgbString)((0, color_utils_1.mix)(bg, textRgb, 0.15));
+        const solid = (0, color_utils_1.blendOverWhite)(themeColor);
+        const effectiveBg = (0, color_utils_1.blendOverWhite)({ ...solid, a: BG_TINT }); // what the eye sees
+        derived.bg = (0, color_utils_1.withAlpha)(solid, BG_TINT);
+        derived.surface = (0, color_utils_1.withAlpha)(solid, SURFACE_TINT);
+        derived.border = (0, color_utils_1.withAlpha)(solid, BORDER_TINT);
+        const text = (0, color_utils_1.contrastText)(effectiveBg);
         derived.text = text;
-        derived.muted = (0, color_utils_1.rgbString)((0, color_utils_1.mix)(textRgb, bg, 0.4));
+        derived.muted = neutralMuted(text);
     }
     // Link pattern: independent link colour, with a paired on-colour for when the
     // link colour is painted as a background (icon chips, pills).
