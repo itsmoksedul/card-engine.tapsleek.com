@@ -146,7 +146,10 @@ export function compileCss(
     `${Math.max(280, Math.min(1200, Math.round(width)))}px`,
   ]);
   frameDecls.push(["margin-inline", "auto"]);
-  frameDecls.push(["background-color", "transparent"]);
+  // The card frame carries the theme background token, so a card themes even
+  // when its root node doesn't paint its own background. A root that DOES set a
+  // background simply paints over this.
+  frameDecls.push(["background-color", "var(--c-bg)"]);
 
   // ── 3. Node rules ──────────────────────────────────────────────────────
   for (const root of definitionRoots(def)) {
@@ -784,16 +787,15 @@ export function compileCardTheme(
     : (rawColors.primary ?? rawColors.primaryAccent);
   const linkRaw = rawColors.link;
 
-  // Tint ratios for the card background. The Card Theme colour is applied as a
-  // LIGHT tint over white, so the card stays light and text stays dark —
-  // surfaces (link rows, outline buttons) read as subtle, not saturated fills.
-  const BG_TINT = 0.12;
-  const SURFACE_TINT = 0.06;
-  const BORDER_TINT = 0.22;
+  // Popl-style ratios: the card BACKGROUND is a light tint of the Card Theme
+  // colour (soft pastel), while buttons/accents stay the FULL saturated colour.
+  const BG_TINT = 0.2; // card background = theme @ 20% over white
+  const SURFACE_TINT = 0.12; // panels/rows slightly lighter
+  const BORDER_TINT = 0.32; // subtle themed border
 
   const derived: Record<string, string> = {};
 
-  // Button pattern: solid button colour, auto-contrasted label (dark/light).
+  // Button pattern: FULL solid button colour, auto-contrasted label.
   const accent = parseColor(accentRaw);
   if (accent) {
     const solid = blendOverWhite(accent);
@@ -801,17 +803,19 @@ export function compileCardTheme(
     derived.onPrimary = contrastText(solid);
   }
 
-  // Card background pattern: a subtle tint of the Card Theme colour. Text and
-  // muted are ALWAYS neutral (dark or light) — never the theme colour — so
-  // copy stays readable regardless of the theme.
+  // Card background pattern: a soft tint of the Card Theme colour so the card
+  // reads as a pastel of the brand, not a full fill. Text/muted are ALWAYS
+  // neutral (dark or light) — never the theme colour — so copy stays legible.
   const themeColor = parseColor(themeRaw);
   if (themeColor) {
     const solid = blendOverWhite(themeColor);
-    const effectiveBg = blendOverWhite({ ...solid, a: BG_TINT }); // what the eye sees
-    derived.bg = withAlpha(solid, BG_TINT);
-    derived.surface = withAlpha(solid, SURFACE_TINT);
-    derived.border = withAlpha(solid, BORDER_TINT);
-    const text = contrastText(effectiveBg);
+    // SOLID (opaque) pale tints — blended over white, not rgba — so nested
+    // themed layers (frame + root + rows) never stack into a saturated fill.
+    const bgSolid = blendOverWhite({ ...solid, a: BG_TINT });
+    derived.bg = rgbString(bgSolid);
+    derived.surface = rgbString(blendOverWhite({ ...solid, a: SURFACE_TINT }));
+    derived.border = rgbString(blendOverWhite({ ...solid, a: BORDER_TINT }));
+    const text = contrastText(bgSolid);
     derived.text = text;
     derived.muted = neutralMuted(text);
   }
