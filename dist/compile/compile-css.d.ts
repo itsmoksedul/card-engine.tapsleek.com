@@ -26,7 +26,6 @@
  */
 import { type Breakpoint } from "../types/style";
 import { type TemplateDefinition, type TokenGroup } from "../types/definition";
-import type { CardTheme } from "../types/block";
 import { cssValue, len } from "./value";
 export interface CompileOptions {
     /** Readable output for the builder's debug drawer. Default false. */
@@ -80,7 +79,7 @@ export declare function compileTokenOverrides(overrides: Partial<Record<TokenGro
  * `compileTokenOverrides`. `fontWeight` and `layout` are applied at render (a
  * root class), not here.
  */
-export declare function compileCardTheme(theme: CardTheme | null | undefined, cardScopeClass: string): string;
+export declare function compileCardTheme(theme: any | null | undefined, cardScopeClass: string): string;
 /** Nodes referenced by the tree, for lint + dead-CSS detection. */
 export declare function collectNodeIds(def: TemplateDefinition): string[];
 export { cssValue, len };

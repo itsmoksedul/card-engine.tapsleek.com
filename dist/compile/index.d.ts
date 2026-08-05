@@ -9,3 +9,4 @@
 export * from './value';
 export * from './declarations';
 export * from './compile-css';
+export * from './color-utils';

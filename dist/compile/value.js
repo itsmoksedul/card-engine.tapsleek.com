@@ -100,16 +100,17 @@ function color(v) {
  * breakpoint that changes one side still produces a complete, predictable box.
  */
 function box4(b) {
-    if (!b || typeof b !== 'object')
+    if (b === undefined || b === null || b === "")
         return null;
-    const all = b.all !== undefined ? len(b.all) : null;
+    const obj = typeof b !== 'object' ? { all: b } : b;
+    if (Object.keys(obj).length === 0)
+        return null;
+    const all = obj.all !== undefined ? len(obj.all) : null;
     const side = (v) => (v !== undefined ? (len(v) ?? all ?? '0') : (all ?? '0'));
-    const t = side(b.t);
-    const r = side(b.r);
-    const bo = side(b.b);
-    const l = side(b.l);
-    if ([t, r, bo, l].every((x) => x === '0') && all === null)
-        return null;
+    const t = side(obj.t);
+    const r = side(obj.r);
+    const bo = side(obj.b);
+    const l = side(obj.l);
     if (t === r && r === bo && bo === l)
         return t;
     if (t === bo && r === l)
@@ -118,16 +119,17 @@ function box4(b) {
 }
 /** Corners4 → `border-radius`. */
 function corners4(c) {
-    if (!c || typeof c !== 'object')
+    if (c === undefined || c === null || c === "")
         return null;
-    const all = c.all !== undefined ? len(c.all) : null;
+    const obj = typeof c !== 'object' ? { all: c } : c;
+    if (Object.keys(obj).length === 0)
+        return null;
+    const all = obj.all !== undefined ? len(obj.all) : null;
     const corner = (v) => v !== undefined ? (len(v) ?? all ?? '0') : (all ?? '0');
-    const tl = corner(c.tl);
-    const tr = corner(c.tr);
-    const br = corner(c.br);
-    const bl = corner(c.bl);
-    if ([tl, tr, br, bl].every((x) => x === '0') && all === null)
-        return null;
+    const tl = corner(obj.tl);
+    const tr = corner(obj.tr);
+    const br = corner(obj.br);
+    const bl = corner(obj.bl);
     if (tl === tr && tr === br && br === bl)
         return tl;
     return `${tl} ${tr} ${br} ${bl}`;

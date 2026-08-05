@@ -25,3 +25,4 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./value"), exports);
 __exportStar(require("./declarations"), exports);
 __exportStar(require("./compile-css"), exports);
+__exportStar(require("./color-utils"), exports);

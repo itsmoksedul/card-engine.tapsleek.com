@@ -51,9 +51,9 @@ export declare function color(v: StyleValue | undefined): string | null;
  * Box4 → `padding` / `margin`. Emits the 4-value shorthand so a later
  * breakpoint that changes one side still produces a complete, predictable box.
  */
-export declare function box4(b: Box4 | undefined): string | null;
+export declare function box4(b: Box4 | string | number | undefined): string | null;
 /** Corners4 → `border-radius`. */
-export declare function corners4(c: Corners4 | undefined): string | null;
+export declare function corners4(c: Corners4 | string | number | undefined): string | null;
 /** BorderValue → one or more declarations. */
 export declare function border(b: BorderValue | undefined): [string, string][];
 /** BackgroundValue → declarations. Image URLs must already be allowlisted. */

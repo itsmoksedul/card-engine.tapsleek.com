@@ -59,6 +59,15 @@ import {
   utf8Bytes,
   VALUE_RE,
 } from "./value";
+import {
+  blendOverWhite,
+  contrastText,
+  mix,
+  parseColor,
+  rgbString,
+  withAlpha,
+  type Rgb,
+} from "./color-utils";
 
 export interface CompileOptions {
   /** Readable output for the builder's debug drawer. Default false. */
@@ -723,16 +732,54 @@ export function compileCardTheme(
   if (!theme || !IDENT_RE.test(cardScopeClass)) return "";
   const decls: string[] = [];
 
-  // Map legacy ThemeEditor keys to internal card-engine tokens
-  const colors: Record<string, string> = { ...(theme.colors ?? {}) };
-  if (colors.primaryAccent && !colors.primary) colors.primary = colors.primaryAccent;
-  if (colors.theme) {
-    if (!colors.bg) colors.bg = colors.theme;
-    if (!colors.surface) colors.surface = colors.theme;
+  // ── Derive a full, readable token set from the two user knobs ──────────
+  // The ThemeEditor exposes only "Card Theme" (background) and "Button Color"
+  // (primary). Everything else — text, muted, border, surface, on-primary — is
+  // derived here so the card is always legible, then any explicit override the
+  // user set still wins.
+  const rawColors: Record<string, unknown> = { ...(theme.colors ?? {}) };
+  const accentRaw = rawColors.primary ?? rawColors.primaryAccent;
+  const themeRaw = rawColors.bg ?? rawColors.theme;
+
+  // Fixed tint ratios for the background pattern. Tunable in one place.
+  const BG_TINT = 0.12; // page background = theme colour @ 12%
+  const SURFACE_TINT = 0.06; // panels/cards slightly lighter
+  const BORDER_TINT = 0.2; // subtle borders from the same hue
+
+  const derived: Record<string, string> = {};
+
+  // Button pattern: solid primary, auto-contrasted label.
+  const accent = parseColor(accentRaw);
+  if (accent) {
+    derived.primary = rgbString(blendOverWhite(accent));
+    derived.onPrimary = contrastText(accent);
   }
-  
-  for (const [name, raw] of Object.entries(colors)) {
-    if (!IDENT_RE.test(name)) continue;
+
+  // Background pattern: tinted bg/surface/border, auto-contrasted text/muted.
+  const themeColor = parseColor(themeRaw);
+  if (themeColor) {
+    const solid: Rgb = blendOverWhite(themeColor); // picked colour as solid base
+    const effectiveBg = blendOverWhite({ ...solid, a: BG_TINT }); // eye sees this
+    derived.bg = withAlpha(solid, BG_TINT);
+    derived.surface = withAlpha(solid, SURFACE_TINT);
+    derived.border = withAlpha(solid, BORDER_TINT);
+    const text = contrastText(effectiveBg);
+    derived.text = text;
+    const textRgb = parseColor(text)!;
+    derived.muted = rgbString(mix(textRgb, effectiveBg, 0.4));
+  }
+
+  // Explicit overrides win (e.g. a manual "Text color"). Skip the two input
+  // aliases (they are consumed above, not tokens) and non-colour keys.
+  const SKIP = new Set(["primaryAccent", "theme", "matchLink"]);
+  const finalColors: Record<string, string> = { ...derived };
+  for (const [name, raw] of Object.entries(rawColors)) {
+    if (SKIP.has(name) || !IDENT_RE.test(name)) continue;
+    const v = validateTokenLiteral("color", raw);
+    if (v !== null) finalColors[name] = v;
+  }
+
+  for (const [name, raw] of Object.entries(finalColors)) {
     const v = validateTokenLiteral("color", raw);
     if (v !== null) decls.push(`${TOKEN_PREFIX.color}${name}:${v}`);
   }

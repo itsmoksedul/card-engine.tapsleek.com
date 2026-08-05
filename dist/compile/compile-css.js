@@ -40,6 +40,7 @@ const declarations_1 = require("./declarations");
 const value_1 = require("./value");
 Object.defineProperty(exports, "cssValue", { enumerable: true, get: function () { return value_1.cssValue; } });
 Object.defineProperty(exports, "len", { enumerable: true, get: function () { return value_1.len; } });
+const color_utils_1 = require("./color-utils");
 const DEFAULT_SCOPE = "ts-card";
 function compileCss(def, options = {}) {
     const pretty = options.pretty ?? false;
@@ -554,9 +555,50 @@ function compileCardTheme(theme, cardScopeClass) {
     if (!theme || !value_1.IDENT_RE.test(cardScopeClass))
         return "";
     const decls = [];
-    for (const [name, raw] of Object.entries(theme.colors ?? {})) {
-        if (!value_1.IDENT_RE.test(name))
+    // ── Derive a full, readable token set from the two user knobs ──────────
+    // The ThemeEditor exposes only "Card Theme" (background) and "Button Color"
+    // (primary). Everything else — text, muted, border, surface, on-primary — is
+    // derived here so the card is always legible, then any explicit override the
+    // user set still wins.
+    const rawColors = { ...(theme.colors ?? {}) };
+    const accentRaw = rawColors.primary ?? rawColors.primaryAccent;
+    const themeRaw = rawColors.bg ?? rawColors.theme;
+    // Fixed tint ratios for the background pattern. Tunable in one place.
+    const BG_TINT = 0.12; // page background = theme colour @ 12%
+    const SURFACE_TINT = 0.06; // panels/cards slightly lighter
+    const BORDER_TINT = 0.2; // subtle borders from the same hue
+    const derived = {};
+    // Button pattern: solid primary, auto-contrasted label.
+    const accent = (0, color_utils_1.parseColor)(accentRaw);
+    if (accent) {
+        derived.primary = (0, color_utils_1.rgbString)((0, color_utils_1.blendOverWhite)(accent));
+        derived.onPrimary = (0, color_utils_1.contrastText)(accent);
+    }
+    // Background pattern: tinted bg/surface/border, auto-contrasted text/muted.
+    const themeColor = (0, color_utils_1.parseColor)(themeRaw);
+    if (themeColor) {
+        const solid = (0, color_utils_1.blendOverWhite)(themeColor); // picked colour as solid base
+        const effectiveBg = (0, color_utils_1.blendOverWhite)({ ...solid, a: BG_TINT }); // eye sees this
+        derived.bg = (0, color_utils_1.withAlpha)(solid, BG_TINT);
+        derived.surface = (0, color_utils_1.withAlpha)(solid, SURFACE_TINT);
+        derived.border = (0, color_utils_1.withAlpha)(solid, BORDER_TINT);
+        const text = (0, color_utils_1.contrastText)(effectiveBg);
+        derived.text = text;
+        const textRgb = (0, color_utils_1.parseColor)(text);
+        derived.muted = (0, color_utils_1.rgbString)((0, color_utils_1.mix)(textRgb, effectiveBg, 0.4));
+    }
+    // Explicit overrides win (e.g. a manual "Text color"). Skip the two input
+    // aliases (they are consumed above, not tokens) and non-colour keys.
+    const SKIP = new Set(["primaryAccent", "theme", "matchLink"]);
+    const finalColors = { ...derived };
+    for (const [name, raw] of Object.entries(rawColors)) {
+        if (SKIP.has(name) || !value_1.IDENT_RE.test(name))
             continue;
+        const v = validateTokenLiteral("color", raw);
+        if (v !== null)
+            finalColors[name] = v;
+    }
+    for (const [name, raw] of Object.entries(finalColors)) {
         const v = validateTokenLiteral("color", raw);
         if (v !== null)
             decls.push(`${definition_1.TOKEN_PREFIX.color}${name}:${v}`);
