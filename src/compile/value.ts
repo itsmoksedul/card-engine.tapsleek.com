@@ -104,31 +104,33 @@ export function color(v: StyleValue | undefined): string | null {
  * Box4 → `padding` / `margin`. Emits the 4-value shorthand so a later
  * breakpoint that changes one side still produces a complete, predictable box.
  */
-export function box4(b: Box4 | undefined): string | null {
-  if (!b || typeof b !== 'object') return null;
-  const all = b.all !== undefined ? len(b.all) : null;
+export function box4(b: Box4 | string | number | undefined): string | null {
+  if (b === undefined || b === null || b === "") return null;
+  const obj = typeof b !== 'object' ? { all: b } : b;
+  if (Object.keys(obj).length === 0) return null;
+  const all = obj.all !== undefined ? len(obj.all) : null;
   const side = (v: StyleValue | undefined) => (v !== undefined ? (len(v) ?? all ?? '0') : (all ?? '0'));
-  const t = side(b.t);
-  const r = side(b.r);
-  const bo = side(b.b);
-  const l = side(b.l);
-  if ([t, r, bo, l].every((x) => x === '0') && all === null) return null;
+  const t = side(obj.t);
+  const r = side(obj.r);
+  const bo = side(obj.b);
+  const l = side(obj.l);
   if (t === r && r === bo && bo === l) return t;
   if (t === bo && r === l) return `${t} ${r}`;
   return `${t} ${r} ${bo} ${l}`;
 }
 
 /** Corners4 → `border-radius`. */
-export function corners4(c: Corners4 | undefined): string | null {
-  if (!c || typeof c !== 'object') return null;
-  const all = c.all !== undefined ? len(c.all) : null;
+export function corners4(c: Corners4 | string | number | undefined): string | null {
+  if (c === undefined || c === null || c === "") return null;
+  const obj = typeof c !== 'object' ? { all: c } : c;
+  if (Object.keys(obj).length === 0) return null;
+  const all = obj.all !== undefined ? len(obj.all) : null;
   const corner = (v: StyleValue | undefined) =>
     v !== undefined ? (len(v) ?? all ?? '0') : (all ?? '0');
-  const tl = corner(c.tl);
-  const tr = corner(c.tr);
-  const br = corner(c.br);
-  const bl = corner(c.bl);
-  if ([tl, tr, br, bl].every((x) => x === '0') && all === null) return null;
+  const tl = corner(obj.tl);
+  const tr = corner(obj.tr);
+  const br = corner(obj.br);
+  const bl = corner(obj.bl);
   if (tl === tr && tr === br && br === bl) return tl;
   return `${tl} ${tr} ${br} ${bl}`;
 }

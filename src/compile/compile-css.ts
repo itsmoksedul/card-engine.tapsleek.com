@@ -717,13 +717,21 @@ export function compileTokenOverrides(
  * root class), not here.
  */
 export function compileCardTheme(
-  theme: CardTheme | null | undefined,
+  theme: any | null | undefined,
   cardScopeClass: string,
 ): string {
   if (!theme || !IDENT_RE.test(cardScopeClass)) return "";
   const decls: string[] = [];
 
-  for (const [name, raw] of Object.entries(theme.colors ?? {})) {
+  // Map legacy ThemeEditor keys to internal card-engine tokens
+  const colors: Record<string, string> = { ...(theme.colors ?? {}) };
+  if (colors.primaryAccent && !colors.primary) colors.primary = colors.primaryAccent;
+  if (colors.theme) {
+    if (!colors.bg) colors.bg = colors.theme;
+    if (!colors.surface) colors.surface = colors.theme;
+  }
+  
+  for (const [name, raw] of Object.entries(colors)) {
     if (!IDENT_RE.test(name)) continue;
     const v = validateTokenLiteral("color", raw);
     if (v !== null) decls.push(`${TOKEN_PREFIX.color}${name}:${v}`);
