@@ -291,6 +291,26 @@ export const EMITTERS: Partial<Record<StylePropKey, Emitter>> = {
 export const ALLOWED_STYLE_PROPS = Object.keys(EMITTERS) as StylePropKey[];
 
 /**
+ * Palette background token → the readable text token that pairs with it.
+ * An element painted with one of these backgrounds, but with no explicit text
+ * colour of its own, inherits the wrong colour (usually the card's body text,
+ * which is tuned for the card background, not for a solid button). Auto-pairing
+ * the "on" colour here keeps every button/badge legible without the template
+ * author having to set the text colour on each one — and it follows through to
+ * a Pro user's override, because both sides are CSS variables.
+ */
+const ON_COLOR_PAIR: Record<string, string> = {
+  primary: "--c-onPrimary",
+};
+
+/** If `colorVal` is a `{color.X}` ref with an "on" pair, return that CSS var. */
+function pairedOnColorVar(colorVal: unknown): string | null {
+  if (typeof colorVal !== "string") return null;
+  const m = /^\{color\.([A-Za-z0-9_-]+)\}$/.exec(colorVal.trim());
+  return m ? (ON_COLOR_PAIR[m[1]] ?? null) : null;
+}
+
+/**
  * Turn one `StyleProps` object into an ordered declaration list.
  * Emission order follows `EMITTERS` insertion order, so output is stable and
  * the content hash only changes when the design actually changes.
@@ -305,6 +325,19 @@ export function declarationsFor(props: StyleProps | undefined): Decl[] {
     if (!emit) continue;
     for (const decl of emit(value)) out.push(decl);
   }
+
+  // Auto on-colour: a solid palette background (e.g. {color.primary}) with no
+  // explicit text colour gets the paired readable colour (e.g. onPrimary), so
+  // labels stay legible on coloured buttons/badges by default.
+  const p = props as Record<string, unknown>;
+  const hasExplicitColor =
+    p.color !== undefined && p.color !== null && p.color !== "";
+  const bg = p.background as { kind?: string; color?: unknown } | undefined;
+  if (!hasExplicitColor && bg && typeof bg === "object" && bg.kind === "color") {
+    const onVar = pairedOnColorVar(bg.color);
+    if (onVar) out.push(["color", `var(${onVar})`]);
+  }
+
   return out;
 }
 
