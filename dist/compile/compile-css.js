@@ -283,6 +283,8 @@ const DEFAULT_TOKENS = {
         muted: "#64748b",
         border: "#e2e8f0",
         onPrimary: "#ffffff",
+        link: "#3b5bfe",
+        onLink: "#ffffff",
     },
     space: {
         "1": "4px",
@@ -540,7 +542,23 @@ function compileTokenOverrides(overrides, cardScopeClass, allow) {
     }
     if (!decls.length)
         return "";
-    return `@layer ts-override{.${cardScopeClass}{${decls.join(";")}}}`;
+    return `@layer ts-override{${overrideScope(cardScopeClass)}{${decls.join(";")}}}`;
+}
+/**
+ * Selector list a per-card override must target.
+ *
+ * `CardRenderer` renders its own inner `.ts-card` wrapper INSIDE the host's
+ * scoped `.${cardScopeClass}` element. The template sheet defines the token
+ * defaults on `.ts-card` (`@layer ts-template`), so that inner `.ts-card`
+ * re-declares every token as its OWN value — which shadows the inherited
+ * override coming from the outer scoped element, and the card's descendants
+ * (buttons, text) inherit the DEFAULT instead of the override. Targeting both
+ * the scoped element AND any nested `.ts-card` inside it puts the override on
+ * that inner holder too (still in `ts-override`, so it wins over the template),
+ * so the whole subtree resolves to the overridden tokens.
+ */
+function overrideScope(cardScopeClass) {
+    return `.${cardScopeClass},.${cardScopeClass} .ts-card`;
 }
 /**
  * v2.1 — a card owner's global Theme → inline override, scoped to the card.
@@ -561,35 +579,49 @@ function compileCardTheme(theme, cardScopeClass) {
     // derived here so the card is always legible, then any explicit override the
     // user set still wins.
     const rawColors = { ...(theme.colors ?? {}) };
-    const accentRaw = rawColors.primary ?? rawColors.primaryAccent;
+    // "Match Button to Card Theme": the button (primary) follows the Card Theme
+    // colour instead of its own Button Colour. The three knobs — Card Theme
+    // (background), Button Colour (primary) and Link Colour — are otherwise
+    // completely independent tokens.
+    const matchButton = rawColors.matchButton === true;
     const themeRaw = rawColors.bg ?? rawColors.theme;
-    // Fixed tint ratios for the background pattern. Tunable in one place.
-    const BG_TINT = 0.12; // page background = theme colour @ 12%
-    const SURFACE_TINT = 0.06; // panels/cards slightly lighter
-    const BORDER_TINT = 0.2; // subtle borders from the same hue
+    const accentRaw = matchButton
+        ? themeRaw
+        : (rawColors.primary ?? rawColors.primaryAccent);
+    const linkRaw = rawColors.link;
     const derived = {};
     // Button pattern: solid primary, auto-contrasted label.
     const accent = (0, color_utils_1.parseColor)(accentRaw);
     if (accent) {
-        derived.primary = (0, color_utils_1.rgbString)((0, color_utils_1.blendOverWhite)(accent));
-        derived.onPrimary = (0, color_utils_1.contrastText)(accent);
+        const solid = (0, color_utils_1.blendOverWhite)(accent);
+        derived.primary = (0, color_utils_1.rgbString)(solid);
+        derived.onPrimary = (0, color_utils_1.contrastText)(solid);
     }
-    // Background pattern: tinted bg/surface/border, auto-contrasted text/muted.
+    // Card background pattern: the Card Theme colour IS the card background
+    // (solid), with a slightly elevated surface, a subtle border, and
+    // auto-contrasted text/muted so any theme stays legible.
     const themeColor = (0, color_utils_1.parseColor)(themeRaw);
     if (themeColor) {
-        const solid = (0, color_utils_1.blendOverWhite)(themeColor); // picked colour as solid base
-        const effectiveBg = (0, color_utils_1.blendOverWhite)({ ...solid, a: BG_TINT }); // eye sees this
-        derived.bg = (0, color_utils_1.withAlpha)(solid, BG_TINT);
-        derived.surface = (0, color_utils_1.withAlpha)(solid, SURFACE_TINT);
-        derived.border = (0, color_utils_1.withAlpha)(solid, BORDER_TINT);
-        const text = (0, color_utils_1.contrastText)(effectiveBg);
-        derived.text = text;
+        const bg = (0, color_utils_1.blendOverWhite)(themeColor);
+        const text = (0, color_utils_1.contrastText)(bg);
         const textRgb = (0, color_utils_1.parseColor)(text);
-        derived.muted = (0, color_utils_1.rgbString)((0, color_utils_1.mix)(textRgb, effectiveBg, 0.4));
+        derived.bg = (0, color_utils_1.rgbString)(bg);
+        derived.surface = (0, color_utils_1.rgbString)((0, color_utils_1.mix)(bg, textRgb, 0.06)); // subtle elevation
+        derived.border = (0, color_utils_1.rgbString)((0, color_utils_1.mix)(bg, textRgb, 0.15));
+        derived.text = text;
+        derived.muted = (0, color_utils_1.rgbString)((0, color_utils_1.mix)(textRgb, bg, 0.4));
     }
-    // Explicit overrides win (e.g. a manual "Text color"). Skip the two input
-    // aliases (they are consumed above, not tokens) and non-colour keys.
-    const SKIP = new Set(["primaryAccent", "theme", "matchLink"]);
+    // Link pattern: independent link colour, with a paired on-colour for when the
+    // link colour is painted as a background (icon chips, pills).
+    const link = (0, color_utils_1.parseColor)(linkRaw);
+    if (link) {
+        const solid = (0, color_utils_1.blendOverWhite)(link);
+        derived.link = (0, color_utils_1.rgbString)(solid);
+        derived.onLink = (0, color_utils_1.contrastText)(solid);
+    }
+    // Explicit overrides win (e.g. a manual "Text color"). Skip the input aliases
+    // (consumed above, not tokens) and the boolean toggle.
+    const SKIP = new Set(["primaryAccent", "theme", "matchLink", "matchButton"]);
     const finalColors = { ...derived };
     for (const [name, raw] of Object.entries(rawColors)) {
         if (SKIP.has(name) || !value_1.IDENT_RE.test(name))
@@ -621,7 +653,7 @@ function compileCardTheme(theme, cardScopeClass) {
     }
     if (!decls.length)
         return "";
-    return `@layer ts-override{.${cardScopeClass}{${decls.join(";")}}}`;
+    return `@layer ts-override{${overrideScope(cardScopeClass)}{${decls.join(";")}}}`;
 }
 /** Distinct widget types placed in the template tree, in first-seen order. */
 function templateWidgetTypes(def) {

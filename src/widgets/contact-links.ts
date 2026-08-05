@@ -98,7 +98,7 @@ export const meta: WidgetModule['meta'] = {
         flexShrink: 0,
         borderRadius: { all: '{radius.full}' },
         background: { kind: 'color', color: '{color.bg}' },
-        color: '{color.primary}',
+        color: '{color.link}',
       },
     },
     label: { base: { flexGrow: 1 } },

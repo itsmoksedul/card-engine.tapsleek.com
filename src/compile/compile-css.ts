@@ -408,6 +408,8 @@ const DEFAULT_TOKENS: Record<TokenGroup, Record<string, string>> = {
     muted: "#64748b",
     border: "#e2e8f0",
     onPrimary: "#ffffff",
+    link: "#3b5bfe",
+    onLink: "#ffffff",
   },
   space: {
     "1": "4px",
@@ -713,7 +715,24 @@ export function compileTokenOverrides(
   }
 
   if (!decls.length) return "";
-  return `@layer ts-override{.${cardScopeClass}{${decls.join(";")}}}`;
+  return `@layer ts-override{${overrideScope(cardScopeClass)}{${decls.join(";")}}}`;
+}
+
+/**
+ * Selector list a per-card override must target.
+ *
+ * `CardRenderer` renders its own inner `.ts-card` wrapper INSIDE the host's
+ * scoped `.${cardScopeClass}` element. The template sheet defines the token
+ * defaults on `.ts-card` (`@layer ts-template`), so that inner `.ts-card`
+ * re-declares every token as its OWN value — which shadows the inherited
+ * override coming from the outer scoped element, and the card's descendants
+ * (buttons, text) inherit the DEFAULT instead of the override. Targeting both
+ * the scoped element AND any nested `.ts-card` inside it puts the override on
+ * that inner holder too (still in `ts-override`, so it wins over the template),
+ * so the whole subtree resolves to the overridden tokens.
+ */
+function overrideScope(cardScopeClass: string): string {
+  return `.${cardScopeClass},.${cardScopeClass} .ts-card`;
 }
 
 /**
@@ -738,40 +757,55 @@ export function compileCardTheme(
   // derived here so the card is always legible, then any explicit override the
   // user set still wins.
   const rawColors: Record<string, unknown> = { ...(theme.colors ?? {}) };
-  const accentRaw = rawColors.primary ?? rawColors.primaryAccent;
-  const themeRaw = rawColors.bg ?? rawColors.theme;
 
-  // Fixed tint ratios for the background pattern. Tunable in one place.
-  const BG_TINT = 0.12; // page background = theme colour @ 12%
-  const SURFACE_TINT = 0.06; // panels/cards slightly lighter
-  const BORDER_TINT = 0.2; // subtle borders from the same hue
+  // "Match Button to Card Theme": the button (primary) follows the Card Theme
+  // colour instead of its own Button Colour. The three knobs — Card Theme
+  // (background), Button Colour (primary) and Link Colour — are otherwise
+  // completely independent tokens.
+  const matchButton = rawColors.matchButton === true;
+  const themeRaw = rawColors.bg ?? rawColors.theme;
+  const accentRaw = matchButton
+    ? themeRaw
+    : (rawColors.primary ?? rawColors.primaryAccent);
+  const linkRaw = rawColors.link;
 
   const derived: Record<string, string> = {};
 
   // Button pattern: solid primary, auto-contrasted label.
   const accent = parseColor(accentRaw);
   if (accent) {
-    derived.primary = rgbString(blendOverWhite(accent));
-    derived.onPrimary = contrastText(accent);
+    const solid = blendOverWhite(accent);
+    derived.primary = rgbString(solid);
+    derived.onPrimary = contrastText(solid);
   }
 
-  // Background pattern: tinted bg/surface/border, auto-contrasted text/muted.
+  // Card background pattern: the Card Theme colour IS the card background
+  // (solid), with a slightly elevated surface, a subtle border, and
+  // auto-contrasted text/muted so any theme stays legible.
   const themeColor = parseColor(themeRaw);
   if (themeColor) {
-    const solid: Rgb = blendOverWhite(themeColor); // picked colour as solid base
-    const effectiveBg = blendOverWhite({ ...solid, a: BG_TINT }); // eye sees this
-    derived.bg = withAlpha(solid, BG_TINT);
-    derived.surface = withAlpha(solid, SURFACE_TINT);
-    derived.border = withAlpha(solid, BORDER_TINT);
-    const text = contrastText(effectiveBg);
-    derived.text = text;
+    const bg: Rgb = blendOverWhite(themeColor);
+    const text = contrastText(bg);
     const textRgb = parseColor(text)!;
-    derived.muted = rgbString(mix(textRgb, effectiveBg, 0.4));
+    derived.bg = rgbString(bg);
+    derived.surface = rgbString(mix(bg, textRgb, 0.06)); // subtle elevation
+    derived.border = rgbString(mix(bg, textRgb, 0.15));
+    derived.text = text;
+    derived.muted = rgbString(mix(textRgb, bg, 0.4));
   }
 
-  // Explicit overrides win (e.g. a manual "Text color"). Skip the two input
-  // aliases (they are consumed above, not tokens) and non-colour keys.
-  const SKIP = new Set(["primaryAccent", "theme", "matchLink"]);
+  // Link pattern: independent link colour, with a paired on-colour for when the
+  // link colour is painted as a background (icon chips, pills).
+  const link = parseColor(linkRaw);
+  if (link) {
+    const solid = blendOverWhite(link);
+    derived.link = rgbString(solid);
+    derived.onLink = contrastText(solid);
+  }
+
+  // Explicit overrides win (e.g. a manual "Text color"). Skip the input aliases
+  // (consumed above, not tokens) and the boolean toggle.
+  const SKIP = new Set(["primaryAccent", "theme", "matchLink", "matchButton"]);
   const finalColors: Record<string, string> = { ...derived };
   for (const [name, raw] of Object.entries(rawColors)) {
     if (SKIP.has(name) || !IDENT_RE.test(name)) continue;
@@ -806,7 +840,7 @@ export function compileCardTheme(
   }
 
   if (!decls.length) return "";
-  return `@layer ts-override{.${cardScopeClass}{${decls.join(";")}}}`;
+  return `@layer ts-override{${overrideScope(cardScopeClass)}{${decls.join(";")}}}`;
 }
 
 /** Distinct widget types placed in the template tree, in first-seen order. */
