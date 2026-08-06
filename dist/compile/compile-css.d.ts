@@ -24,8 +24,8 @@
  * override is visible on a wide desktop editor window (where a `max-width` query
  * would never match). It never touches the published artifact.
  */
-import { type Breakpoint } from "../types/style";
 import { type TemplateDefinition, type TokenGroup } from "../types/definition";
+import { type Breakpoint } from "../types/style";
 import { cssValue, len } from "./value";
 export interface CompileOptions {
     /** Readable output for the builder's debug drawer. Default false. */

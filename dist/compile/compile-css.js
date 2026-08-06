@@ -31,16 +31,16 @@ exports.compileCss = compileCss;
 exports.compileTokenOverrides = compileTokenOverrides;
 exports.compileCardTheme = compileCardTheme;
 exports.collectNodeIds = collectNodeIds;
-const style_1 = require("../types/style");
+const resolve_design_1 = require("../blocks/resolve-design");
 const definition_1 = require("../types/definition");
 const node_1 = require("../types/node");
-const resolve_design_1 = require("../blocks/resolve-design");
+const style_1 = require("../types/style");
 const registry_1 = require("../widgets/registry");
+const color_utils_1 = require("./color-utils");
 const declarations_1 = require("./declarations");
 const value_1 = require("./value");
 Object.defineProperty(exports, "cssValue", { enumerable: true, get: function () { return value_1.cssValue; } });
 Object.defineProperty(exports, "len", { enumerable: true, get: function () { return value_1.len; } });
-const color_utils_1 = require("./color-utils");
 const DEFAULT_SCOPE = "ts-card";
 function compileCss(def, options = {}) {
     const pretty = options.pretty ?? false;
@@ -602,8 +602,14 @@ function compileCardTheme(theme, cardScopeClass) {
         if (v !== null)
             decls.push(`${definition_1.TOKEN_PREFIX.color}${name}:${v}`);
     }
-    if (theme.fontFamily) {
-        const v = validateTokenLiteral("font", theme.fontFamily);
+    const fontFamily = theme.typography?.fontFamily || theme.fontFamily;
+    if (fontFamily) {
+        // If it's just a word like "Oswald", make it a valid font family string like "'Oswald', sans-serif"
+        // Wait, the renderer uses `--f-body: 'Oswald', sans-serif`. validateTokenLiteral might reject just "Oswald"
+        // wait, `validateTokenLiteral("font", "Oswald")` checks VALUE_RE.fontFamily.
+        // If it's valid, we push it. But it needs the fallback for safety.
+        const safeValue = fontFamily.includes(",") ? fontFamily : `'${fontFamily}', sans-serif`;
+        const v = validateTokenLiteral("font", safeValue);
         if (v !== null)
             decls.push(`${definition_1.TOKEN_PREFIX.font}heading:${v}`, `${definition_1.TOKEN_PREFIX.font}body:${v}`);
     }

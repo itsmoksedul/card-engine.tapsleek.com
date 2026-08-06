@@ -25,13 +25,7 @@
  * would never match). It never touches the published artifact.
  */
 
-import {
-  BREAKPOINT_MEDIA,
-  STATE_KEYS,
-  type Breakpoint,
-  type StyleProps,
-  type StyleSet,
-} from "../types/style";
+import { blockClass, resolveBlockDesign } from "../blocks/resolve-design";
 import {
   definitionRoots,
   TOKEN_GROUPS,
@@ -46,28 +40,29 @@ import {
   walkTreeOrder,
   type Node,
 } from "../types/node";
-import type { CardTheme } from "../types/block";
-import { resolveBlockDesign, blockClass } from "../blocks/resolve-design";
-import { WIDGET_TYPES, getWidgetMeta } from "../widgets/registry";
+import {
+  BREAKPOINT_MEDIA,
+  STATE_KEYS,
+  type Breakpoint,
+  type StyleProps,
+  type StyleSet,
+} from "../types/style";
+import { getWidgetMeta, WIDGET_TYPES } from "../widgets/registry";
+import {
+  mix,
+  parseColor,
+  rgbString,
+  type Rgb
+} from "./color-utils";
 import { declarationsFor, serializeDecls, type Decl } from "./declarations";
 import {
-  color,
   cssValue,
   IDENT_RE,
   len,
   safeUrl,
   utf8Bytes,
-  VALUE_RE,
+  VALUE_RE
 } from "./value";
-import {
-  blendOverWhite,
-  contrastText,
-  mix,
-  parseColor,
-  rgbString,
-  withAlpha,
-  type Rgb,
-} from "./color-utils";
 
 export interface CompileOptions {
   /** Readable output for the builder's debug drawer. Default false. */
@@ -832,3 +827,4 @@ export function collectNodeIds(def: TemplateDefinition): string[] {
 }
 
 export { cssValue, len };
+
