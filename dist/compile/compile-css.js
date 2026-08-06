@@ -68,10 +68,8 @@ function compileCss(def, options = {}) {
         `${Math.max(280, Math.min(1200, Math.round(width)))}px`,
     ]);
     frameDecls.push(["margin-inline", "auto"]);
-    // The card frame carries the theme background token, so a card themes even
-    // when its root node doesn't paint its own background. A root that DOES set a
-    // background simply paints over this.
-    frameDecls.push(["background-color", "var(--c-bg)"]);
+    // The root node carries the theme background token instead of the frame
+    // to ensure border-radius and overflow clipping works correctly.
     // ── 3. Node rules ──────────────────────────────────────────────────────
     for (const root of (0, definition_1.definitionRoots)(def)) {
         (0, node_1.walkTreeOrder)(root, (node) => {
@@ -83,9 +81,13 @@ function compileCss(def, options = {}) {
             // base / sm / md
             for (const bp of ["base", "sm", "md"]) {
                 const props = { ...mergeHidden(node.style?.[bp], node.hidden?.[bp]) };
-                // Ensure root card container clips child elements cleanly when border-radius is set
-                if (node.id === "root" && props.borderRadius && props.overflow === undefined) {
-                    props.overflow = "hidden";
+                if (node.id === "root") {
+                    if (props.borderRadius && props.overflow === undefined) {
+                        props.overflow = "hidden";
+                    }
+                    if (bp === "base" && !props.background) {
+                        props.background = "var(--c-bg)";
+                    }
                 }
                 const decls = (0, declarations_1.declarationsFor)(props);
                 if (decls.length) {
