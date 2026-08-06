@@ -780,8 +780,14 @@ export function compileCardTheme(
     if (v !== null) decls.push(`${TOKEN_PREFIX.color}${name}:${v}`);
   }
 
-  if (theme.fontFamily) {
-    const v = validateTokenLiteral("font", theme.fontFamily);
+  const fontFamily = theme.typography?.fontFamily || theme.fontFamily;
+  if (fontFamily) {
+    // If it's just a word like "Oswald", make it a valid font family string like "'Oswald', sans-serif"
+    // Wait, the renderer uses `--f-body: 'Oswald', sans-serif`. validateTokenLiteral might reject just "Oswald"
+    // wait, `validateTokenLiteral("font", "Oswald")` checks VALUE_RE.fontFamily.
+    // If it's valid, we push it. But it needs the fallback for safety.
+    const safeValue = fontFamily.includes(",") ? fontFamily : `'${fontFamily}', sans-serif`;
+    const v = validateTokenLiteral("font", safeValue);
     if (v !== null)
       decls.push(
         `${TOKEN_PREFIX.font}heading:${v}`,
