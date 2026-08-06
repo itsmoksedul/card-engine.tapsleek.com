@@ -591,71 +591,13 @@ function compileCardTheme(theme, cardScopeClass) {
     if (!theme || !value_1.IDENT_RE.test(cardScopeClass))
         return "";
     const decls = [];
-    // ── Derive a full, readable token set from the two user knobs ──────────
-    // The ThemeEditor exposes only "Card Theme" (background) and "Button Color"
-    // (primary). Everything else — text, muted, border, surface, on-primary — is
-    // derived here so the card is always legible, then any explicit override the
-    // user set still wins.
+    // Directly map explicit color overrides (bg, primary, text, border, etc.)
+    // without any automatic ratio or tinting derivation.
     const rawColors = { ...(theme.colors ?? {}) };
-    // "Match Button to Card Theme": the button (primary) follows the Card Theme
-    // colour instead of its own Button Colour. The three knobs — Card Theme
-    // (background), Button Colour (primary) and Link Colour — are otherwise
-    // completely independent tokens.
-    const matchButton = rawColors.matchButton === true;
-    const themeRaw = rawColors.bg ?? rawColors.theme;
-    const accentRaw = matchButton
-        ? themeRaw
-        : (rawColors.primary ?? rawColors.primaryAccent);
-    const linkRaw = rawColors.link;
-    // Popl-style ratios: the card BACKGROUND is a light tint of the Card Theme
-    // colour (soft pastel), while buttons/accents stay the FULL saturated colour.
-    const BG_TINT = 0.2; // card background = theme @ 20% over white
-    const SURFACE_TINT = 0.12; // panels/rows slightly lighter
-    const BORDER_TINT = 0.32; // subtle themed border
-    const derived = {};
-    // Button pattern: FULL solid button colour, auto-contrasted label.
-    const accent = (0, color_utils_1.parseColor)(accentRaw);
-    if (accent) {
-        const solid = (0, color_utils_1.blendOverWhite)(accent);
-        derived.primary = (0, color_utils_1.rgbString)(solid);
-        derived.onPrimary = (0, color_utils_1.contrastText)(solid);
-    }
-    // Card background pattern: a soft tint of the Card Theme colour so the card
-    // reads as a pastel of the brand, not a full fill. Text/muted are ALWAYS
-    // neutral (dark or light) — never the theme colour — so copy stays legible.
-    const themeColor = (0, color_utils_1.parseColor)(themeRaw);
-    if (themeColor) {
-        const solid = (0, color_utils_1.blendOverWhite)(themeColor);
-        // SOLID (opaque) pale tints — blended over white, not rgba — so nested
-        // themed layers (frame + root + rows) never stack into a saturated fill.
-        const bgSolid = (0, color_utils_1.blendOverWhite)({ ...solid, a: BG_TINT });
-        derived.bg = (0, color_utils_1.rgbString)(bgSolid);
-        derived.surface = (0, color_utils_1.rgbString)((0, color_utils_1.blendOverWhite)({ ...solid, a: SURFACE_TINT }));
-        derived.border = (0, color_utils_1.rgbString)((0, color_utils_1.blendOverWhite)({ ...solid, a: BORDER_TINT }));
-        const text = (0, color_utils_1.contrastText)(bgSolid);
-        derived.text = text;
-        derived.muted = neutralMuted(text);
-    }
-    // Link pattern: independent link colour, with a paired on-colour for when the
-    // link colour is painted as a background (icon chips, pills).
-    const link = (0, color_utils_1.parseColor)(linkRaw);
-    if (link) {
-        const solid = (0, color_utils_1.blendOverWhite)(link);
-        derived.link = (0, color_utils_1.rgbString)(solid);
-        derived.onLink = (0, color_utils_1.contrastText)(solid);
-    }
-    // Explicit overrides win (e.g. a manual "Text color"). Skip the input aliases
-    // (consumed above, not tokens) and the boolean toggle.
-    const SKIP = new Set(["primaryAccent", "theme", "matchLink", "matchButton"]);
-    const finalColors = { ...derived };
+    const SKIP = new Set(["matchButton", "primaryAccent", "theme", "matchLink"]);
     for (const [name, raw] of Object.entries(rawColors)) {
         if (SKIP.has(name) || !value_1.IDENT_RE.test(name))
             continue;
-        const v = validateTokenLiteral("color", raw);
-        if (v !== null)
-            finalColors[name] = v;
-    }
-    for (const [name, raw] of Object.entries(finalColors)) {
         const v = validateTokenLiteral("color", raw);
         if (v !== null)
             decls.push(`${definition_1.TOKEN_PREFIX.color}${name}:${v}`);
