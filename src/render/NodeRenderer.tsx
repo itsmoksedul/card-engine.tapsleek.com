@@ -718,6 +718,15 @@ function WidgetRenderer({
     }
   }
 
+  // Tag every analytics event from this widget with its stable node key so
+  // the backend can attribute clicks to the specific widget instance
+  // (dynamic per-widget analytics).
+  const widgetCtx: RenderCtx = {
+    ...ctx,
+    track: (event: Record<string, unknown>) =>
+      ctx.track({ widgetKey: node.key, ...event }),
+  };
+
   const Widget = WIDGET_RENDERERS[
     node.widget as keyof typeof WIDGET_RENDERERS
   ] as any;
@@ -766,7 +775,7 @@ function WidgetRenderer({
             [node.key]: widgetContent,
             _design: { ...(node.design || {}), ...(widgetContent || {}) },
           }}
-          ctx={{ ...ctx, selfData: widgetContent }}
+          ctx={{ ...widgetCtx, selfData: widgetContent }}
         />
       </div>
     );
@@ -795,7 +804,7 @@ function WidgetRenderer({
       data-node-id={ctx.isEditing ? node.id : undefined}
       data-widget={node.widget}
     >
-      <Widget content={widgetContent} design={design} cls={cls} ctx={ctx} />
+      <Widget content={widgetContent} design={design} cls={cls} ctx={widgetCtx} />
     </div>
   );
 

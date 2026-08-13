@@ -554,6 +554,13 @@ function WidgetRenderer({ node, content, ctx, }) {
             }
         }
     }
+    // Tag every analytics event from this widget with its stable node key so
+    // the backend can attribute clicks to the specific widget instance
+    // (dynamic per-widget analytics).
+    const widgetCtx = {
+        ...ctx,
+        track: (event) => ctx.track({ widgetKey: node.key, ...event }),
+    };
     const Widget = widgets_2.WIDGET_RENDERERS[node.widget];
     const widgetMeta = (0, widgets_1.getWidgetMeta)(node.widget);
     const widgetContent = content?.[node.key] ?? node.defaultContent ?? {};
@@ -588,7 +595,7 @@ function WidgetRenderer({ node, content, ctx, }) {
         return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-widget": node.widget, "data-node-id": ctx.isEditing ? node.id : undefined, children: (0, jsx_runtime_1.jsx)(NodeRenderer, { node: mergedLayout, content: {
                     [node.key]: widgetContent,
                     _design: { ...(node.design || {}), ...(widgetContent || {}) },
-                }, ctx: { ...ctx, selfData: widgetContent } }) }));
+                }, ctx: { ...widgetCtx, selfData: widgetContent } }) }));
     }
     // No layout and no custom Widget renderer — this shouldn't happen in normal flow
     // (all widgets have either a layout or a renderer), but handle it gracefully.
@@ -597,7 +604,7 @@ function WidgetRenderer({ node, content, ctx, }) {
     }
     const design = node.design ?? {};
     const cls = (part) => `p-${part}`;
-    const renderedWidget = ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, "data-widget": node.widget, children: (0, jsx_runtime_1.jsx)(Widget, { content: widgetContent, design: design, cls: cls, ctx: ctx }) }));
+    const renderedWidget = ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, "data-widget": node.widget, children: (0, jsx_runtime_1.jsx)(Widget, { content: widgetContent, design: design, cls: cls, ctx: widgetCtx }) }));
     if (!ctx.isEditing &&
         Array.isArray(ctx.blocks) &&
         node.id === ctx.placeholderId &&
