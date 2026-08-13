@@ -1,5 +1,5 @@
 import React from 'react';
-import DOMPurify from 'isomorphic-dompurify';
+import DOMPurify from '../purify';
 import { EmptyState, str, type WidgetRenderProps } from './shared';
 
 export function RichTextRender({ content, design, cls, ctx }: WidgetRenderProps) {

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import DOMPurify from 'isomorphic-dompurify';
+import DOMPurify from '../purify';
 import { EmptyState, type WidgetRenderProps } from './shared';
 
 const HEIGHT_MAP: Record<string, string> = {

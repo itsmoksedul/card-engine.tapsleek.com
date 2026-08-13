@@ -1,7 +1,7 @@
 "use client";
 import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
-import DOMPurify from "isomorphic-dompurify";
+import DOMPurify from "./purify";
 import React from "react";
 import type { ElementNode, Node, SlotNode, WidgetNode } from "../types/node";
 import { getWidgetMeta } from "../widgets";

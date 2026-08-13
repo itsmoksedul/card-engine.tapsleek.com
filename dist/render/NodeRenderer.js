@@ -9,7 +9,7 @@ exports.NodeRenderer = NodeRenderer;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const embla_carousel_autoplay_1 = __importDefault(require("embla-carousel-autoplay"));
 const embla_carousel_react_1 = __importDefault(require("embla-carousel-react"));
-const isomorphic_dompurify_1 = __importDefault(require("isomorphic-dompurify"));
+const purify_1 = __importDefault(require("./purify"));
 const react_1 = __importDefault(require("react"));
 const widgets_1 = require("../widgets");
 const resolveBinding_1 = require("./resolveBinding");
@@ -236,14 +236,14 @@ function ElementRenderer({ node, content, ctx, }) {
         case "richtext": {
             const rawHtml = bound ?? props.html ?? "";
             dom.dangerouslySetInnerHTML = {
-                __html: isomorphic_dompurify_1.default.sanitize(String(rawHtml)),
+                __html: purify_1.default.sanitize(String(rawHtml)),
             };
             break;
         }
         case "embed": {
             const rawHtml = bound ?? props.html ?? "";
             dom.dangerouslySetInnerHTML = {
-                __html: isomorphic_dompurify_1.default.sanitize(String(rawHtml), {
+                __html: purify_1.default.sanitize(String(rawHtml), {
                     ADD_TAGS: ["iframe"],
                     ADD_ATTR: [
                         "allow",

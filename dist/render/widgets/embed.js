@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmbedRender = EmbedRender;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = require("react");
-const isomorphic_dompurify_1 = __importDefault(require("isomorphic-dompurify"));
+const purify_1 = __importDefault(require("../purify"));
 const shared_1 = require("./shared");
 const HEIGHT_MAP = {
     small: '150px',
@@ -22,7 +22,7 @@ function EmbedRender({ design, content, cls, ctx }) {
     const sanitizedHtml = (0, react_1.useMemo)(() => {
         if (!rawHtml)
             return '';
-        return isomorphic_dompurify_1.default.sanitize(rawHtml, {
+        return purify_1.default.sanitize(rawHtml, {
             ADD_TAGS: ['iframe'],
             ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'loading', 'marginheight', 'marginwidth'],
         });
