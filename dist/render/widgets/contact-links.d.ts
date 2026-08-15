@@ -1,4 +1,3 @@
-import React from 'react';
 import { type WidgetRenderProps } from './shared';
 /**
  * CONTACT_LINKS — renders the card's CardLink rows.
@@ -7,4 +6,4 @@ import { type WidgetRenderProps } from './shared';
  * click analytics, so this widget only decides which ones appear and how they
  * look. `data-link-id` is what the click beacon reads.
  */
-export declare function ContactLinksRender({ design, content, cls, ctx }: WidgetRenderProps): React.JSX.Element;
+export declare function ContactLinksRender({ design, content, cls, ctx }: WidgetRenderProps): import("react").JSX.Element;
