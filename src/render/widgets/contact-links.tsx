@@ -1,4 +1,3 @@
-import React from 'react';
 import { RenderIcon } from './icon-helper';
 import { asArray, EmptyState, navProps, type WidgetRenderProps } from './shared';
 
@@ -16,7 +15,8 @@ export function ContactLinksRender({ design, content, cls, ctx }: WidgetRenderPr
   const max = Number(d.max) > 0 ? Number(d.max) : Infinity;
 
   const demoItems = asArray<any>(c.links);
-  let links = demoItems.length ? demoItems : asArray<any>(ctx.links);
+  let links = asArray<any>(ctx.links);
+  if (!links.length && demoItems.length) links = demoItems;
   if (categories.length) links = links.filter((l) => categories.includes(l.category));
   links = links.slice(0, max);
 
@@ -36,9 +36,7 @@ export function ContactLinksRender({ design, content, cls, ctx }: WidgetRenderPr
               if (ctx.onActionClick && !ctx.isEditing) {
                 e.preventDefault();
                 ctx.onActionClick('link');
-                return;
               }
-              if (!ctx.isEditing) ctx.track({ type: 'LINK_CLICK', linkId: link.id });
             }}
           >
             {d.showIcon !== false && <RenderIcon name={link.icon || link.type} className={cls('icon')} />}

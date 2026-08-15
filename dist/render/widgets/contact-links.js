@@ -17,7 +17,9 @@ function ContactLinksRender({ design, content, cls, ctx }) {
     const categories = Array.isArray(d.categories) ? d.categories : [];
     const max = Number(d.max) > 0 ? Number(d.max) : Infinity;
     const demoItems = (0, shared_1.asArray)(c.links);
-    let links = demoItems.length ? demoItems : (0, shared_1.asArray)(ctx.links);
+    let links = (0, shared_1.asArray)(ctx.links);
+    if (!links.length && demoItems.length)
+        links = demoItems;
     if (categories.length)
         links = links.filter((l) => categories.includes(l.category));
     links = links.slice(0, max);
@@ -27,9 +29,6 @@ function ContactLinksRender({ design, content, cls, ctx }) {
                     if (ctx.onActionClick && !ctx.isEditing) {
                         e.preventDefault();
                         ctx.onActionClick('link');
-                        return;
                     }
-                    if (!ctx.isEditing)
-                        ctx.track({ type: 'LINK_CLICK', linkId: link.id });
                 }, children: [d.showIcon !== false && (0, jsx_runtime_1.jsx)(icon_helper_1.RenderIcon, { name: link.icon || link.type, className: cls('icon') }), (0, jsx_runtime_1.jsx)("span", { className: cls('label'), children: link.title || link.label || link.type }), d.showValue && link.value && (0, jsx_runtime_1.jsx)("span", { className: cls('value'), children: link.value })] }, link.id || idx))) }) }));
 }
