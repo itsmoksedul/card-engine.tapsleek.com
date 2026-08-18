@@ -97,7 +97,12 @@ function fieldToZod(field, options) {
         case 'icon':
             return zod_1.z.union([
                 zod_1.z.string().regex(ICON_RE, 'invalid icon key'),
-                zod_1.z.object({ type: zod_1.z.string() }).passthrough()
+                zod_1.z.object({
+                    type: zod_1.z.string(),
+                    name: zod_1.z.string().max(100).optional(),
+                    url: zod_1.z.string().max(2000).optional(),
+                    svg: zod_1.z.string().max(100000).optional(),
+                })
             ]);
         case 'date':
             return zod_1.z.string().refine((v) => v === '' || DATE_RE.test(v), 'must be YYYY-MM-DD');

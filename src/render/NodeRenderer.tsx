@@ -1,7 +1,7 @@
 "use client";
 import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
-import DOMPurify from "./purify";
+import DOMPurify, { embedPurifier } from "./purify";
 import React from "react";
 import type { ElementNode, Node, SlotNode, WidgetNode } from "../types/node";
 import { getWidgetMeta } from "../widgets";
@@ -329,7 +329,7 @@ function ElementRenderer({
     case "embed": {
       const rawHtml = bound ?? props.html ?? "";
       dom.dangerouslySetInnerHTML = {
-        __html: DOMPurify.sanitize(String(rawHtml), {
+        __html: embedPurifier.sanitize(String(rawHtml), {
           ADD_TAGS: ["iframe"],
           ADD_ATTR: [
             "allow",

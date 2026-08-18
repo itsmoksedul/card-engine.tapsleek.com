@@ -1,5 +1,38 @@
 "use strict";
 "use client";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -9,7 +42,7 @@ exports.NodeRenderer = NodeRenderer;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const embla_carousel_autoplay_1 = __importDefault(require("embla-carousel-autoplay"));
 const embla_carousel_react_1 = __importDefault(require("embla-carousel-react"));
-const purify_1 = __importDefault(require("./purify"));
+const purify_1 = __importStar(require("./purify"));
 const react_1 = __importDefault(require("react"));
 const widgets_1 = require("../widgets");
 const resolveBinding_1 = require("./resolveBinding");
@@ -243,7 +276,7 @@ function ElementRenderer({ node, content, ctx, }) {
         case "embed": {
             const rawHtml = bound ?? props.html ?? "";
             dom.dangerouslySetInnerHTML = {
-                __html: purify_1.default.sanitize(String(rawHtml), {
+                __html: purify_1.embedPurifier.sanitize(String(rawHtml), {
                     ADD_TAGS: ["iframe"],
                     ADD_ATTR: [
                         "allow",

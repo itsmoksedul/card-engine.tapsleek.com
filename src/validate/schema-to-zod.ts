@@ -118,7 +118,12 @@ function fieldToZod(field: FieldSchema, options: SchemaToZodOptions): z.ZodTypeA
     case 'icon':
       return z.union([
         z.string().regex(ICON_RE, 'invalid icon key'),
-        z.object({ type: z.string() }).passthrough()
+        z.object({
+          type: z.string(),
+          name: z.string().max(100).optional(),
+          url: z.string().max(2000).optional(),
+          svg: z.string().max(100000).optional(),
+        })
       ]);
 
     case 'date':

@@ -1,6 +1,7 @@
 import * as LucideIcons from "lucide-react";
 import { FaLinkedin } from "react-icons/fa";
 import { linkDef } from "../../catalog/links";
+import DOMPurify from "../purify";
 import {
   SiAnthropic,
   SiApplemusic,
@@ -176,7 +177,7 @@ export function RenderIcon({
             alignItems: "center",
             justifyContent: "center",
           }}
-          dangerouslySetInnerHTML={{ __html: iconValue.svg }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(iconValue.svg, { USE_PROFILES: { svg: true, svgFilters: true } }) }}
         />
       );
     }

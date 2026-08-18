@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import DOMPurify from '../purify';
+import DOMPurify, { embedPurifier } from '../purify';
 import { EmptyState, type WidgetRenderProps } from './shared';
 
 const HEIGHT_MAP: Record<string, string> = {
@@ -18,7 +18,7 @@ export function EmbedRender({ design, content, cls, ctx }: WidgetRenderProps) {
 
   const sanitizedHtml = useMemo(() => {
     if (!rawHtml) return '';
-    return DOMPurify.sanitize(rawHtml, {
+    return embedPurifier.sanitize(rawHtml, {
       ADD_TAGS: ['iframe'],
       ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'loading', 'marginheight', 'marginwidth'],
     });

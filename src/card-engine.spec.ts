@@ -45,6 +45,9 @@ import type { ElementNode, WidgetNode } from "./types/node";
 import { validateDefinition } from "./validate/definition";
 import { validateAgainstSchema } from "./validate/schema-to-zod";
 import { manifest, partKeys, WIDGET_TYPES } from "./widgets/registry";
+import { renderToStaticMarkup } from "react-dom/server";
+import { NodeRenderer } from "./render/NodeRenderer";
+import React from "react";
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -1216,5 +1219,47 @@ describe("composite widgets — layout subtree", () => {
     const r = validateDefinition(def);
     const dupErrors = r.errors.filter((e: any) => /duplicate node id/.test(e.message));
     expect(dupErrors).toEqual([]);
+  });
+});
+
+describe("Render Layer Security", () => {
+  it("sanitizes icon widget custom SVG", () => {
+    const node = {
+      kind: "element",
+      id: "icon1",
+      tag: "icon",
+      props: { name: { type: "svg", svg: "<svg><script>alert(1)</script><path d='M0 0'/></svg>" } },
+    } as any;
+    const ctx = { isEditing: false, track: () => {} } as any;
+    const html = renderToStaticMarkup(React.createElement(NodeRenderer, { node, content: {}, ctx }));
+    expect(html).not.toContain("script");
+    expect(html).toContain("path");
+  });
+
+  it("sanitizes embed widget iframe and enforces sandbox", () => {
+    const node = {
+      kind: "element",
+      id: "embed1",
+      tag: "embed",
+      props: { html: "<iframe src='https://youtube.com/embed/123' allow='autoplay; camera'></iframe>" },
+    } as any;
+    const ctx = { isEditing: false, track: () => {} } as any;
+    const html = renderToStaticMarkup(React.createElement(NodeRenderer, { node, content: {}, ctx }));
+    expect(html).toContain("sandbox=");
+    expect(html).not.toContain("camera");
+    expect(html).toContain("youtube.com");
+  });
+
+  it("strips embed widget iframe with unallowed domain", () => {
+    const node = {
+      kind: "element",
+      id: "embed2",
+      tag: "embed",
+      props: { html: "<iframe src='https://evil.com/embed'></iframe>" },
+    } as any;
+    const ctx = { isEditing: false, track: () => {} } as any;
+    const html = renderToStaticMarkup(React.createElement(NodeRenderer, { node, content: {}, ctx }));
+    expect(html).not.toContain("evil.com");
+    expect(html).not.toContain("iframe");
   });
 });
