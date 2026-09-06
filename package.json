@@ -14,8 +14,7 @@
     }
   },
   "scripts": {
-    "build": "tsc",
-    "prepare": "npm run build"
+    "build": "tsc"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
