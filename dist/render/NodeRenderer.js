@@ -180,12 +180,13 @@ function ElementRenderer({ node, content, ctx, }) {
         ctxEmbla?.selectedIndex === ctx.repeatIndex) {
         isCarouselDotActive = true;
     }
+    const customClass = typeof props.className === 'string' && props.className.trim() ? ` ${props.className}` : "";
     const dom = {
-        className: `n${node.id} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}`,
+        className: `n${node.id} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}${customClass}`,
     };
     // Only forward attributes the DOM actually understands.
     for (const [key, value] of Object.entries(props)) {
-        if (ENGINE_PROPS.has(key))
+        if (ENGINE_PROPS.has(key) || key === "className")
             continue;
         dom[key] = value;
     }
@@ -309,7 +310,7 @@ function ElementRenderer({ node, content, ctx, }) {
                 children = ((0, jsx_runtime_1.jsx)("iframe", { src: src, style: { width: "100%", height: "100%", border: 0 }, allowFullScreen: true }));
             }
             else {
-                children = ((0, jsx_runtime_1.jsx)("video", { src: url, controls: props.controls, autoPlay: props.autoplay, loop: props.loop, style: { width: "100%", height: "100%" } }));
+                children = ((0, jsx_runtime_1.jsx)("video", { src: url, poster: ctx.selfData?.thumbnail || undefined, controls: props.controls, autoPlay: props.autoplay, loop: props.loop, style: { width: "100%", height: "100%", objectFit: "cover" } }));
             }
             break;
         }

@@ -72,17 +72,19 @@ export const meta: WidgetModule['meta'] = {
   ],
   contentSchema: [
     { key: 'url', type: 'url', label: 'Video URL', hint: 'YouTube, Vimeo, or direct MP4 link.' },
+    { key: 'thumbnail', type: 'image', label: 'Thumbnail Image', hint: 'Only applies to direct MP4 videos. YouTube/Vimeo fetch their own.' },
     { key: 'caption', type: 'text', label: 'Caption', max: 120 },
   ],
   defaultDesign: { aspectRatio: '16/9', controls: true, autoplay: false, loop: false },
   defaultContent: {
     url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    thumbnail: '',
     caption: '',
   }
 };
 
 export const previews = {
-  empty: { url: '', caption: '' },
+  empty: { url: '', thumbnail: '', caption: '' },
   typical: meta.defaultContent,
-  stress: { url: meta.defaultContent.url, caption: 'A'.repeat(120) }
+  stress: { url: meta.defaultContent.url, thumbnail: '', caption: 'A'.repeat(120) }
 };

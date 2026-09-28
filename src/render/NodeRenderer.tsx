@@ -213,13 +213,14 @@ function ElementRenderer({
     isCarouselDotActive = true;
   }
 
+  const customClass = typeof props.className === 'string' && props.className.trim() ? ` ${props.className}` : "";
   const dom: Record<string, any> = {
-    className: `n${node.id} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}`,
+    className: `n${node.id} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}${customClass}`,
   };
 
   // Only forward attributes the DOM actually understands.
   for (const [key, value] of Object.entries(props)) {
-    if (ENGINE_PROPS.has(key)) continue;
+    if (ENGINE_PROPS.has(key) || key === "className") continue;
     dom[key] = value;
   }
 
@@ -374,10 +375,11 @@ function ElementRenderer({
         children = (
           <video
             src={url}
+            poster={(ctx.selfData?.thumbnail as string) || undefined}
             controls={props.controls}
             autoPlay={props.autoplay}
             loop={props.loop}
-            style={{ width: "100%", height: "100%" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         );
       }

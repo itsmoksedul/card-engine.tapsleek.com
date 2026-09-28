@@ -62,10 +62,28 @@ const COMMON_ICON_MAP = {
     YOUTUBE: "Youtube",
     TIKTOK: "Video",
     GITHUB: "Github",
-    SAVE_CONTACT: "UserPlus",
     CONNECT_NOW: "Send",
     SHARE: "Share2",
     QR: "QrCode",
+};
+const fa6_1 = require("react-icons/fa6");
+const FA_MAP = {
+    Phone: fa6_1.FaPhone, Mail: fa6_1.FaEnvelope, AtSign: fa6_1.FaEnvelope, MessageCircle: fa6_1.FaComment,
+    MessageSquare: fa6_1.FaMessage, MapPin: fa6_1.FaLocationDot, Video: fa6_1.FaVideo, Users: fa6_1.FaUsers,
+    CalendarDays: fa6_1.FaCalendarDays, Calendar: fa6_1.FaCalendar, Globe: fa6_1.FaGlobe, Briefcase: fa6_1.FaBriefcase,
+    FileText: fa6_1.FaFileLines, Store: fa6_1.FaStore, Download: fa6_1.FaDownload, Link2: fa6_1.FaLink,
+    Building2: fa6_1.FaBuilding, Building: fa6_1.FaBuilding, Cloud: fa6_1.FaCloud, Paintbrush: fa6_1.FaPaintbrush,
+    ShoppingCart: fa6_1.FaCartShopping, Code: fa6_1.FaCode, Camera: fa6_1.FaCamera, Banknote: fa6_1.FaMoneyBill,
+    Wallet: fa6_1.FaWallet, QrCode: fa6_1.FaQrcode, Contact: fa6_1.FaAddressCard, UserPlus: fa6_1.FaUserPlus,
+    Send: fa6_1.FaPaperPlane, Share2: fa6_1.FaShareNodes, Image: fa6_1.FaImage, User: fa6_1.FaUser,
+    ArrowRight: fa6_1.FaArrowRight, ArrowLeft: fa6_1.FaArrowLeft, ChevronDown: fa6_1.FaChevronDown,
+    ChevronUp: fa6_1.FaChevronUp, ChevronLeft: fa6_1.FaChevronLeft, ChevronRight: fa6_1.FaChevronRight,
+    Check: fa6_1.FaCheck, X: fa6_1.FaXmark, Plus: fa6_1.FaPlus, Minus: fa6_1.FaMinus, CalendarCheck: fa6_1.FaCalendarCheck,
+    Clock: fa6_1.FaClock, MousePointerClick: fa6_1.FaHandPointer, Type: fa6_1.FaFont, AlignLeft: fa6_1.FaAlignLeft,
+    MessageCircleQuestion: fa6_1.FaCircleQuestion, LayoutGrid: fa6_1.FaGrip, Images: fa6_1.FaImages,
+    BadgeInfo: fa6_1.FaCircleInfo, Smile: fa6_1.FaFaceSmile, List: fa6_1.FaList, Twitter: fa6_1.FaTwitter,
+    MoveVertical: fa6_1.FaArrowsUpDown, BarChart: fa6_1.FaChartBar, Quote: fa6_1.FaQuoteLeft,
+    ListOrdered: fa6_1.FaListOl, Heading: fa6_1.FaHeading, Clapperboard: fa6_1.FaClapperboard
 };
 function RenderIcon({ name, className, }) {
     if (!name)
@@ -114,11 +132,18 @@ function RenderIcon({ name, className, }) {
         .join("");
     // Check SI Map first
     let IconComponent = null;
+    let isFilledIcon = false;
     if (formatted === "FaLinkedin") {
         IconComponent = fa_1.FaLinkedin;
+        isFilledIcon = true;
     }
     else if (formatted.startsWith("Si") && SI_MAP[formatted]) {
         IconComponent = SI_MAP[formatted];
+        isFilledIcon = true;
+    }
+    else if (FA_MAP[formatted] || FA_MAP[mapped] || FA_MAP[upper]) {
+        IconComponent = FA_MAP[formatted] ?? FA_MAP[mapped] ?? FA_MAP[upper];
+        isFilledIcon = true;
     }
     else {
         IconComponent =
@@ -131,5 +156,5 @@ function RenderIcon({ name, className, }) {
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-        }, children: (0, jsx_runtime_1.jsx)(IconComponent, { style: { width: "1em", height: "1em", flexShrink: 0 } }) }));
+        }, children: (0, jsx_runtime_1.jsx)(IconComponent, { style: { width: "1em", height: "1em", flexShrink: 0 }, ...(isFilledIcon ? { stroke: "none", strokeWidth: 0, fill: "currentColor" } : {}) }) }));
 }

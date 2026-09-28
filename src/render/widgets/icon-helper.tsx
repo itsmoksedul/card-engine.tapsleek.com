@@ -125,10 +125,40 @@ const COMMON_ICON_MAP: Record<string, string> = {
   YOUTUBE: "Youtube",
   TIKTOK: "Video",
   GITHUB: "Github",
-  SAVE_CONTACT: "UserPlus",
   CONNECT_NOW: "Send",
   SHARE: "Share2",
   QR: "QrCode",
+};
+import {
+  FaPhone, FaEnvelope, FaComment, FaMessage, FaLocationDot, FaVideo,
+  FaUsers, FaCalendarDays, FaCalendar, FaGlobe, FaBriefcase, FaFileLines,
+  FaStore, FaDownload, FaLink, FaBuilding, FaCloud, FaPaintbrush,
+  FaCartShopping, FaCode, FaCamera, FaMoneyBill, FaWallet, FaQrcode,
+  FaAddressCard, FaUserPlus, FaPaperPlane, FaShareNodes, FaAt,
+  FaArrowRight, FaArrowLeft, FaChevronDown, FaChevronUp, FaChevronLeft, FaChevronRight,
+  FaCheck, FaXmark, FaPlus, FaMinus, FaCalendarCheck, FaClock, FaHandPointer,
+  FaFont, FaAlignLeft, FaCircleQuestion, FaGrip, FaImages, FaCircleInfo,
+  FaFaceSmile, FaImage, FaList, FaUser, FaTwitter, FaArrowsUpDown,
+  FaChartBar, FaQuoteLeft, FaListOl, FaHeading, FaClapperboard
+} from "react-icons/fa6";
+
+const FA_MAP: Record<string, any> = {
+  Phone: FaPhone, Mail: FaEnvelope, AtSign: FaEnvelope, MessageCircle: FaComment,
+  MessageSquare: FaMessage, MapPin: FaLocationDot, Video: FaVideo, Users: FaUsers,
+  CalendarDays: FaCalendarDays, Calendar: FaCalendar, Globe: FaGlobe, Briefcase: FaBriefcase,
+  FileText: FaFileLines, Store: FaStore, Download: FaDownload, Link2: FaLink,
+  Building2: FaBuilding, Building: FaBuilding, Cloud: FaCloud, Paintbrush: FaPaintbrush,
+  ShoppingCart: FaCartShopping, Code: FaCode, Camera: FaCamera, Banknote: FaMoneyBill,
+  Wallet: FaWallet, QrCode: FaQrcode, Contact: FaAddressCard, UserPlus: FaUserPlus,
+  Send: FaPaperPlane, Share2: FaShareNodes, Image: FaImage, User: FaUser,
+  ArrowRight: FaArrowRight, ArrowLeft: FaArrowLeft, ChevronDown: FaChevronDown,
+  ChevronUp: FaChevronUp, ChevronLeft: FaChevronLeft, ChevronRight: FaChevronRight,
+  Check: FaCheck, X: FaXmark, Plus: FaPlus, Minus: FaMinus, CalendarCheck: FaCalendarCheck,
+  Clock: FaClock, MousePointerClick: FaHandPointer, Type: FaFont, AlignLeft: FaAlignLeft,
+  MessageCircleQuestion: FaCircleQuestion, LayoutGrid: FaGrip, Images: FaImages,
+  BadgeInfo: FaCircleInfo, Smile: FaFaceSmile, List: FaList, Twitter: FaTwitter,
+  MoveVertical: FaArrowsUpDown, BarChart: FaChartBar, Quote: FaQuoteLeft,
+  ListOrdered: FaListOl, Heading: FaHeading, Clapperboard: FaClapperboard
 };
 
 export function RenderIcon({
@@ -218,9 +248,17 @@ export function RenderIcon({
 
   // Check SI Map first
   let IconComponent = null;
+  let isFilledIcon = false;
   
-  if (formatted === "FaLinkedin") { IconComponent = FaLinkedin; } else if (formatted.startsWith("Si") && SI_MAP[formatted]) {
+  if (formatted === "FaLinkedin") { 
+    IconComponent = FaLinkedin; 
+    isFilledIcon = true;
+  } else if (formatted.startsWith("Si") && SI_MAP[formatted]) {
     IconComponent = SI_MAP[formatted];
+    isFilledIcon = true;
+  } else if (FA_MAP[formatted] || FA_MAP[mapped] || FA_MAP[upper]) {
+    IconComponent = FA_MAP[formatted] ?? FA_MAP[mapped] ?? FA_MAP[upper];
+    isFilledIcon = true;
   } else {
     IconComponent =
       (LucideIcons as any)[formatted] ??
@@ -240,7 +278,10 @@ export function RenderIcon({
         justifyContent: "center",
       }}
     >
-      <IconComponent style={{ width: "1em", height: "1em", flexShrink: 0 }} />
+      <IconComponent 
+        style={{ width: "1em", height: "1em", flexShrink: 0 }} 
+        {...(isFilledIcon ? { stroke: "none", strokeWidth: 0, fill: "currentColor" } : {})}
+      />
     </span>
   );
 }
