@@ -65,7 +65,7 @@ export function CardRenderer({
   }, [definition.root, isEditing, blocks]);
 
   const ctx: RenderCtx = {
-    card,
+    card: { ...card, links: links ?? card?.links },
     links,
     blocks,
     isEditing,

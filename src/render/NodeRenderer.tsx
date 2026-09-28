@@ -745,8 +745,7 @@ function WidgetRenderer({
   // Derived widgets that DO have a defaultLayout (e.g. PROFILE) are unaffected.
   // Also applies to deprecated widgets: if they have a defaultLayout, render it.
   const hasMetaLayout = widgetMeta?.defaultLayout != null;
-  const forceComponentRender = ["CONTACT_LINKS", "LINKS", "LINK_BUTTONS", "CUSTOM_LINKS"].includes(node.widget);
-  const skipStoredLayout = forceComponentRender || (widgetMeta?.derived === true && !hasMetaLayout);
+  const skipStoredLayout = widgetMeta?.derived === true && !hasMetaLayout;
   const layout = skipStoredLayout
     ? undefined
     : node.layout && widgetMeta?.defaultLayout

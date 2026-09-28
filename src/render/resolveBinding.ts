@@ -50,9 +50,24 @@ export function resolveBinding(
 
   if (binding.source === "self") {
     // When repeating over 'links' for a real card, user's real card.links MUST take priority over demo template links!
-    if (binding.path === "links" && card?.links && Array.isArray(card.links)) {
-      const activeLinks = card.links.filter((l: any) => l.isVisible !== false);
+    if (binding.path === "links") {
+      let activeLinks: any[] = [];
+      if (card?.links && Array.isArray(card.links) && card.links.length > 0) {
+        activeLinks = card.links.filter((l: any) => l.isVisible !== false);
+      } else if (Array.isArray(selfData?.links)) {
+        activeLinks = selfData.links;
+      } else if (Array.isArray(content?.links)) {
+        activeLinks = content.links;
+      }
+
       if (activeLinks.length > 0) {
+        const design = content?._design || {};
+        if (Array.isArray(design.categories) && design.categories.length > 0) {
+          activeLinks = activeLinks.filter((l: any) => design.categories.includes(l.category));
+        }
+        if (Number(design.max) > 0) {
+          activeLinks = activeLinks.slice(0, Number(design.max));
+        }
         return activeLinks;
       }
     }
@@ -70,9 +85,11 @@ export function resolveBinding(
         if (selfData.icon) return selfData.icon;
         const catalogItem = LINK_CATALOG.find((l) => l.type === selfData.type);
         if (catalogItem?.iconName) return catalogItem.iconName;
+        return selfData.type || "";
       }
       if (binding.path === "label") {
         if (selfData.label) return selfData.label;
+        if (selfData.title) return selfData.title;
         const catalogItem = LINK_CATALOG.find((l) => l.type === selfData.type);
         if (catalogItem?.label) return catalogItem.label;
         return selfData.type || "";

@@ -49,7 +49,7 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
         return null;
     }, [definition.root, isEditing, blocks]);
     const ctx = {
-        card,
+        card: { ...card, links: links ?? card?.links },
         links,
         blocks,
         isEditing,
