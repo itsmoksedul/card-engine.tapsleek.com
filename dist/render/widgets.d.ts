@@ -39,6 +39,9 @@ export declare const WIDGET_RENDERERS: {
     PROFILE: typeof ProfileRender;
     CONNECT_BUTTONS: typeof ConnectButtonsRender;
     CONTACT_LINKS: typeof ContactLinksRender;
+    LINKS: typeof ContactLinksRender;
+    LINK_BUTTONS: typeof ContactLinksRender;
+    CUSTOM_LINKS: typeof ContactLinksRender;
     COPYRIGHT: typeof CopyrightRender;
     TITLE: typeof TitleRender;
     DESCRIPTION: typeof DescriptionRender;
