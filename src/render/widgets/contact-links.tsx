@@ -30,6 +30,7 @@ export function ContactLinksRender({ design, content, cls, ctx }: WidgetRenderPr
           <a
             key={link.id || idx}
             className={cls('item')}
+           
             data-link-id={link.id}
             data-link-type={link.type}
             {...navProps(link.url || link.value, ctx.isEditing ?? false, '_blank')}

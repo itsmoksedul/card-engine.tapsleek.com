@@ -638,7 +638,7 @@ function WidgetRenderer({ node, content, ctx, }) {
         return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, "data-widget": node.widget, children: ctx.isEditing ? `Unknown widget: ${node.widget}` : null }));
     }
     const design = node.design ?? {};
-    const cls = (part) => `p-${part}`;
+    const cls = (part) => `p-${part} n${part}`;
     const renderedWidget = ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, "data-widget": node.widget, children: (0, jsx_runtime_1.jsx)(Widget, { content: widgetContent, design: design, cls: cls, ctx: widgetCtx }) }));
     if (!ctx.isEditing &&
         Array.isArray(ctx.blocks) &&

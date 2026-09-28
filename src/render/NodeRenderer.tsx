@@ -799,7 +799,7 @@ function WidgetRenderer({
   }
 
   const design = node.design ?? {};
-  const cls = (part: string) => `p-${part}`;
+  const cls = (part: string) => `p-${part} n${part}`;
 
   const renderedWidget = (
     <div
