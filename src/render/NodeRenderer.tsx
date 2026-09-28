@@ -1,10 +1,10 @@
 "use client";
 import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
-import DOMPurify, { embedPurifier } from "./purify";
 import React from "react";
 import type { ElementNode, Node, SlotNode, WidgetNode } from "../types/node";
 import { getWidgetMeta } from "../widgets";
+import DOMPurify, { embedPurifier } from "./purify";
 import { resolveBinding } from "./resolveBinding";
 import { WIDGET_RENDERERS } from "./widgets";
 import { RenderIcon } from "./widgets/icon-helper";
@@ -213,7 +213,10 @@ function ElementRenderer({
     isCarouselDotActive = true;
   }
 
-  const customClass = typeof props.className === 'string' && props.className.trim() ? ` ${props.className}` : "";
+  const customClass =
+    typeof props.className === "string" && props.className.trim()
+      ? ` ${props.className}`
+      : "";
   const dom: Record<string, any> = {
     className: `n${node.id} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}${customClass}`,
   };
@@ -806,7 +809,12 @@ function WidgetRenderer({
       data-node-id={ctx.isEditing ? node.id : undefined}
       data-widget={node.widget}
     >
-      <Widget content={widgetContent} design={design} cls={cls} ctx={widgetCtx} />
+      <Widget
+        content={widgetContent}
+        design={design}
+        cls={cls}
+        ctx={widgetCtx}
+      />
     </div>
   );
 

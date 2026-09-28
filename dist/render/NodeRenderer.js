@@ -42,9 +42,9 @@ exports.NodeRenderer = NodeRenderer;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const embla_carousel_autoplay_1 = __importDefault(require("embla-carousel-autoplay"));
 const embla_carousel_react_1 = __importDefault(require("embla-carousel-react"));
-const purify_1 = __importStar(require("./purify"));
 const react_1 = __importDefault(require("react"));
 const widgets_1 = require("../widgets");
+const purify_1 = __importStar(require("./purify"));
 const resolveBinding_1 = require("./resolveBinding");
 const widgets_2 = require("./widgets");
 const icon_helper_1 = require("./widgets/icon-helper");
@@ -180,7 +180,9 @@ function ElementRenderer({ node, content, ctx, }) {
         ctxEmbla?.selectedIndex === ctx.repeatIndex) {
         isCarouselDotActive = true;
     }
-    const customClass = typeof props.className === 'string' && props.className.trim() ? ` ${props.className}` : "";
+    const customClass = typeof props.className === "string" && props.className.trim()
+        ? ` ${props.className}`
+        : "";
     const dom = {
         className: `n${node.id} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}${customClass}`,
     };
