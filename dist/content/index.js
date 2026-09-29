@@ -15,4 +15,5 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./migrate"), exports);
+__exportStar(require("./sample-preview"), exports);
 __exportStar(require("./template-switch"), exports);

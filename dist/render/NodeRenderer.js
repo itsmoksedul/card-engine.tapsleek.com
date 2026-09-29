@@ -167,9 +167,15 @@ function ElementRenderer({ node, content, ctx, }) {
     const bound = (0, resolveBinding_1.resolveBinding)(node.bind, ctx.card, content, ctx.selfData);
     const props = (node.props ?? {});
     // A bound node that resolves empty disappears entirely — that's what stops an
-    // absent bio leaving a gap in the layout.
-    if (node.hideIfEmpty && isEmpty(bound))
+    // absent bio leaving a gap in the layout. But if the node has fallback static
+    // props (props.src, props.text, props.html), keep it so templates show placeholders.
+    if (node.hideIfEmpty &&
+        isEmpty(bound) &&
+        !props.src &&
+        !props.text &&
+        !props.html) {
         return null;
+    }
     const tag = node.tag === "frame"
         ? props.as || "div"
         : node.tag === "heading"

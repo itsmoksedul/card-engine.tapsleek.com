@@ -1,2 +1,3 @@
-export * from './migrate';
-export * from './template-switch';
+export * from "./migrate";
+export * from "./sample-preview";
+export * from "./template-switch";
