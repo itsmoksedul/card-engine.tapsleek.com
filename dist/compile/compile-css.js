@@ -125,16 +125,16 @@ function compileCss(def, options = {}) {
                         ...node.partStyles?.[key],
                     };
                 }
-                if (Object.keys(mergedPartStyles).length) {
-                    produced += compilePartStyles(mergedPartStyles, sel, bucket, states, warnings);
-                }
                 const layout = node.layout ?? (0, registry_1.getWidgetMeta)(node.widget)?.defaultLayout;
+                if (Object.keys(mergedPartStyles).length) {
+                    produced += compilePartStyles(mergedPartStyles, sel, bucket, states, warnings, layout ? (layout.id || "root") : "root");
+                }
                 if (layout) {
                     (0, node_1.walkTreeOrder)(layout, (layoutNode) => {
                         const layoutCls = nodeClass(layoutNode.id, warnings);
                         if (!layoutCls)
                             return;
-                        const layoutSel = `${sel} .${layoutCls}`;
+                        const layoutSel = layoutNode === layout ? sel : `${sel} .${layoutCls}`;
                         for (const bp of ["base", "sm", "md"]) {
                             const props = mergeHidden(layoutNode.style?.[bp], layoutNode.hidden?.[bp]);
                             const decls = (0, declarations_1.declarationsFor)(props);
@@ -202,7 +202,7 @@ function compileCss(def, options = {}) {
                     const layoutCls = nodeClass(layoutNode.id, warnings);
                     if (!layoutCls)
                         return;
-                    const layoutSel = `${sel} .${layoutCls}`;
+                    const layoutSel = layoutNode === layout ? sel : `${sel} .${layoutCls}`;
                     for (const bp of ["base", "sm", "md"]) {
                         const props = mergeHidden(layoutNode.style?.[bp], layoutNode.hidden?.[bp]);
                         const decls = (0, declarations_1.declarationsFor)(props);
@@ -374,14 +374,17 @@ function validateTokenLiteral(group, raw) {
             return null;
     }
 }
-function compilePartStyles(partStyles, parentSel, bucket, states, warnings) {
+function compilePartStyles(partStyles, parentSel, bucket, states, warnings, rootPartKey) {
     let produced = 0;
     for (const [part, set] of Object.entries(partStyles)) {
         if (!value_1.IDENT_RE.test(part)) {
             warnings.push(`part "${part}": invalid name, dropped`);
             continue;
         }
-        produced += pushStyleSet(set, `${parentSel} .p-${part}`, bucket, states);
+        const partSel = rootPartKey && part === rootPartKey
+            ? `${parentSel}, ${parentSel} .p-${part}`
+            : `${parentSel} .p-${part}`;
+        produced += pushStyleSet(set, partSel, bucket, states);
     }
     return produced;
 }

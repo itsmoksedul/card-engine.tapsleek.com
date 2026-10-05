@@ -605,9 +605,21 @@ function mergeLayoutTrees(
   }
 
   if (merged.children && merged.children.length > 0) {
-    merged.children = merged.children.map((child) => {
+    merged.children = merged.children.map((child, idx) => {
       if (child.kind === "element") {
-        const defaultChild = defaultChildrenMap.get(child.id);
+        let defaultChild = defaultChildrenMap.get(child.id);
+        if (
+          !defaultChild &&
+          defaultLayout.children &&
+          defaultLayout.children[idx] &&
+          defaultLayout.children[idx].kind === "element"
+        ) {
+          defaultChild = defaultLayout.children[idx] as ElementNode;
+          return {
+            ...mergeLayoutTrees(child as ElementNode, defaultChild),
+            id: defaultChild.id,
+          };
+        }
         if (defaultChild) {
           return mergeLayoutTrees(child as ElementNode, defaultChild);
         }
@@ -766,8 +778,21 @@ function WidgetRenderer({
 
   // Deprecated widgets or widgets without a custom renderer fall back to layout tree.
   if (layout) {
+    const layoutClasses = [
+      layout.id ? `p-${layout.id} n${layout.id}` : "",
+      layout.props?.className || "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
     const mergedLayout: ElementNode = {
       ...layout,
+      id: node.id,
+      props: {
+        ...(layout.props || {}),
+        "data-widget": node.widget,
+        ...(layoutClasses ? { className: layoutClasses } : {}),
+      },
       style: {
         ...(layout.style ?? {}),
         ...(node.style ?? {}),
@@ -775,24 +800,44 @@ function WidgetRenderer({
           ...(layout.style?.base ?? {}),
           ...(node.style?.base ?? {}),
         },
+        sm: {
+          ...(layout.style?.sm ?? {}),
+          ...(node.style?.sm ?? {}),
+        },
+        md: {
+          ...(layout.style?.md ?? {}),
+          ...(node.style?.md ?? {}),
+        },
       },
     };
-    return (
-      <div
-        className={`n${node.id}`}
-        data-widget={node.widget}
-        data-node-id={ctx.isEditing ? node.id : undefined}
-      >
-        <NodeRenderer
-          node={mergedLayout}
-          content={{
-            [node.key]: widgetContent,
-            _design: { ...(node.design || {}), ...(widgetContent || {}) },
-          }}
-          ctx={{ ...widgetCtx, selfData: widgetContent }}
-        />
-      </div>
+
+    const renderedLayout = (
+      <NodeRenderer
+        node={mergedLayout}
+        content={{
+          [node.key]: widgetContent,
+          _design: { ...(node.design || {}), ...(widgetContent || {}) },
+        }}
+        ctx={{ ...widgetCtx, selfData: widgetContent }}
+      />
     );
+
+    if (
+      !ctx.isEditing &&
+      Array.isArray(ctx.blocks) &&
+      node.id === ctx.placeholderId &&
+      ctx.injectBefore &&
+      ctx.renderUserBlocks
+    ) {
+      return (
+        <React.Fragment>
+          {ctx.renderUserBlocks()}
+          {renderedLayout}
+        </React.Fragment>
+      );
+    }
+
+    return renderedLayout;
   }
 
   // No layout and no custom Widget renderer — this shouldn't happen in normal flow

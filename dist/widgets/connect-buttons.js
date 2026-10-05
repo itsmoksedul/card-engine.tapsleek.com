@@ -41,7 +41,7 @@ exports.meta = {
         root: {
             base: {
                 display: "flex",
-                flexDirection: "column",
+                flexDirection: "row",
                 gap: "{space.3}",
                 width: "100%",
                 padding: { t: "{space.2}", r: "0", b: "{space.2}", l: "0" },
@@ -53,6 +53,8 @@ exports.meta = {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "{space.2}",
+                flex: 1,
+                minWidth: 0,
                 width: "100%",
                 padding: {
                     t: "{space.3}",
@@ -75,6 +77,8 @@ exports.meta = {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "{space.2}",
+                flex: 1,
+                minWidth: 0,
                 width: "100%",
                 padding: {
                     t: "{space.3}",
@@ -128,6 +132,8 @@ exports.meta = {
                         alignItems: "center",
                         justifyContent: "center",
                         gap: "{space.2}",
+                        flex: 1,
+                        minWidth: 0,
                         width: "100%",
                         padding: {
                             t: "{space.3}",
@@ -166,6 +172,7 @@ exports.meta = {
                         style: {
                             base: {
                                 fontWeight: 600,
+                                whiteSpace: "nowrap",
                             },
                         },
                     },
@@ -183,6 +190,8 @@ exports.meta = {
                         alignItems: "center",
                         justifyContent: "center",
                         gap: "{space.2}",
+                        flex: 1,
+                        minWidth: 0,
                         width: "100%",
                         padding: {
                             t: "{space.3}",
@@ -222,6 +231,7 @@ exports.meta = {
                         style: {
                             base: {
                                 fontWeight: 600,
+                                whiteSpace: "nowrap",
                             },
                         },
                     },

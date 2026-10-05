@@ -208,6 +208,7 @@ export function compileCss(
             ...(node.partStyles?.[key as keyof typeof node.partStyles] as StyleSet | undefined),
           };
         }
+        const layout = node.layout ?? getWidgetMeta(node.widget)?.defaultLayout;
         if (Object.keys(mergedPartStyles).length) {
           produced += compilePartStyles(
             mergedPartStyles,
@@ -215,15 +216,15 @@ export function compileCss(
             bucket,
             states,
             warnings,
+            layout ? (layout.id || "root") : "root",
           );
         }
 
-        const layout = node.layout ?? getWidgetMeta(node.widget)?.defaultLayout;
         if (layout) {
           walkTreeOrder(layout, (layoutNode) => {
             const layoutCls = nodeClass(layoutNode.id, warnings);
             if (!layoutCls) return;
-            const layoutSel = `${sel} .${layoutCls}`;
+            const layoutSel = layoutNode === layout ? sel : `${sel} .${layoutCls}`;
             for (const bp of ["base", "sm", "md"] as const) {
               const props = mergeHidden(
                 layoutNode.style?.[bp],
@@ -306,7 +307,7 @@ export function compileCss(
         walkTreeOrder(layout, (layoutNode) => {
           const layoutCls = nodeClass(layoutNode.id, warnings);
           if (!layoutCls) return;
-          const layoutSel = `${sel} .${layoutCls}`;
+          const layoutSel = layoutNode === layout ? sel : `${sel} .${layoutCls}`;
           for (const bp of ["base", "sm", "md"] as const) {
             const props = mergeHidden(
               layoutNode.style?.[bp],
@@ -506,6 +507,7 @@ function compilePartStyles(
   bucket: { base: Rule[]; sm: Rule[]; md: Rule[] },
   states: Rule[],
   warnings: string[],
+  rootPartKey?: string,
 ): number {
   let produced = 0;
   for (const [part, set] of Object.entries(partStyles)) {
@@ -513,7 +515,11 @@ function compilePartStyles(
       warnings.push(`part "${part}": invalid name, dropped`);
       continue;
     }
-    produced += pushStyleSet(set, `${parentSel} .p-${part}`, bucket, states);
+    const partSel =
+      rootPartKey && part === rootPartKey
+        ? `${parentSel}, ${parentSel} .p-${part}`
+        : `${parentSel} .p-${part}`;
+    produced += pushStyleSet(set, partSel, bucket, states);
   }
   return produced;
 }

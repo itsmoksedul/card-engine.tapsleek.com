@@ -497,9 +497,19 @@ function mergeLayoutTrees(instance, defaultLayout) {
         }
     }
     if (merged.children && merged.children.length > 0) {
-        merged.children = merged.children.map((child) => {
+        merged.children = merged.children.map((child, idx) => {
             if (child.kind === "element") {
-                const defaultChild = defaultChildrenMap.get(child.id);
+                let defaultChild = defaultChildrenMap.get(child.id);
+                if (!defaultChild &&
+                    defaultLayout.children &&
+                    defaultLayout.children[idx] &&
+                    defaultLayout.children[idx].kind === "element") {
+                    defaultChild = defaultLayout.children[idx];
+                    return {
+                        ...mergeLayoutTrees(child, defaultChild),
+                        id: defaultChild.id,
+                    };
+                }
                 if (defaultChild) {
                     return mergeLayoutTrees(child, defaultChild);
                 }
@@ -623,8 +633,20 @@ function WidgetRenderer({ node, content, ctx, }) {
             : (node.layout ?? widgetMeta?.defaultLayout);
     // Deprecated widgets or widgets without a custom renderer fall back to layout tree.
     if (layout) {
+        const layoutClasses = [
+            layout.id ? `p-${layout.id} n${layout.id}` : "",
+            layout.props?.className || "",
+        ]
+            .filter(Boolean)
+            .join(" ");
         const mergedLayout = {
             ...layout,
+            id: node.id,
+            props: {
+                ...(layout.props || {}),
+                "data-widget": node.widget,
+                ...(layoutClasses ? { className: layoutClasses } : {}),
+            },
             style: {
                 ...(layout.style ?? {}),
                 ...(node.style ?? {}),
@@ -632,12 +654,28 @@ function WidgetRenderer({ node, content, ctx, }) {
                     ...(layout.style?.base ?? {}),
                     ...(node.style?.base ?? {}),
                 },
+                sm: {
+                    ...(layout.style?.sm ?? {}),
+                    ...(node.style?.sm ?? {}),
+                },
+                md: {
+                    ...(layout.style?.md ?? {}),
+                    ...(node.style?.md ?? {}),
+                },
             },
         };
-        return ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-widget": node.widget, "data-node-id": ctx.isEditing ? node.id : undefined, children: (0, jsx_runtime_1.jsx)(NodeRenderer, { node: mergedLayout, content: {
-                    [node.key]: widgetContent,
-                    _design: { ...(node.design || {}), ...(widgetContent || {}) },
-                }, ctx: { ...widgetCtx, selfData: widgetContent } }) }));
+        const renderedLayout = ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: mergedLayout, content: {
+                [node.key]: widgetContent,
+                _design: { ...(node.design || {}), ...(widgetContent || {}) },
+            }, ctx: { ...widgetCtx, selfData: widgetContent } }));
+        if (!ctx.isEditing &&
+            Array.isArray(ctx.blocks) &&
+            node.id === ctx.placeholderId &&
+            ctx.injectBefore &&
+            ctx.renderUserBlocks) {
+            return ((0, jsx_runtime_1.jsxs)(react_1.default.Fragment, { children: [ctx.renderUserBlocks(), renderedLayout] }));
+        }
+        return renderedLayout;
     }
     // No layout and no custom Widget renderer — this shouldn't happen in normal flow
     // (all widgets have either a layout or a renderer), but handle it gracefully.

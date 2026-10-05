@@ -40,7 +40,7 @@ export const meta: WidgetModule["meta"] = {
     root: {
       base: {
         display: "flex",
-        flexDirection: "column",
+        flexDirection: "row",
         gap: "{space.3}",
         width: "100%",
         padding: { t: "{space.2}", r: "0", b: "{space.2}", l: "0" },
@@ -52,6 +52,8 @@ export const meta: WidgetModule["meta"] = {
         alignItems: "center",
         justifyContent: "center",
         gap: "{space.2}",
+        flex: 1,
+        minWidth: 0,
         width: "100%",
         padding: {
           t: "{space.3}",
@@ -74,6 +76,8 @@ export const meta: WidgetModule["meta"] = {
         alignItems: "center",
         justifyContent: "center",
         gap: "{space.2}",
+        flex: 1,
+        minWidth: 0,
         width: "100%",
         padding: {
           t: "{space.3}",
@@ -127,6 +131,8 @@ export const meta: WidgetModule["meta"] = {
             alignItems: "center",
             justifyContent: "center",
             gap: "{space.2}",
+            flex: 1,
+            minWidth: 0,
             width: "100%",
             padding: {
               t: "{space.3}",
@@ -165,6 +171,7 @@ export const meta: WidgetModule["meta"] = {
             style: {
               base: {
                 fontWeight: 600,
+                whiteSpace: "nowrap",
               },
             },
           },
@@ -182,6 +189,8 @@ export const meta: WidgetModule["meta"] = {
             alignItems: "center",
             justifyContent: "center",
             gap: "{space.2}",
+            flex: 1,
+            minWidth: 0,
             width: "100%",
             padding: {
               t: "{space.3}",
@@ -221,6 +230,7 @@ export const meta: WidgetModule["meta"] = {
             style: {
               base: {
                 fontWeight: 600,
+                whiteSpace: "nowrap",
               },
             },
           },
