@@ -42,7 +42,6 @@ export const meta: WidgetModule['meta'] = {
             fontSize: '{size.base}',
             cursor: 'pointer',
           },
-          hover: { opacity: 0.9, background: { kind: 'color', color: '{color.muted}' } },
         },
         children: [
           {

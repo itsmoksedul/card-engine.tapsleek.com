@@ -99,9 +99,6 @@ export const meta: WidgetModule['meta'] = {
         cursor: 'pointer',
         transition: { property: ['transform'], duration: 150, easing: 'ease' }
       },
-      hover: {
-        transform: { translateY: '-2px' }
-      }
     },
     thumbnail: {
       base: {

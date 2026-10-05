@@ -109,7 +109,6 @@ export const meta: WidgetModule["meta"] = {
         objectFit: "cover",
         transition: { property: ["transform"], duration: 250, easing: "ease" },
       },
-      hover: { transform: { scale: 1.04 } },
     },
     caption: {
       base: {

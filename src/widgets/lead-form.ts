@@ -160,7 +160,6 @@ export const meta: WidgetModule["meta"] = {
         cursor: "pointer",
         transition: { property: ["opacity"], duration: 150, easing: "ease" },
       },
-      hover: { opacity: 0.9 },
     },
     success: {
       base: {

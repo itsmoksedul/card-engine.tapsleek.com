@@ -86,8 +86,7 @@ export const meta: WidgetModule['meta'] = {
         fontWeight: 600,
         margin: { t: '{space.2}' },
         transition: { property: ['background-color', 'transform'], duration: 150, easing: 'ease' }
-      },
-      hover: { transform: { translateY: '-1px' } }
+      }
     }
   },
   defaultDesign: { height: 'md', mapType: 'm', showAddress: true, showDirectionsBtn: true },

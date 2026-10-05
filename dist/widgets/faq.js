@@ -90,7 +90,6 @@ exports.meta = {
                 cursor: 'pointer',
                 userSelect: 'none',
             },
-            hover: { background: { kind: 'color', color: '{color.bg}' } },
         },
         chevron: {
             base: {

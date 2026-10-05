@@ -56,10 +56,6 @@ exports.meta = {
                                 borderRadius: { all: '{radius.full}' },
                                 transition: { property: ['transform', 'background-color'], duration: 150, easing: 'ease' },
                             },
-                            hover: {
-                                transform: { translateY: '-2px' },
-                                background: { kind: 'color', color: '{color.border}' },
-                            },
                         },
                         children: [
                             {

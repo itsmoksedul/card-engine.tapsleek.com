@@ -55,7 +55,6 @@ exports.meta = {
                 cursor: 'pointer',
                 transition: { property: ['opacity', 'transform'], duration: 150, easing: 'ease' },
             },
-            hover: { opacity: 0.9, transform: { translateY: '-1px' } },
         },
         icon: {
             base: { display: 'flex', alignItems: 'center', flexShrink: 0 },

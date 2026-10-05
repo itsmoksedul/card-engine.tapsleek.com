@@ -95,7 +95,6 @@ export const meta: WidgetModule['meta'] = {
         borderRadius: { all: '{radius.md}' },
         transition: { property: ['box-shadow', 'transform'], duration: 150, easing: 'ease' },
       },
-      hover: { boxShadow: '{shadow.md}', transform: { translateY: '-2px' } },
     },
     itemMedia: {
       base: {

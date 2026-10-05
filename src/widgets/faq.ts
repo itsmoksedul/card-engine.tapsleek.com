@@ -89,7 +89,6 @@ export const meta: WidgetModule['meta'] = {
         cursor: 'pointer',
         userSelect: 'none',
       },
-      hover: { background: { kind: 'color', color: '{color.bg}' } },
     },
     chevron: {
       base: {

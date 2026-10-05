@@ -42,7 +42,6 @@ exports.meta = {
                         fontSize: '{size.base}',
                         cursor: 'pointer',
                     },
-                    hover: { opacity: 0.9 },
                 },
                 children: [
                     {

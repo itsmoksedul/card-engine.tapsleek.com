@@ -83,7 +83,6 @@ exports.meta = {
                                 objectFit: 'contain',
                                 opacity: 0.8,
                             },
-                            hover: { opacity: 1 },
                         },
                     },
                 ],

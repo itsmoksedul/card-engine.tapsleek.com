@@ -83,10 +83,6 @@ export const meta: WidgetModule['meta'] = {
         cursor: 'pointer',
         transition: { property: ['background-color', 'transform'], duration: 150, easing: 'ease' },
       },
-      hover: {
-        background: { kind: 'color', color: '{color.bg}' },
-        transform: { translateY: '-1px' },
-      },
     },
     icon: {
       base: {
@@ -148,10 +144,6 @@ export const meta: WidgetModule['meta'] = {
                 fontSize: '{size.base}',
                 fontWeight: 500,
                 cursor: 'pointer',
-              },
-              hover: {
-                background: { kind: 'color', color: '{color.bg}' },
-                transform: { translateY: '-1px' },
               },
             },
             children: [

@@ -68,7 +68,6 @@ exports.meta = {
                 cursor: "pointer",
                 transition: { property: ["opacity"], duration: 150, easing: "ease" },
             },
-            hover: { opacity: 0.88 },
         },
         connectNow: {
             base: {

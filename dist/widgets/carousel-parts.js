@@ -326,7 +326,6 @@ function createCarouselLayout(itemNode, options) {
                                         border: { style: "none" }, padding: { all: "0" },
                                         transition: { property: ["width", "background-color"], duration: 200, easing: "ease" },
                                     },
-                                    hover: { background: { kind: "color", color: "{color.primary}" } },
                                 },
                                 activeStyle: {
                                     base: {
