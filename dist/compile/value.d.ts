@@ -6,8 +6,8 @@
  * code path that copies an arbitrary author string into a declaration, which
  * is why `expression()`, `url(javascript:…)` and `@import` can never appear.
  */
-import { type TokenGroup } from '../types/definition';
-import type { BackgroundValue, BorderValue, Box4, Corners4, ShadowValue, StyleValue, TransformValue, TransitionValue } from '../types/style';
+import { type TokenGroup } from "../types/definition";
+import type { BackgroundValue, BorderValue, Box4, Corners4, ShadowValue, StyleValue, TransformValue, TransitionValue } from "../types/style";
 /** Safe CSS identifier — token names and node ids are held to this. */
 export declare const IDENT_RE: RegExp;
 export declare const VALUE_RE: {

@@ -509,19 +509,9 @@ function mergeLayoutTrees(instance, defaultLayout) {
         }
     }
     if (merged.children && merged.children.length > 0) {
-        merged.children = merged.children.map((child, idx) => {
+        merged.children = merged.children.map((child) => {
             if (child.kind === "element") {
-                let defaultChild = defaultChildrenMap.get(child.id);
-                if (!defaultChild &&
-                    defaultLayout.children &&
-                    defaultLayout.children[idx] &&
-                    defaultLayout.children[idx].kind === "element") {
-                    defaultChild = defaultLayout.children[idx];
-                    return {
-                        ...mergeLayoutTrees(child, defaultChild),
-                        id: defaultChild.id,
-                    };
-                }
+                const defaultChild = defaultChildrenMap.get(child.id);
                 if (defaultChild) {
                     return mergeLayoutTrees(child, defaultChild);
                 }

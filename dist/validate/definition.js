@@ -850,6 +850,55 @@ function sanitizeTemplateDefinition(input) {
             }
         }
     }
+    function deduplicateSubtreeIds(rootNode) {
+        if (!rootNode || typeof rootNode !== "object")
+            return;
+        const idCounts = new Map();
+        function count(node) {
+            if (!node || typeof node !== "object")
+                return;
+            if (typeof node.id === "string") {
+                idCounts.set(node.id, (idCounts.get(node.id) || 0) + 1);
+            }
+            // Do not traverse into widget layout here, as layout has its own scope
+            if (Array.isArray(node.children)) {
+                node.children.forEach(count);
+            }
+        }
+        count(rootNode);
+        const seenIds = new Set();
+        function makeUnique(base) {
+            let candidate = base;
+            let counter = 1;
+            while (seenIds.has(candidate) || idCounts.has(candidate)) {
+                candidate = `${base}_${counter++}`;
+            }
+            return candidate;
+        }
+        function resolve(node) {
+            if (!node || typeof node !== "object")
+                return;
+            if (typeof node.id === "string") {
+                const countForId = idCounts.get(node.id) || 0;
+                const isDupe = countForId > 1;
+                const isContainer = node.kind === "element" &&
+                    (node.tag === "frame" || node.tag === "grid");
+                if (seenIds.has(node.id) || (isDupe && isContainer)) {
+                    const prefix = isContainer ? node.tag || "frame" : node.id;
+                    const newId = makeUnique(prefix);
+                    node.id = newId;
+                    seenIds.add(newId);
+                }
+                else {
+                    seenIds.add(node.id);
+                }
+            }
+            if (Array.isArray(node.children)) {
+                node.children.forEach(resolve);
+            }
+        }
+        resolve(rootNode);
+    }
     function walkNode(node) {
         if (!node || typeof node !== "object")
             return;
@@ -866,6 +915,7 @@ function sanitizeTemplateDefinition(input) {
         }
         // 3. Clean widget layout if present
         if (node.layout) {
+            deduplicateSubtreeIds(node.layout);
             walkNode(node.layout);
         }
         // 4. Walk children
@@ -874,6 +924,7 @@ function sanitizeTemplateDefinition(input) {
         }
     }
     if (cloned.root) {
+        deduplicateSubtreeIds(cloned.root);
         walkNode(cloned.root);
     }
     return cloned;
