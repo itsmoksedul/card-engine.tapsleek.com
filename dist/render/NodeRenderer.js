@@ -488,7 +488,19 @@ function GatedWidgetUpsell({ node, ctx, }) {
                 }, children: "Pro Feature" }), (0, jsx_runtime_1.jsxs)("div", { style: { fontSize: "13px", color: "#334155", marginTop: "4px" }, children: [node.label || node.widget, " is locked on current plan"] })] }));
 }
 function mergeLayoutTrees(instance, defaultLayout) {
-    const merged = { ...instance };
+    let instChildren = instance.children;
+    // Backward compatibility: If instance has a single wrapper child like "list"
+    // but defaultLayout has its items (like "item") directly under root, unwrap the list wrapper.
+    if (instChildren &&
+        instChildren.length === 1 &&
+        instChildren[0].kind === "element" &&
+        instChildren[0].id === "list" &&
+        defaultLayout.children?.some((c) => c.id === "item") &&
+        !defaultLayout.children?.some((c) => c.id === "list")) {
+        const listNode = instChildren[0];
+        instChildren = listNode.children || [];
+    }
+    const merged = { ...instance, children: instChildren };
     const defaultChildrenMap = new Map();
     if (defaultLayout.children) {
         for (const c of defaultLayout.children) {

@@ -596,7 +596,22 @@ function mergeLayoutTrees(
   instance: ElementNode,
   defaultLayout: ElementNode,
 ): ElementNode {
-  const merged: ElementNode = { ...instance };
+  let instChildren = instance.children;
+  // Backward compatibility: If instance has a single wrapper child like "list"
+  // but defaultLayout has its items (like "item") directly under root, unwrap the list wrapper.
+  if (
+    instChildren &&
+    instChildren.length === 1 &&
+    instChildren[0].kind === "element" &&
+    instChildren[0].id === "list" &&
+    defaultLayout.children?.some((c) => c.id === "item") &&
+    !defaultLayout.children?.some((c) => c.id === "list")
+  ) {
+    const listNode = instChildren[0] as ElementNode;
+    instChildren = listNode.children || [];
+  }
+
+  const merged: ElementNode = { ...instance, children: instChildren };
   const defaultChildrenMap = new Map<string, ElementNode>();
   if (defaultLayout.children) {
     for (const c of defaultLayout.children) {
