@@ -34,6 +34,7 @@ import {
   type TokenGroup,
 } from "../types/definition";
 import {
+  collectWidgets,
   isElement,
   isSlot,
   isWidget,
@@ -146,7 +147,7 @@ export function compileCss(
 
   // ── 3. Node rules ──────────────────────────────────────────────────────
   for (const root of definitionRoots(def)) {
-    walkTreeOrder(root, (node) => {
+    walkTreeOrder(root, function compileNode(node) {
       const cls = nodeClass(node.id, warnings);
       if (!cls) return;
       const sel = `.${scope} .${cls}`;
@@ -222,6 +223,12 @@ export function compileCss(
 
         if (layout) {
           walkTreeOrder(layout, (layoutNode) => {
+            // A widget nested in this layout has a globally unique id and its
+            // own layout/part styles — compile it as a full node, not a leaf.
+            if (layoutNode !== layout && isWidget(layoutNode)) {
+              compileNode(layoutNode);
+              return;
+            }
             const layoutCls = nodeClass(layoutNode.id, warnings);
             if (!layoutCls) return;
             const layoutSel = layoutNode === layout ? sel : `${sel} .${layoutCls}`;
@@ -818,9 +825,7 @@ export function compileCardTheme(
 function templateWidgetTypes(def: TemplateDefinition): string[] {
   const seen = new Set<string>();
   for (const root of definitionRoots(def)) {
-    walkTreeOrder(root, (n) => {
-      if (isWidget(n)) seen.add(n.widget);
-    });
+    for (const w of collectWidgets(root)) seen.add(w.widget);
   }
   return [...seen];
 }

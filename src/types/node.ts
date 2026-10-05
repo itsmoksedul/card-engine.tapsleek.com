@@ -229,22 +229,43 @@ export function walkNodes(
   }
 }
 
-/** Every widget node in tree order. */
+/** Every widget node in tree order, including widgets nested in a widget's layout. */
 export function collectWidgets(root: Node): WidgetNode[] {
   const out: WidgetNode[] = [];
-  walkTreeOrder(root, (n) => {
+  walkTreeWithLayouts(root, (n) => {
     if (isWidget(n)) out.push(n);
   });
   return out;
 }
 
-/** Every slot node in tree order. */
+/** Every slot node in tree order, including slots nested in a widget's layout. */
 export function collectSlots(root: Node): SlotNode[] {
   const out: SlotNode[] = [];
-  walkTreeOrder(root, (n) => {
+  walkTreeWithLayouts(root, (n) => {
     if (isSlot(n)) out.push(n);
   });
   return out;
+}
+
+/**
+ * `walkTreeOrder` that also descends into each widget's stored `layout`, so a
+ * widget the admin placed inside another widget (e.g. Connect Buttons inside
+ * Profile) is visited too. Layout element nodes are visited as well.
+ */
+export function walkTreeWithLayouts(
+  node: Node,
+  visit: (node: Node, depth: number) => void,
+  depth = 0,
+): void {
+  visit(node, depth);
+  if (isElement(node) && node.children) {
+    for (const child of node.children) {
+      walkTreeWithLayouts(child, visit, depth + 1);
+    }
+  }
+  if (isWidget(node) && node.layout) {
+    walkTreeWithLayouts(node.layout, visit, depth + 1);
+  }
 }
 
 /** Depth-first walk that preserves document order (unlike the stack version). */

@@ -165,6 +165,8 @@ export function generatePreviewContent(
             : demo;
     }
     n?.children?.forEach(walk);
+    // Widgets can be nested inside another widget's layout.
+    if ((n as { layout?: unknown })?.layout) walk((n as { layout?: unknown }).layout);
   };
 
   walk(definition.root);
@@ -200,6 +202,7 @@ export function generatePreviewLinks(
         foundLinks = n.defaultContent.links;
       }
       n?.children?.forEach(walk);
+      if ((n as { layout?: unknown })?.layout) walk((n as { layout?: unknown }).layout);
     };
     walk(definition.root);
     if (foundLinks && (foundLinks as any[]).length > 0) {

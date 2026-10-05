@@ -72,7 +72,7 @@ function compileCss(def, options = {}) {
     // to ensure border-radius and overflow clipping works correctly.
     // ── 3. Node rules ──────────────────────────────────────────────────────
     for (const root of (0, definition_1.definitionRoots)(def)) {
-        (0, node_1.walkTreeOrder)(root, (node) => {
+        (0, node_1.walkTreeOrder)(root, function compileNode(node) {
             const cls = nodeClass(node.id, warnings);
             if (!cls)
                 return;
@@ -131,6 +131,12 @@ function compileCss(def, options = {}) {
                 }
                 if (layout) {
                     (0, node_1.walkTreeOrder)(layout, (layoutNode) => {
+                        // A widget nested in this layout has a globally unique id and its
+                        // own layout/part styles — compile it as a full node, not a leaf.
+                        if (layoutNode !== layout && (0, node_1.isWidget)(layoutNode)) {
+                            compileNode(layoutNode);
+                            return;
+                        }
                         const layoutCls = nodeClass(layoutNode.id, warnings);
                         if (!layoutCls)
                             return;
@@ -637,10 +643,8 @@ function compileCardTheme(theme, cardScopeClass) {
 function templateWidgetTypes(def) {
     const seen = new Set();
     for (const root of (0, definition_1.definitionRoots)(def)) {
-        (0, node_1.walkTreeOrder)(root, (n) => {
-            if ((0, node_1.isWidget)(n))
-                seen.add(n.widget);
-        });
+        for (const w of (0, node_1.collectWidgets)(root))
+            seen.add(w.widget);
     }
     return [...seen];
 }

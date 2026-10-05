@@ -139,6 +139,9 @@ function generatePreviewContent(definition, profile = "typical") {
                         : demo;
         }
         n?.children?.forEach(walk);
+        // Widgets can be nested inside another widget's layout.
+        if (n?.layout)
+            walk(n.layout);
     };
     walk(definition.root);
     (definition.popups ?? []).forEach((p) => walk(p.root));
@@ -163,6 +166,8 @@ function generatePreviewLinks(definition, profile = "typical") {
                 foundLinks = n.defaultContent.links;
             }
             n?.children?.forEach(walk);
+            if (n?.layout)
+                walk(n.layout);
         };
         walk(definition.root);
         if (foundLinks && foundLinks.length > 0) {

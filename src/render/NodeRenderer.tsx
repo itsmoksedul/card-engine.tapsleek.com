@@ -818,6 +818,10 @@ function WidgetRenderer({
       <NodeRenderer
         node={mergedLayout}
         content={{
+          // Keep the card-level content visible inside the layout so a widget
+          // nested here (e.g. Connect Buttons in Profile) still finds its own
+          // content by key.
+          ...(content ?? {}),
           [node.key]: widgetContent,
           _design: { ...(node.design || {}), ...(widgetContent || {}) },
         }}

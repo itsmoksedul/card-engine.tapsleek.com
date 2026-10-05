@@ -134,10 +134,16 @@ export declare function isWidget(n: Node): n is WidgetNode;
 export declare function isSlot(n: Node): n is SlotNode;
 /** Depth-first walk over the tree. `parent` is null for the root. */
 export declare function walkNodes(root: Node, visit: (node: Node, parent: Node | null, depth: number) => void): void;
-/** Every widget node in tree order. */
+/** Every widget node in tree order, including widgets nested in a widget's layout. */
 export declare function collectWidgets(root: Node): WidgetNode[];
-/** Every slot node in tree order. */
+/** Every slot node in tree order, including slots nested in a widget's layout. */
 export declare function collectSlots(root: Node): SlotNode[];
+/**
+ * `walkTreeOrder` that also descends into each widget's stored `layout`, so a
+ * widget the admin placed inside another widget (e.g. Connect Buttons inside
+ * Profile) is visited too. Layout element nodes are visited as well.
+ */
+export declare function walkTreeWithLayouts(node: Node, visit: (node: Node, depth: number) => void, depth?: number): void;
 /** Depth-first walk that preserves document order (unlike the stack version). */
 export declare function walkTreeOrder(node: Node, visit: (node: Node, depth: number) => void, depth?: number): void;
 export declare function findNode(root: Node, id: string): Node | null;

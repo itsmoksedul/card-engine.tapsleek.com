@@ -667,6 +667,10 @@ function WidgetRenderer({ node, content, ctx, }) {
             },
         };
         const renderedLayout = ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: mergedLayout, content: {
+                // Keep the card-level content visible inside the layout so a widget
+                // nested here (e.g. Connect Buttons in Profile) still finds its own
+                // content by key.
+                ...(content ?? {}),
                 [node.key]: widgetContent,
                 _design: { ...(node.design || {}), ...(widgetContent || {}) },
             }, ctx: { ...widgetCtx, selfData: widgetContent } }));
