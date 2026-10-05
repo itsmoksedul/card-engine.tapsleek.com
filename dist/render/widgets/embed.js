@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmbedRender = EmbedRender;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = require("react");
-const purify_1 = require("../purify");
+const sanitize_1 = require("../sanitize");
 const shared_1 = require("./shared");
 const HEIGHT_MAP = {
     small: '150px',
@@ -19,10 +19,7 @@ function EmbedRender({ design, content, cls, ctx }) {
     const sanitizedHtml = (0, react_1.useMemo)(() => {
         if (!rawHtml)
             return '';
-        return purify_1.embedPurifier.sanitize(rawHtml, {
-            ADD_TAGS: ['iframe'],
-            ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'loading', 'marginheight', 'marginwidth'],
-        });
+        return (0, sanitize_1.sanitizeHtml)(rawHtml, 'embed');
     }, [rawHtml]);
     if (!sanitizedHtml) {
         return (0, jsx_runtime_1.jsx)(shared_1.EmptyState, { cls: cls, ctx: ctx, label: "No embed code provided" });

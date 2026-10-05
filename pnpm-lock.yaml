@@ -8,18 +8,15 @@ importers:
 
   .:
     dependencies:
-      dompurify:
-        specifier: ^3.4.13
-        version: 3.4.13
       embla-carousel-autoplay:
         specifier: ^8.6.0
         version: 8.6.0(embla-carousel@8.6.0)
       embla-carousel-react:
         specifier: ^8.6.0
         version: 8.6.0(react@19.2.8)
-      linkedom:
-        specifier: ^0.18.13
-        version: 0.18.13
+      htmlparser2:
+        specifier: ^10.1.0
+        version: 10.1.0
       lucide-react:
         specifier: ^0.300.0
         version: 0.300.0(react@19.2.8)
@@ -62,58 +59,21 @@ packages:
   '@types/react@19.2.18':
     resolution: {integrity: sha512-AnzbBERsrLKtk2XSfTbYRLjQPdy116Sty4q+T+Bp3IC4l6jNBvreVPAHmpq9qhXQM7CXZPjLVmGMw9sy+hxQ3w==}
 
-  '@types/trusted-types@2.0.7':
-    resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
-
-  boolbase@2.0.0:
-    resolution: {integrity: sha512-DkVaaQHymRhpYEYo9x1oo7Q7B0Y6KJUsjm3c9eTyFDby4MHLBTwZ6ZDWBel5zrYxj1WsZgC5oLpiz+93MluXeA==}
-    engines: {node: '>=20.19.0'}
-
-  css-select@7.0.0:
-    resolution: {integrity: sha512-snmjEVXy+1LnwXdxhYvTMj1d9tOh4HxkA1YmoayVBeeyR2C14Pum7fcxJIm4SswYspVy866eYNwlH6xC3/VH5g==}
-    engines: {node: '>=20.19.0'}
-
-  css-what@8.0.0:
-    resolution: {integrity: sha512-DH0Bqq3DNp5tdOReuNyAA+Ev4Y2GS5FMbZpeTLP6C4CDi0h5nL0BmUPChXw3o/qbHLDWHl49sbNqQVY7bMSDdw==}
-    engines: {node: '>=20.19.0'}
-
-  cssom@0.5.0:
-    resolution: {integrity: sha512-iKuQcq+NdHqlAcwUY0o/HL69XQrUaQdMjmStJ8JFmUaiiQErlhrmuigkg/CU4E2J0IyUKUrMAgl36TvN67MqTw==}
-
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
   dom-serializer@2.0.0:
     resolution: {integrity: sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==}
 
-  dom-serializer@3.1.1:
-    resolution: {integrity: sha512-4MEa38/QexBob6gFNwu+EGdWvhJ1OKuNwdYY3Y3NyeWDQfnGeDYQUDfIRzWu5B5gsv03so2Uxd28YC6zrsx3Lw==}
-    engines: {node: '>=20.19.0'}
-
   domelementtype@2.3.0:
     resolution: {integrity: sha512-OLETBj6w0OsagBwdXnPdN0cnMfF9opN69co+7ZrbfPGrdpPVNBUj02spi6B1N7wChLQiPn4CSH/zJvXw56gmHw==}
-
-  domelementtype@3.0.0:
-    resolution: {integrity: sha512-umCQid3jKbDmVjx8jGaW7uUykm4DEUeyV21hPxNMo2nV955DhUThwqyOIDtreepP31hl84X7G5U9ZfsWvIB3Pg==}
-    engines: {node: '>=20.19.0'}
 
   domhandler@5.0.3:
     resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
     engines: {node: '>= 4'}
 
-  domhandler@6.0.1:
-    resolution: {integrity: sha512-gYzvtM72ZtxQO0T048kd6HWSbbGCNOUwcnfQ01cqIJ4X2IYKFFHZ5mKvrQETcFXxsRObZulDaKmy//R7TPtsBg==}
-    engines: {node: '>=20.19.0'}
-
-  dompurify@3.4.13:
-    resolution: {integrity: sha512-2vmYIoqjze2d+kakP8S/nS5shfsl587kzwEjcGlTdiksUVgFHnFCsLYDVj/JNqJVOQZGSYBTmuycv0PodwmnMQ==}
-
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
-
-  domutils@4.0.2:
-    resolution: {integrity: sha512-qI4JLRKnSzqFqr7hAlS5xQDusBCjKSEG4t4+7aNrIQMHBcsC2TGEhuyABJdYkgSewL57PNLYEiibY2iPKhKpaA==}
-    engines: {node: '>=20.19.0'}
 
   embla-carousel-autoplay@8.6.0:
     resolution: {integrity: sha512-OBu5G3nwaSXkZCo1A6LTaFMZ8EpkYbwIaH+bPqdBnDGQ2fh4+NbzjXjs2SktoPNKCtflfVMc75njaDHOYXcrsA==}
@@ -141,33 +101,13 @@ packages:
     resolution: {integrity: sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA==}
     engines: {node: '>=0.12'}
 
-  entities@8.0.0:
-    resolution: {integrity: sha512-zwfzJecQ/Uej6tusMqwAqU/6KL2XaB2VZ2Jg54Je6ahNBGNH6Ek6g3jjNCF0fG9EWQKGZNddNjU5F1ZQn/sBnA==}
-    engines: {node: '>=20.19.0'}
-
-  html-escaper@3.0.3:
-    resolution: {integrity: sha512-RuMffC89BOWQoY0WKGpIhn5gX3iI54O6nRA0yC124NYVtzjmFWBIiFd8M0x+ZdX0P9R4lADg1mgP8C7PxGOWuQ==}
-
   htmlparser2@10.1.0:
     resolution: {integrity: sha512-VTZkM9GWRAtEpveh7MSF6SjjrpNVNNVJfFup7xTY3UpFtm67foy9HDVXneLtFVt4pMz5kZtgNcvCniNFb1hlEQ==}
-
-  linkedom@0.18.13:
-    resolution: {integrity: sha512-ES/o9qotMpzpN2MHs+Iq/JcVoOj8Fa5wiQYrTdFpvAnwXL0g66XHHUc9WUMk6nAlBtGsFQ24ne+SYnvnaQ2FSw==}
-    engines: {node: '>=16'}
-    peerDependencies:
-      canvas: '>= 2'
-    peerDependenciesMeta:
-      canvas:
-        optional: true
 
   lucide-react@0.300.0:
     resolution: {integrity: sha512-rQxUUCmWAvNLoAsMZ5j04b2+OJv6UuNLYMY7VK0eVlm4aTwUEjEEHc09/DipkNIlhXUSDn2xoyIzVT0uh7dRsg==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0
-
-  nth-check@3.0.1:
-    resolution: {integrity: sha512-GX0gsdbGVCgnRgbeGaubfjpBXyYRWOOCVeYh08bSQvDZqxz5ndXs1OTfAt/h36G1xvI94YIspsI0sVFqAV9+RQ==}
-    engines: {node: '>=20.19.0'}
 
   react-dom@19.2.8:
     resolution: {integrity: sha512-rVprimfGBG3DR+Tq0IQG2DT5PxKth1WIGDmj5yPmlzr4YBe7uyE+Du4oVqTDXZSHGGGXRtTJEGSSePyQCMBglQ==}
@@ -191,9 +131,6 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  uhyphen@0.2.0:
-    resolution: {integrity: sha512-qz3o9CHXmJJPGBdqzab7qAYuW8kQGKNEuoHFYrBwV6hWIMcpAmxDLXojcHfFr9US1Pe6zUswEIJIbLI610fuqA==}
-
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
@@ -214,23 +151,6 @@ snapshots:
     dependencies:
       csstype: 3.2.3
 
-  '@types/trusted-types@2.0.7':
-    optional: true
-
-  boolbase@2.0.0: {}
-
-  css-select@7.0.0:
-    dependencies:
-      boolbase: 2.0.0
-      css-what: 8.0.0
-      domhandler: 6.0.1
-      domutils: 4.0.2
-      nth-check: 3.0.1
-
-  css-what@8.0.0: {}
-
-  cssom@0.5.0: {}
-
   csstype@3.2.3: {}
 
   dom-serializer@2.0.0:
@@ -239,39 +159,17 @@ snapshots:
       domhandler: 5.0.3
       entities: 4.5.0
 
-  dom-serializer@3.1.1:
-    dependencies:
-      domelementtype: 3.0.0
-      domhandler: 6.0.1
-      entities: 8.0.0
-
   domelementtype@2.3.0: {}
-
-  domelementtype@3.0.0: {}
 
   domhandler@5.0.3:
     dependencies:
       domelementtype: 2.3.0
-
-  domhandler@6.0.1:
-    dependencies:
-      domelementtype: 3.0.0
-
-  dompurify@3.4.13:
-    optionalDependencies:
-      '@types/trusted-types': 2.0.7
 
   domutils@3.2.2:
     dependencies:
       dom-serializer: 2.0.0
       domelementtype: 2.3.0
       domhandler: 5.0.3
-
-  domutils@4.0.2:
-    dependencies:
-      dom-serializer: 3.1.1
-      domelementtype: 3.0.0
-      domhandler: 6.0.1
 
   embla-carousel-autoplay@8.6.0(embla-carousel@8.6.0):
     dependencies:
@@ -293,10 +191,6 @@ snapshots:
 
   entities@7.0.1: {}
 
-  entities@8.0.0: {}
-
-  html-escaper@3.0.3: {}
-
   htmlparser2@10.1.0:
     dependencies:
       domelementtype: 2.3.0
@@ -304,21 +198,9 @@ snapshots:
       domutils: 3.2.2
       entities: 7.0.1
 
-  linkedom@0.18.13:
-    dependencies:
-      css-select: 7.0.0
-      cssom: 0.5.0
-      html-escaper: 3.0.3
-      htmlparser2: 10.1.0
-      uhyphen: 0.2.0
-
   lucide-react@0.300.0(react@19.2.8):
     dependencies:
       react: 19.2.8
-
-  nth-check@3.0.1:
-    dependencies:
-      boolbase: 2.0.0
 
   react-dom@19.2.8(react@19.2.8):
     dependencies:
@@ -334,8 +216,6 @@ snapshots:
   scheduler@0.27.0: {}
 
   typescript@5.9.3: {}
-
-  uhyphen@0.2.0: {}
 
   undici-types@6.21.0: {}
 

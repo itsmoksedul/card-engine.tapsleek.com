@@ -139,10 +139,23 @@ export const meta: WidgetModule['meta'] = {
       {
         id: 'button',
         kind: 'element',
-        tag: 'button',
+        // A link to the booking flow; `profile` is resolved by the backend
+        // from `profileId` (meta.references). The label is its own child so
+        // the URL and the text don't compete for the one binding.
+        tag: 'link',
         name: 'Book button',
-        bind: { source: 'self', path: 'buttonLabel' },
+        bind: { source: 'self', path: 'profile', format: 'appointmentUrl' },
         props: { action: 'link' },
+        children: [
+          {
+            id: 'buttonLabel',
+            kind: 'element',
+            tag: 'text',
+            name: 'Button label',
+            bind: { source: 'self', path: 'buttonLabel' },
+            props: { text: 'Choose a time' },
+          },
+        ],
         style: {
           base: {
             display: 'flex',

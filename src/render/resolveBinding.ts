@@ -1,5 +1,5 @@
 import { LINK_CATALOG } from "../catalog/links";
-import type { Binding } from "../types/node";
+import type { Binding, BindingFormat } from "../types/node";
 
 function formatLinkUrl(type: string, value?: string): string {
   if (!value) return "";
@@ -109,6 +109,10 @@ export function resolveBinding(
       result = result[part];
     }
 
+    if (binding.format) {
+      return formatValue(binding.format, result, selfData, content?._design);
+    }
+
     if (
       (result == null || (Array.isArray(result) && result.length === 0)) &&
       card
@@ -130,6 +134,54 @@ export function resolveBinding(
   }
 
   return undefined;
+}
+
+const WEEKDAYS: Record<string, string> = {
+  mon: "Monday",
+  tue: "Tuesday",
+  wed: "Wednesday",
+  thu: "Thursday",
+  fri: "Friday",
+  sat: "Saturday",
+  sun: "Sunday",
+};
+
+function formatTime(value: unknown, format?: unknown): string {
+  if (typeof value !== "string" || !value) return "";
+  if (format === "24h") return value;
+  const [h, m] = value.split(":").map(Number);
+  if (!Number.isFinite(h)) return value;
+  const suffix = h >= 12 ? "PM" : "AM";
+  const hour = h % 12 === 0 ? 12 : h % 12;
+  return `${hour}:${String(Number.isFinite(m) ? m : 0).padStart(2, "0")} ${suffix}`;
+}
+
+function formatValue(
+  format: BindingFormat,
+  value: any,
+  selfData: any,
+  design: any,
+): any {
+  switch (format) {
+    case "weekday":
+      return typeof value === "string" ? (WEEKDAYS[value] ?? value) : value;
+    case "hoursRange": {
+      const row = selfData ?? {};
+      if (row.closed) return "Closed";
+      const open = formatTime(row.open, design?.timeFormat);
+      const close = formatTime(row.close, design?.timeFormat);
+      return open && close ? `${open} – ${close}` : open || close || "";
+    }
+    case "appointmentUrl": {
+      // `profile` is resolved by the backend from `profileId` (meta.references).
+      const slug = value?.slug;
+      return typeof slug === "string" && slug
+        ? `/appt/${encodeURIComponent(slug)}`
+        : undefined;
+    }
+    default:
+      return value;
+  }
 }
 
 function base(): string {

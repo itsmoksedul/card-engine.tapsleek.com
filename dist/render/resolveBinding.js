@@ -108,6 +108,9 @@ function resolveBinding(binding, card, content, selfData) {
                 break;
             result = result[part];
         }
+        if (binding.format) {
+            return formatValue(binding.format, result, selfData, content?._design);
+        }
         if ((result == null || (Array.isArray(result) && result.length === 0)) &&
             card) {
             if (binding.path === "links" && (card.links || content?.links)) {
@@ -125,6 +128,50 @@ function resolveBinding(binding, card, content, selfData) {
         return `var(--${binding.path.replace(".", "-")})`;
     }
     return undefined;
+}
+const WEEKDAYS = {
+    mon: "Monday",
+    tue: "Tuesday",
+    wed: "Wednesday",
+    thu: "Thursday",
+    fri: "Friday",
+    sat: "Saturday",
+    sun: "Sunday",
+};
+function formatTime(value, format) {
+    if (typeof value !== "string" || !value)
+        return "";
+    if (format === "24h")
+        return value;
+    const [h, m] = value.split(":").map(Number);
+    if (!Number.isFinite(h))
+        return value;
+    const suffix = h >= 12 ? "PM" : "AM";
+    const hour = h % 12 === 0 ? 12 : h % 12;
+    return `${hour}:${String(Number.isFinite(m) ? m : 0).padStart(2, "0")} ${suffix}`;
+}
+function formatValue(format, value, selfData, design) {
+    switch (format) {
+        case "weekday":
+            return typeof value === "string" ? (WEEKDAYS[value] ?? value) : value;
+        case "hoursRange": {
+            const row = selfData ?? {};
+            if (row.closed)
+                return "Closed";
+            const open = formatTime(row.open, design?.timeFormat);
+            const close = formatTime(row.close, design?.timeFormat);
+            return open && close ? `${open} – ${close}` : open || close || "";
+        }
+        case "appointmentUrl": {
+            // `profile` is resolved by the backend from `profileId` (meta.references).
+            const slug = value?.slug;
+            return typeof slug === "string" && slug
+                ? `/appt/${encodeURIComponent(slug)}`
+                : undefined;
+        }
+        default:
+            return value;
+    }
 }
 function base() {
     const url = (typeof process !== "undefined" &&

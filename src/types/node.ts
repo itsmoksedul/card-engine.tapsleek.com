@@ -104,8 +104,21 @@ export const CARD_FIELDS: CardField[] = [
 export type Binding =
   | { source: 'card'; field: CardField }
   | { source: 'widget'; key: string; path: string }
-  | { source: 'self'; path: string }
+  | { source: 'self'; path: string; format?: BindingFormat }
   | { source: 'token'; path: string };
+
+/**
+ * Display formatting applied to a resolved `self` value. Lets a layout show
+ * computed text (e.g. "9:00 AM – 5:00 PM" or "Closed") without a custom
+ * renderer, so the parts stay individually selectable/styleable in the builder.
+ */
+export type BindingFormat = 'weekday' | 'hoursRange' | 'appointmentUrl';
+
+export const BINDING_FORMATS: BindingFormat[] = [
+  'weekday',
+  'hoursRange',
+  'appointmentUrl',
+];
 
 export interface NodeA11y {
   role?: string;

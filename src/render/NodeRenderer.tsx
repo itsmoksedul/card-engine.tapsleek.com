@@ -4,8 +4,8 @@ import useEmblaCarousel from "embla-carousel-react";
 import React from "react";
 import type { ElementNode, Node, SlotNode, WidgetNode } from "../types/node";
 import { getWidgetMeta } from "../widgets";
-import DOMPurify, { embedPurifier } from "./purify";
 import { resolveBinding } from "./resolveBinding";
+import { safeHref, sanitizeHtml } from "./sanitize";
 import { WIDGET_RENDERERS } from "./widgets";
 import { RenderIcon } from "./widgets/icon-helper";
 
@@ -156,6 +156,61 @@ const ENGINE_PROPS = new Set([
   "loop",
 ]);
 
+/**
+ * The only `node.props` keys that reach the DOM (plus `data-*` / `aria-*`).
+ *
+ * Templates are JSON and can be imported from a file, so forwarding every key
+ * let `props.dangerouslySetInnerHTML`, `srcdoc`, `formaction`… through as raw
+ * HTML/attributes. `href`/`src` are handled per tag with URL checks instead.
+ */
+const DOM_PROPS = new Set([
+  "title",
+  "alt",
+  "target",
+  "rel",
+  "placeholder",
+  "width",
+  "height",
+  "tabIndex",
+  "role",
+]);
+
+function isForwardableProp(key: string, value: unknown): boolean {
+  if (
+    typeof value !== "string" &&
+    typeof value !== "number" &&
+    typeof value !== "boolean"
+  ) {
+    return false;
+  }
+  return DOM_PROPS.has(key) || /^(data|aria)-[a-z0-9-]+$/.test(key);
+}
+
+/** Tags a `frame` may render as via `props.as` — semantic containers only. */
+const FRAME_AS = new Set([
+  "div",
+  "section",
+  "header",
+  "footer",
+  "nav",
+  "main",
+  "article",
+  "aside",
+  "figure",
+  "ul",
+  "ol",
+  "li",
+  "span",
+]);
+
+/** A bound value that is a link target rather than display text. */
+function looksLikeUrl(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^(https?:|mailto:|tel:|sms:|\/|#)/i.test(value.trim())
+  );
+}
+
 function ElementRenderer({
   node,
   content,
@@ -209,7 +264,9 @@ function ElementRenderer({
 
   const tag =
     node.tag === "frame"
-      ? (props.as as string) || "div"
+      ? FRAME_AS.has(String(props.as))
+        ? String(props.as)
+        : "div"
       : node.tag === "heading"
         ? `h${clampLevel(props.level)}`
         : TAG_MAP[node.tag] || "div";
@@ -230,10 +287,10 @@ function ElementRenderer({
     className: `n${node.id} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}${customClass}`,
   };
 
-  // Only forward attributes the DOM actually understands.
+  // Only forward allowlisted, primitive attributes.
   for (const [key, value] of Object.entries(props)) {
     if (ENGINE_PROPS.has(key) || key === "className") continue;
-    dom[key] = value;
+    if (isForwardableProp(key, value)) dom[key] = value;
   }
 
   if (ctx.isEditing) dom["data-node-id"] = node.id;
@@ -335,25 +392,14 @@ function ElementRenderer({
     case "richtext": {
       const rawHtml = bound ?? props.html ?? "";
       dom.dangerouslySetInnerHTML = {
-        __html: DOMPurify.sanitize(String(rawHtml)),
+        __html: sanitizeHtml(String(rawHtml), "richtext"),
       };
       break;
     }
     case "embed": {
       const rawHtml = bound ?? props.html ?? "";
       dom.dangerouslySetInnerHTML = {
-        __html: embedPurifier.sanitize(String(rawHtml), {
-          ADD_TAGS: ["iframe"],
-          ADD_ATTR: [
-            "allow",
-            "allowfullscreen",
-            "frameborder",
-            "scrolling",
-            "src",
-            "width",
-            "height",
-          ],
-        }),
+        __html: sanitizeHtml(String(rawHtml), "embed"),
       };
       break;
     }
@@ -426,12 +472,22 @@ function ElementRenderer({
         if (ctx.onActionClick) ctx.onActionClick(action);
       };
 
+      // A bound value is the link target when it looks like a URL; otherwise
+      // (e.g. a button bound to its label text) it is display text. Treating
+      // every bound value as a URL made labelled buttons render empty and
+      // `window.open("Choose a time")` on click.
+      const boundIsUrl = looksLikeUrl(bound);
+      const href = safeHref(boundIsUrl ? bound : props.href) ?? undefined;
+      const boundLabel =
+        !boundIsUrl && (typeof bound === "string" || typeof bound === "number")
+          ? String(bound)
+          : null;
+
       if (
         action === "link" &&
         node.id !== "connectNow" &&
         node.id !== "saveContact"
       ) {
-        const href = bound ?? props.href;
         if (node.tag === "link") {
           if (ctx.isEditing || ctx.onActionClick) {
             dom.onClick = interceptClick;
@@ -443,7 +499,11 @@ function ElementRenderer({
             dom.onClick = interceptClick;
           } else {
             dom.onClick = () =>
-              window.open(String(href), props.target || "_self");
+              window.open(
+                href,
+                props.target === "_blank" ? "_blank" : "_self",
+                props.target === "_blank" ? "noopener,noreferrer" : undefined,
+              );
           }
         }
       } else if (action === "vcard" || node.id === "saveContact") {
@@ -510,7 +570,11 @@ function ElementRenderer({
         }
       }
       if (node.tag === "button") dom.type = "button";
-      children = props.label ?? null;
+      if (node.tag === "link" && props.target === "_blank") {
+        dom.target = "_blank";
+        dom.rel = "noopener noreferrer";
+      }
+      children = props.label ?? boundLabel;
       break;
     }
     case "divider":
@@ -592,6 +656,22 @@ function GatedWidgetUpsell({
   );
 }
 
+/**
+ * Structure comes from the widget's code, not the stored copy: the builder
+ * never edits a layout node's tag/binding, so a stored layout only diverges
+ * from the default when the default was fixed later. Taking these from the
+ * default lets such fixes reach templates saved before them; style, props and
+ * hidden stay the instance's (that is what the admin edits).
+ */
+export function structuralFrom(def: ElementNode): Partial<ElementNode> {
+  const out: Partial<ElementNode> = { tag: def.tag };
+  if (def.bind !== undefined) out.bind = def.bind;
+  if (def.repeat !== undefined) out.repeat = def.repeat;
+  if (def.hideIfEmpty !== undefined) out.hideIfEmpty = def.hideIfEmpty;
+  if (def.visibleIf !== undefined) out.visibleIf = def.visibleIf;
+  return out;
+}
+
 function mergeLayoutTrees(
   instance: ElementNode,
   defaultLayout: ElementNode,
@@ -611,7 +691,13 @@ function mergeLayoutTrees(
     instChildren = listNode.children || [];
   }
 
-  const merged: ElementNode = { ...instance, children: instChildren };
+  const merged: ElementNode = {
+    ...instance,
+    // Same id ⇒ same node; a different id (e.g. the admin wrapped the layout
+    // in a new frame) is the admin's own structure and is left alone.
+    ...(instance.id === defaultLayout.id ? structuralFrom(defaultLayout) : {}),
+    children: instChildren,
+  };
   const defaultChildrenMap = new Map<string, ElementNode>();
   if (defaultLayout.children) {
     for (const c of defaultLayout.children) {
@@ -781,8 +867,12 @@ function WidgetRenderer({
 
   // Deprecated widgets or widgets without a custom renderer fall back to layout tree.
   if (layout) {
+    // Only the part class. Every layout root is id "root" — the same id as the
+    // template root — so also stamping `n<layoutId>` made the TEMPLATE root's
+    // `.ts-card .nroot{padding;border;background…}` rule hit every widget.
+    // The layout root's own style is compiled onto `.n<widgetId>` instead.
     const layoutClasses = [
-      layout.id ? `p-${layout.id} n${layout.id}` : "",
+      layout.id ? `p-${layout.id}` : "",
       layout.props?.className || "",
     ]
       .filter(Boolean)

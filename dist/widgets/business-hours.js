@@ -167,7 +167,7 @@ exports.meta = {
                                 kind: 'element',
                                 tag: 'text',
                                 name: 'Day name',
-                                bind: { source: 'self', path: 'day' },
+                                bind: { source: 'self', path: 'day', format: 'weekday' },
                                 style: { base: { color: '{color.muted}', fontWeight: 500 } },
                             },
                             {
@@ -175,7 +175,7 @@ exports.meta = {
                                 kind: 'element',
                                 tag: 'text',
                                 name: 'Hours',
-                                bind: { source: 'self', path: 'open' },
+                                bind: { source: 'self', path: 'open', format: 'hoursRange' },
                                 style: { base: { fontWeight: 600, color: '{color.text}' } },
                             },
                         ],

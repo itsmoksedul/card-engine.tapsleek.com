@@ -1,5 +1,5 @@
 import React from 'react';
-import DOMPurify from '../purify';
+import { sanitizeHtml } from '../sanitize';
 import { EmptyState, str, type WidgetRenderProps } from './shared';
 
 export function RichTextRender({ content, design, cls, ctx }: WidgetRenderProps) {
@@ -16,7 +16,7 @@ export function RichTextRender({ content, design, cls, ctx }: WidgetRenderProps)
       {body && (
         <div
           className={cls('body')}
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(body) }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(body, 'richtext') }}
         />
       )}
     </div>

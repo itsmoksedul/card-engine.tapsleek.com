@@ -1,51 +1,19 @@
 "use strict";
 "use client";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CarouselContext = void 0;
 exports.NodeRenderer = NodeRenderer;
+exports.structuralFrom = structuralFrom;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const embla_carousel_autoplay_1 = __importDefault(require("embla-carousel-autoplay"));
 const embla_carousel_react_1 = __importDefault(require("embla-carousel-react"));
 const react_1 = __importDefault(require("react"));
 const widgets_1 = require("../widgets");
-const purify_1 = __importStar(require("./purify"));
 const resolveBinding_1 = require("./resolveBinding");
+const sanitize_1 = require("./sanitize");
 const widgets_2 = require("./widgets");
 const icon_helper_1 = require("./widgets/icon-helper");
 function NodeRenderer({ node, content, ctx }) {
@@ -149,6 +117,53 @@ const ENGINE_PROPS = new Set([
     "autoplay",
     "loop",
 ]);
+/**
+ * The only `node.props` keys that reach the DOM (plus `data-*` / `aria-*`).
+ *
+ * Templates are JSON and can be imported from a file, so forwarding every key
+ * let `props.dangerouslySetInnerHTML`, `srcdoc`, `formaction`… through as raw
+ * HTML/attributes. `href`/`src` are handled per tag with URL checks instead.
+ */
+const DOM_PROPS = new Set([
+    "title",
+    "alt",
+    "target",
+    "rel",
+    "placeholder",
+    "width",
+    "height",
+    "tabIndex",
+    "role",
+]);
+function isForwardableProp(key, value) {
+    if (typeof value !== "string" &&
+        typeof value !== "number" &&
+        typeof value !== "boolean") {
+        return false;
+    }
+    return DOM_PROPS.has(key) || /^(data|aria)-[a-z0-9-]+$/.test(key);
+}
+/** Tags a `frame` may render as via `props.as` — semantic containers only. */
+const FRAME_AS = new Set([
+    "div",
+    "section",
+    "header",
+    "footer",
+    "nav",
+    "main",
+    "article",
+    "aside",
+    "figure",
+    "ul",
+    "ol",
+    "li",
+    "span",
+]);
+/** A bound value that is a link target rather than display text. */
+function looksLikeUrl(value) {
+    return (typeof value === "string" &&
+        /^(https?:|mailto:|tel:|sms:|\/|#)/i.test(value.trim()));
+}
 function ElementRenderer({ node, content, ctx, }) {
     const ctxEmbla = react_1.default.useContext(exports.CarouselContext);
     if (node.visibleIf) {
@@ -177,7 +192,9 @@ function ElementRenderer({ node, content, ctx, }) {
         return null;
     }
     const tag = node.tag === "frame"
-        ? props.as || "div"
+        ? FRAME_AS.has(String(props.as))
+            ? String(props.as)
+            : "div"
         : node.tag === "heading"
             ? `h${clampLevel(props.level)}`
             : TAG_MAP[node.tag] || "div";
@@ -192,11 +209,12 @@ function ElementRenderer({ node, content, ctx, }) {
     const dom = {
         className: `n${node.id} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}${customClass}`,
     };
-    // Only forward attributes the DOM actually understands.
+    // Only forward allowlisted, primitive attributes.
     for (const [key, value] of Object.entries(props)) {
         if (ENGINE_PROPS.has(key) || key === "className")
             continue;
-        dom[key] = value;
+        if (isForwardableProp(key, value))
+            dom[key] = value;
     }
     if (ctx.isEditing)
         dom["data-node-id"] = node.id;
@@ -278,25 +296,14 @@ function ElementRenderer({ node, content, ctx, }) {
         case "richtext": {
             const rawHtml = bound ?? props.html ?? "";
             dom.dangerouslySetInnerHTML = {
-                __html: purify_1.default.sanitize(String(rawHtml)),
+                __html: (0, sanitize_1.sanitizeHtml)(String(rawHtml), "richtext"),
             };
             break;
         }
         case "embed": {
             const rawHtml = bound ?? props.html ?? "";
             dom.dangerouslySetInnerHTML = {
-                __html: purify_1.embedPurifier.sanitize(String(rawHtml), {
-                    ADD_TAGS: ["iframe"],
-                    ADD_ATTR: [
-                        "allow",
-                        "allowfullscreen",
-                        "frameborder",
-                        "scrolling",
-                        "src",
-                        "width",
-                        "height",
-                    ],
-                }),
+                __html: (0, sanitize_1.sanitizeHtml)(String(rawHtml), "embed"),
             };
             break;
         }
@@ -346,10 +353,18 @@ function ElementRenderer({ node, content, ctx, }) {
                 if (ctx.onActionClick)
                     ctx.onActionClick(action);
             };
+            // A bound value is the link target when it looks like a URL; otherwise
+            // (e.g. a button bound to its label text) it is display text. Treating
+            // every bound value as a URL made labelled buttons render empty and
+            // `window.open("Choose a time")` on click.
+            const boundIsUrl = looksLikeUrl(bound);
+            const href = (0, sanitize_1.safeHref)(boundIsUrl ? bound : props.href) ?? undefined;
+            const boundLabel = !boundIsUrl && (typeof bound === "string" || typeof bound === "number")
+                ? String(bound)
+                : null;
             if (action === "link" &&
                 node.id !== "connectNow" &&
                 node.id !== "saveContact") {
-                const href = bound ?? props.href;
                 if (node.tag === "link") {
                     if (ctx.isEditing || ctx.onActionClick) {
                         dom.onClick = interceptClick;
@@ -363,7 +378,7 @@ function ElementRenderer({ node, content, ctx, }) {
                         dom.onClick = interceptClick;
                     }
                     else {
-                        dom.onClick = () => window.open(String(href), props.target || "_self");
+                        dom.onClick = () => window.open(href, props.target === "_blank" ? "_blank" : "_self", props.target === "_blank" ? "noopener,noreferrer" : undefined);
                     }
                 }
             }
@@ -442,7 +457,11 @@ function ElementRenderer({ node, content, ctx, }) {
             }
             if (node.tag === "button")
                 dom.type = "button";
-            children = props.label ?? null;
+            if (node.tag === "link" && props.target === "_blank") {
+                dom.target = "_blank";
+                dom.rel = "noopener noreferrer";
+            }
+            children = props.label ?? boundLabel;
             break;
         }
         case "divider":
@@ -487,6 +506,25 @@ function GatedWidgetUpsell({ node, ctx, }) {
                     letterSpacing: "0.05em",
                 }, children: "Pro Feature" }), (0, jsx_runtime_1.jsxs)("div", { style: { fontSize: "13px", color: "#334155", marginTop: "4px" }, children: [node.label || node.widget, " is locked on current plan"] })] }));
 }
+/**
+ * Structure comes from the widget's code, not the stored copy: the builder
+ * never edits a layout node's tag/binding, so a stored layout only diverges
+ * from the default when the default was fixed later. Taking these from the
+ * default lets such fixes reach templates saved before them; style, props and
+ * hidden stay the instance's (that is what the admin edits).
+ */
+function structuralFrom(def) {
+    const out = { tag: def.tag };
+    if (def.bind !== undefined)
+        out.bind = def.bind;
+    if (def.repeat !== undefined)
+        out.repeat = def.repeat;
+    if (def.hideIfEmpty !== undefined)
+        out.hideIfEmpty = def.hideIfEmpty;
+    if (def.visibleIf !== undefined)
+        out.visibleIf = def.visibleIf;
+    return out;
+}
 function mergeLayoutTrees(instance, defaultLayout) {
     let instChildren = instance.children;
     // Backward compatibility: If instance has a single wrapper child like "list"
@@ -500,7 +538,13 @@ function mergeLayoutTrees(instance, defaultLayout) {
         const listNode = instChildren[0];
         instChildren = listNode.children || [];
     }
-    const merged = { ...instance, children: instChildren };
+    const merged = {
+        ...instance,
+        // Same id ⇒ same node; a different id (e.g. the admin wrapped the layout
+        // in a new frame) is the admin's own structure and is left alone.
+        ...(instance.id === defaultLayout.id ? structuralFrom(defaultLayout) : {}),
+        children: instChildren,
+    };
     const defaultChildrenMap = new Map();
     if (defaultLayout.children) {
         for (const c of defaultLayout.children) {
@@ -635,8 +679,12 @@ function WidgetRenderer({ node, content, ctx, }) {
             : (node.layout ?? widgetMeta?.defaultLayout);
     // Deprecated widgets or widgets without a custom renderer fall back to layout tree.
     if (layout) {
+        // Only the part class. Every layout root is id "root" — the same id as the
+        // template root — so also stamping `n<layoutId>` made the TEMPLATE root's
+        // `.ts-card .nroot{padding;border;background…}` rule hit every widget.
+        // The layout root's own style is compiled onto `.n<widgetId>` instead.
         const layoutClasses = [
-            layout.id ? `p-${layout.id} n${layout.id}` : "",
+            layout.id ? `p-${layout.id}` : "",
             layout.props?.className || "",
         ]
             .filter(Boolean)

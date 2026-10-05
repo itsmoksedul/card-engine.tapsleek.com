@@ -11,7 +11,7 @@
  * design and a shared component can produce completely different looks.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CARD_FIELDS = exports.VOID_TAGS = exports.CONTAINER_TAGS = void 0;
+exports.BINDING_FORMATS = exports.CARD_FIELDS = exports.VOID_TAGS = exports.CONTAINER_TAGS = void 0;
 exports.isElement = isElement;
 exports.isWidget = isWidget;
 exports.isSlot = isSlot;
@@ -51,6 +51,11 @@ exports.CARD_FIELDS = [
     'vcardUrl',
     'qrUrl',
     'shareUrl',
+];
+exports.BINDING_FORMATS = [
+    'weekday',
+    'hoursRange',
+    'appointmentUrl',
 ];
 // ─── Traversal helpers ───────────────────────────────────────────────────────
 function isElement(n) {

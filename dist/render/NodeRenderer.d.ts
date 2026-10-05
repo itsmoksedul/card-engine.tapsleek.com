@@ -1,5 +1,5 @@
 import React from "react";
-import type { Node } from "../types/node";
+import type { ElementNode, Node } from "../types/node";
 export interface RenderCtx {
     card: any;
     links: any[];
@@ -27,3 +27,11 @@ export declare const CarouselContext: React.Context<{
     emblaRef?: any;
     selectedIndex?: number;
 } | null>;
+/**
+ * Structure comes from the widget's code, not the stored copy: the builder
+ * never edits a layout node's tag/binding, so a stored layout only diverges
+ * from the default when the default was fixed later. Taking these from the
+ * default lets such fixes reach templates saved before them; style, props and
+ * hidden stay the instance's (that is what the admin edits).
+ */
+export declare function structuralFrom(def: ElementNode): Partial<ElementNode>;

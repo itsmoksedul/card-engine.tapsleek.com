@@ -22,6 +22,13 @@ const schema_to_zod_1 = require("./schema-to-zod");
 const style_1 = require("./style");
 const ALL_TAGS = new Set([...node_1.CONTAINER_TAGS, ...node_1.VOID_TAGS]);
 const CARD_FIELD_SET = new Set(node_1.CARD_FIELDS);
+/** `on*` handlers and raw-HTML/document props never belong in a template. */
+const UNSAFE_PROP_RE = /^(on[A-Za-z]|dangerouslySetInnerHTML$|innerHTML$|outerHTML$|srcdoc$|srcDoc$|formaction$|formAction$|style$)/;
+/** Mirrors the renderer: what `props.as` may turn a frame into. */
+const FRAME_AS_TAGS = new Set([
+    "div", "section", "header", "footer", "nav", "main", "article", "aside",
+    "figure", "ul", "ol", "li", "span",
+]);
 const NODE_ACTIONS = new Set([
     "link",
     "vcard",
@@ -378,6 +385,22 @@ function validateElement(node, path, ctx) {
         errors.push({ path: `${path}.props`, message: "must be an object" });
         return;
     }
+    // Raw-HTML / script vectors. The renderer only forwards an allowlist, but a
+    // template carrying these is malformed or hostile — reject it loudly.
+    for (const key of Object.keys(props)) {
+        if (UNSAFE_PROP_RE.test(key)) {
+            errors.push({
+                path: `${path}.props.${key}`,
+                message: `prop "${key}" is not allowed`,
+            });
+        }
+    }
+    if (props.as !== undefined && !FRAME_AS_TAGS.has(String(props.as))) {
+        errors.push({
+            path: `${path}.props.as`,
+            message: `"${String(props.as)}" is not an allowed container tag`,
+        });
+    }
     if (tag === "heading") {
         const level = props.level;
         if (level !== undefined &&
@@ -485,6 +508,13 @@ function validateBinding(bind, path, ctx) {
         case "self":
             if (!isNonEmptyString(bind.path, 128))
                 errors.push({ path: `${path}.path`, message: "required" });
+            if (bind.format !== undefined &&
+                !node_1.BINDING_FORMATS.includes(bind.format)) {
+                errors.push({
+                    path: `${path}.format`,
+                    message: `unknown format "${String(bind.format)}"`,
+                });
+            }
             break;
         default:
             errors.push({
