@@ -201,22 +201,27 @@ describe("compileCss", () => {
       sm: { gap: "{space.4}" },
     };
     const { css } = compileCss(def);
-    // Mobile (max-width:380px) must appear AFTER Tablet (max-width:768px).
+    // Mobile (max-width:480px) must appear AFTER Tablet (max-width:768px).
+    expect(css.indexOf("@media (max-width:480px)")).toBeGreaterThan(-1);
     expect(css.indexOf("@media (max-width:768px)")).toBeLessThan(
-      css.indexOf("@media (max-width:380px)"),
+      css.indexOf("@media (max-width:480px)"),
     );
   });
 
   it("flattenTo collapses the cascade to one breakpoint, no media queries", () => {
     const def = fixture();
+    // Only the header's rules: the fixture's SERVICE_LIST ships its own
+    // (carousel) defaults that legitimately contain `row`.
+    const hdr = (css: string) =>
+      (css.match(/[^{}]*\.nhdr[^{}]*\{[^}]*\}/g) ?? []).join("");
     // Desktop only: no override at all.
     const desktop = compileCss(def, { flattenTo: "base" }).css;
     expect(desktop).not.toContain("@media");
-    expect(desktop).not.toContain("flex-direction:row");
+    expect(hdr(desktop)).not.toContain("flex-direction:row");
     // Tablet preview: the md override is inlined, still no media query.
     const tablet = compileCss(def, { flattenTo: "md" }).css;
     expect(tablet).not.toContain("@media");
-    expect(tablet).toContain("flex-direction:row");
+    expect(hdr(tablet)).toContain("flex-direction:row");
   });
 
   it("emits widget part styles and their hover state", () => {
@@ -261,8 +266,9 @@ describe("compileCss", () => {
     };
     const { css } = compileCss(def);
     expect(css).not.toContain("expression");
-    // the injected rule must not survive in any form
-    expect(css).not.toContain("display:none");
+    // the injected rule must not survive in any form (the fixture's widget
+    // defaults contain their own display:none, so look at this node only)
+    expect(css).not.toMatch(/\.nhdr[^{]*\{[^}]*display:none/);
     expect(css).not.toContain("red;");
     expect(css).not.toMatch(/body\s*\{/);
     // the whole node produced nothing, so it has no rule at all
@@ -855,20 +861,21 @@ describe("widget registry", () => {
   );
 
   it.each(manifest().map((m) => [m.type, m] as const))(
-    "%s: visibleIf references a sibling field",
+    "%s: visibleIf references a known field",
     (_type: string, meta: any) => {
+      // Renderer and builder evaluate visibleIf against design + content
+      // merged (`_design`), so a design option may depend on a content
+      // toggle (carousel options → `useCarousel`) and vice versa.
+      const keys = new Set(
+        [...meta.contentSchema, ...(meta.designSchema ?? [])].map((f) => f.key),
+      );
       for (const fields of [meta.contentSchema, meta.designSchema ?? []]) {
-        const keys = new Set(fields.map((f) => f.key));
         for (const f of fields) {
           if (f.visibleIf) expect(keys.has(f.visibleIf.key)).toBe(true);
         }
       }
       for (const p of meta.parts ?? []) {
-        if (p.visibleIf) {
-          expect(
-            meta.designSchema?.some((f) => f.key === p.visibleIf!.key),
-          ).toBe(true);
-        }
+        if (p.visibleIf) expect(keys.has(p.visibleIf.key)).toBe(true);
       }
     },
   );
@@ -1053,7 +1060,7 @@ describe("compileCardTheme", () => {
     );
     expect(css).toContain("@layer ts-override");
     expect(css).toContain("--c-primary:#E11D48");
-    expect(css).toContain("--f-heading:Poppins");
+    expect(css).toContain("--f-heading:'Poppins', sans-serif");
     expect(css).toContain("--r-md:20px");
     expect(css).toContain("--sp-4:24px");
   });
@@ -1173,13 +1180,15 @@ describe("composite widgets — layout subtree", () => {
   });
 
   // ── Validate: the designer-authored subtree is guarded ──
-  it("rejects a layout whose root is not a frame", () => {
+  // Atomic widgets legitimately use a leaf root (IMAGE's layout root IS the
+  // <img>), so the guard is "a root with children must be a container".
+  it("rejects a layout root that is a leaf but has children", () => {
     const def = blankDefinition("t");
     def.root.children = [compositeButton()];
     (def.root.children[0] as WidgetNode).layout!.tag = "text" as ElementNode["tag"];
     const r = validateDefinition(def);
     expect(r.ok).toBe(false);
-    expect(r.errors.some((e: any) => /tag "frame"/.test(e.message))).toBe(true);
+    expect(r.errors.some((e: any) => /cannot have children/.test(e.message))).toBe(true);
   });
 
   it("accepts a well-formed frame layout (no .layout errors)", () => {
@@ -1261,5 +1270,130 @@ describe("Render Layer Security", () => {
     const html = renderToStaticMarkup(React.createElement(NodeRenderer, { node, content: {}, ctx }));
     expect(html).not.toContain("evil.com");
     expect(html).not.toContain("iframe");
+  });
+});
+
+// ─── Regressions (audit 2026-10) ─────────────────────────────────────────────
+
+import { CardRenderer } from "./render/CardRenderer";
+import { safeHref, sanitizeHtml } from "./render/sanitize";
+import { collectWidgets } from "./types/node";
+import { getWidgetMeta } from "./widgets/registry";
+
+function renderCard(def: TemplateDefinition, content: any = {}, card: any = {}) {
+  return renderToStaticMarkup(
+    React.createElement(CardRenderer as any, {
+      definition: def,
+      content,
+      card,
+      links: [],
+      isEditing: false,
+    }),
+  );
+}
+
+function widgetDef(type: string, content?: any, design?: any): TemplateDefinition {
+  const meta = getWidgetMeta(type)!;
+  const def = blankDefinition("t");
+  def.root.children = [
+    {
+      kind: "widget",
+      id: "w1",
+      widget: type,
+      key: "k1",
+      label: type,
+      defaultContent: content ?? meta.defaultContent,
+      design: design ?? meta.defaultDesign,
+    } as WidgetNode,
+  ];
+  return def;
+}
+
+describe("server-side sanitization (no DOM)", () => {
+  it("strips event handlers and scripts from rich text during SSR", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(NodeRenderer, {
+        node: { kind: "element", id: "rt", tag: "richtext", props: { html: '<p>hi<img src=x onerror="alert(1)"><script>alert(2)</script></p>' } } as any,
+        content: {},
+        ctx: { isEditing: false, track: () => {} } as any,
+      }),
+    );
+    expect(html).toContain("<p>hi");
+    expect(html).not.toContain("onerror");
+    expect(html).not.toContain("script");
+  });
+
+  it("neutralises javascript: links and keeps safe ones", () => {
+    expect(sanitizeHtml('<a href="javascript:alert(1)">x</a>')).toBe("<a>x</a>");
+    expect(sanitizeHtml('<a href="https://x.com" target="_blank">x</a>')).toContain('rel="noopener noreferrer"');
+    expect(safeHref("JaVa\tScRiPt:alert(1)")).toBe(null);
+    expect(safeHref("//evil.com")).toBe(null);
+    expect(safeHref("tel:+15550100")).toBe("tel:+15550100");
+  });
+
+  it("drops mXSS-style nesting instead of re-emitting it", () => {
+    const out = sanitizeHtml('<svg><style><img src=x onerror=alert(1)></style></svg><p>ok</p>');
+    expect(out).not.toContain("onerror");
+    expect(out).toContain("<p>ok</p>");
+  });
+});
+
+describe("template props are not a raw-HTML channel", () => {
+  it("rejects and does not render props.dangerouslySetInnerHTML", () => {
+    const def = blankDefinition("t");
+    def.root.children = [
+      { kind: "element", id: "x1", tag: "frame", props: { dangerouslySetInnerHTML: { __html: "<img src=x onerror=alert(1)>" } } as any },
+    ];
+    expect(validateDefinition(def).ok).toBe(false);
+    expect(renderCard(def)).not.toContain("onerror");
+  });
+
+  it("does not let props.as turn a frame into <script>", () => {
+    const def = blankDefinition("t");
+    def.root.children = [{ kind: "element", id: "x2", tag: "frame", props: { as: "script" } } as any];
+    expect(validateDefinition(def).ok).toBe(false);
+    expect(renderCard(def)).not.toContain("<script");
+  });
+});
+
+describe("widget wrappers don't inherit the template root's rule", () => {
+  it("widget wrapper carries .n<widgetId>, never .nroot", () => {
+    const html = renderCard(widgetDef("TITLE"));
+    expect(html).toMatch(/class="nw1[^"]*"/);
+    // Only the template root itself may carry `nroot`.
+    expect(html.match(/\bnroot\b/g)?.length).toBe(1);
+  });
+});
+
+describe("business hours & appointment layouts", () => {
+  it("shows weekday names, a time range and Closed", () => {
+    const html = renderCard(widgetDef("BUSINESS_HOURS"));
+    expect(html).toContain("Monday");
+    expect(html).toContain("9:00 AM – 5:00 PM");
+    expect(html).toContain("Closed");
+  });
+
+  it("respects the 24h time format", () => {
+    const meta = getWidgetMeta("BUSINESS_HOURS")!;
+    const html = renderCard(widgetDef("BUSINESS_HOURS", meta.defaultContent, { ...meta.defaultDesign, timeFormat: "24h" }));
+    expect(html).toContain("09:00 – 17:00");
+  });
+
+  it("appointment button links to the booking flow and shows its label", () => {
+    const content = { title: "Book", buttonLabel: "Choose a time", profile: { slug: "intro-call" } };
+    const html = renderCard(widgetDef("APPOINTMENT", content), { k1: content });
+    expect(html).toContain('href="/appt/intro-call"');
+    expect(html).toContain("Choose a time");
+  });
+});
+
+describe("nested widgets", () => {
+  it("collectWidgets finds a widget placed inside another widget's layout", () => {
+    const def = blankDefinition("t");
+    const layout = JSON.parse(JSON.stringify(getWidgetMeta("PROFILE")!.defaultLayout));
+    layout.children.push({ kind: "widget", id: "wcb", widget: "CONNECT_BUTTONS", key: "cb", label: "CB" });
+    def.root.children = [{ kind: "widget", id: "wp", widget: "PROFILE", key: "profile", label: "P", layout } as WidgetNode];
+    expect(collectWidgets(def.root).map((w) => w.key)).toEqual(["profile", "cb"]);
+    expect(renderCard(def)).toContain('data-widget="CONNECT_BUTTONS"');
   });
 });
