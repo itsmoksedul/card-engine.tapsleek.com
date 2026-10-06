@@ -241,7 +241,25 @@ function ElementRenderer({
         {items.map((item, index) => (
           <ElementRenderer
             key={item.id ?? index}
-            node={{ ...node, repeat: undefined }}
+            node={{
+              ...node,
+              repeat: undefined,
+              // A repeater over the card's links stamps each row's id so the
+              // card page's click beacon can attribute LINK_CLICKs per link.
+              ...(node.repeat?.source === "self" &&
+              node.repeat.path === "links" &&
+              typeof item?.id === "string"
+                ? {
+                    props: {
+                      ...(node.props ?? {}),
+                      "data-link-id": item.id,
+                      ...(typeof item.type === "string"
+                        ? { "data-link-type": item.type }
+                        : {}),
+                    },
+                  }
+                : {}),
+            }}
             content={content}
             ctx={{ ...ctx, selfData: item, repeatIndex: index }}
           />
@@ -814,6 +832,7 @@ function WidgetRenderer({
       props: {
         ...(layout.props || {}),
         "data-widget": node.widget,
+        ...(node.key ? { "data-widget-key": node.key } : {}),
         ...(layoutClasses ? { className: layoutClasses } : {}),
       },
       style: {
@@ -889,6 +908,7 @@ function WidgetRenderer({
       className={`n${node.id}`}
       data-node-id={ctx.isEditing ? node.id : undefined}
       data-widget={node.widget}
+      data-widget-key={node.key || undefined}
     >
       <Widget
         content={widgetContent}

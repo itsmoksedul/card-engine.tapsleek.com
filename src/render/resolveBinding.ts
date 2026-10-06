@@ -179,10 +179,34 @@ function formatValue(
         ? `/appt/${encodeURIComponent(slug)}`
         : undefined;
     }
+    // MAP widget. Each returns "" when switched off or without an address so
+    // the node's `hideIfEmpty` removes it.
+    case "mapAddress": {
+      if (design?.showAddress === false) return "";
+      return typeof value === "string" ? value.trim() : "";
+    }
+    case "mapEmbed": {
+      const address = typeof value === "string" ? value.trim() : "";
+      if (!address) return "";
+      const height = MAP_HEIGHTS[design?.height as string] ?? MAP_HEIGHTS.md;
+      const mapType = design?.mapType === "k" ? "k" : "m"; // k=satellite
+      const src = `https://maps.google.com/maps?q=${encodeURIComponent(address)}&t=${mapType}&z=14&ie=UTF8&iwloc=&output=embed`;
+      // Goes through the "embed" sanitizer, which re-checks the iframe host.
+      return `<iframe src="${src}" width="100%" height="${height}" frameborder="0" loading="lazy" title="Map" allowfullscreen></iframe>`;
+    }
+    case "mapDirectionsUrl": {
+      if (design?.showDirectionsBtn === false) return "";
+      const address = typeof value === "string" ? value.trim() : "";
+      return address
+        ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`
+        : "";
+    }
     default:
       return value;
   }
 }
+
+const MAP_HEIGHTS: Record<string, string> = { sm: "200", md: "300", lg: "450" };
 
 function base(): string {
   const url =

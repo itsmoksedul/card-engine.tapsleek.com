@@ -15,6 +15,64 @@ export const meta: WidgetModule['meta'] = {
     { key: 'mapWrapper', label: 'Map Wrapper', kind: 'container' },
     { key: 'directionsBtn', label: 'Directions Button', kind: 'button' },
   ],
+  // A real layout tree so every piece is its own layer in the builder (hide,
+  // duplicate, wrap, delete). Node ids match the part keys above, so styles
+  // saved against the old `.p-<part>` classes keep applying; the base styles
+  // stay in `defaultPartStyles`, like CTA_BUTTON.
+  defaultLayout: {
+    id: 'root',
+    kind: 'element',
+    tag: 'stack',
+    children: [
+      {
+        id: 'label',
+        kind: 'element',
+        tag: 'text',
+        name: 'Label',
+        hideIfEmpty: true,
+        bind: { source: 'self', path: 'label' },
+      },
+      {
+        id: 'address',
+        kind: 'element',
+        tag: 'text',
+        name: 'Address',
+        hideIfEmpty: true,
+        bind: { source: 'self', path: 'address', format: 'mapAddress' },
+      },
+      {
+        id: 'mapWrapper',
+        kind: 'element',
+        tag: 'embed',
+        name: 'Map',
+        hideIfEmpty: true,
+        bind: { source: 'self', path: 'address', format: 'mapEmbed' },
+      },
+      {
+        id: 'directionsBtn',
+        kind: 'element',
+        tag: 'link',
+        name: 'Directions Button',
+        hideIfEmpty: true,
+        props: { target: '_blank', rel: 'noopener noreferrer' },
+        bind: { source: 'self', path: 'address', format: 'mapDirectionsUrl' },
+        children: [
+          {
+            id: 'icon',
+            kind: 'element',
+            tag: 'icon',
+            props: { name: 'Navigation' },
+          },
+          {
+            id: 'directionsText',
+            kind: 'element',
+            tag: 'text',
+            props: { text: 'Get Directions' },
+          },
+        ],
+      },
+    ],
+  },
   designSchema: [
     {
       key: 'height', type: 'select', label: 'Map Height',
@@ -68,6 +126,8 @@ export const meta: WidgetModule['meta'] = {
     mapWrapper: {
       base: {
         width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
         overflow: 'hidden',
         borderRadius: { all: '{radius.md}' },
         background: { kind: 'color', color: '{color.border}' }

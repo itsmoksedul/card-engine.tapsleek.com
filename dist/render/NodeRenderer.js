@@ -180,7 +180,25 @@ function ElementRenderer({ node, content, ctx, }) {
         const items = (0, resolveBinding_1.resolveBinding)(node.repeat, ctx.card, content, ctx.selfData);
         if (!Array.isArray(items))
             return null;
-        return ((0, jsx_runtime_1.jsx)(react_1.default.Fragment, { children: items.map((item, index) => ((0, jsx_runtime_1.jsx)(ElementRenderer, { node: { ...node, repeat: undefined }, content: content, ctx: { ...ctx, selfData: item, repeatIndex: index } }, item.id ?? index))) }));
+        return ((0, jsx_runtime_1.jsx)(react_1.default.Fragment, { children: items.map((item, index) => ((0, jsx_runtime_1.jsx)(ElementRenderer, { node: {
+                    ...node,
+                    repeat: undefined,
+                    // A repeater over the card's links stamps each row's id so the
+                    // card page's click beacon can attribute LINK_CLICKs per link.
+                    ...(node.repeat?.source === "self" &&
+                        node.repeat.path === "links" &&
+                        typeof item?.id === "string"
+                        ? {
+                            props: {
+                                ...(node.props ?? {}),
+                                "data-link-id": item.id,
+                                ...(typeof item.type === "string"
+                                    ? { "data-link-type": item.type }
+                                    : {}),
+                            },
+                        }
+                        : {}),
+                }, content: content, ctx: { ...ctx, selfData: item, repeatIndex: index } }, item.id ?? index))) }));
     }
     const bound = (0, resolveBinding_1.resolveBinding)(node.bind, ctx.card, content, ctx.selfData);
     const props = (node.props ?? {});
@@ -638,6 +656,7 @@ function WidgetRenderer({ node, content, ctx, }) {
             props: {
                 ...(layout.props || {}),
                 "data-widget": node.widget,
+                ...(node.key ? { "data-widget-key": node.key } : {}),
                 ...(layoutClasses ? { className: layoutClasses } : {}),
             },
             style: {
@@ -681,7 +700,7 @@ function WidgetRenderer({ node, content, ctx, }) {
     }
     const design = node.design ?? {};
     const cls = (part) => `p-${part} n${part}`;
-    const renderedWidget = ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, "data-widget": node.widget, children: (0, jsx_runtime_1.jsx)(Widget, { content: widgetContent, design: design, cls: cls, ctx: widgetCtx }) }));
+    const renderedWidget = ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, "data-widget": node.widget, "data-widget-key": node.key || undefined, children: (0, jsx_runtime_1.jsx)(Widget, { content: widgetContent, design: design, cls: cls, ctx: widgetCtx }) }));
     if (!ctx.isEditing &&
         Array.isArray(ctx.blocks) &&
         node.id === ctx.placeholderId &&

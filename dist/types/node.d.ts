@@ -47,7 +47,7 @@ export type Binding = {
  * computed text (e.g. "9:00 AM – 5:00 PM" or "Closed") without a custom
  * renderer, so the parts stay individually selectable/styleable in the builder.
  */
-export type BindingFormat = 'weekday' | 'hoursRange' | 'appointmentUrl';
+export type BindingFormat = 'weekday' | 'hoursRange' | 'appointmentUrl' | 'mapAddress' | 'mapEmbed' | 'mapDirectionsUrl';
 export declare const BINDING_FORMATS: BindingFormat[];
 export interface NodeA11y {
     role?: string;

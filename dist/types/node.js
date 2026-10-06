@@ -56,6 +56,9 @@ exports.BINDING_FORMATS = [
     'weekday',
     'hoursRange',
     'appointmentUrl',
+    'mapAddress',
+    'mapEmbed',
+    'mapDirectionsUrl',
 ];
 // ─── Traversal helpers ───────────────────────────────────────────────────────
 function isElement(n) {
