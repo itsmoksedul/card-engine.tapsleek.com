@@ -15,6 +15,8 @@ export interface RenderCtx {
     placeholderId?: string | null;
     injectBefore?: boolean;
     isRenderingUserBlocks?: boolean;
+    /** Template elements that would be empty chrome on this card — skipped. */
+    collapsedIds?: Set<string>;
 }
 export interface NodeRendererProps {
     node: Node;

@@ -4,6 +4,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import React from "react";
 import type { ElementNode, Node, SlotNode, WidgetNode } from "../types/node";
 import { getWidgetMeta } from "../widgets";
+import { isCoreWidget, isWidgetHiddenOnCard } from "./card-visibility";
 import { resolveBinding } from "./resolveBinding";
 import { safeHref, sanitizeHtml } from "./sanitize";
 import { WIDGET_RENDERERS } from "./widgets";
@@ -24,6 +25,8 @@ export interface RenderCtx {
   placeholderId?: string | null;
   injectBefore?: boolean;
   isRenderingUserBlocks?: boolean;
+  /** Template elements that would be empty chrome on this card — skipped. */
+  collapsedIds?: Set<string>;
 }
 
 export interface NodeRendererProps {
@@ -33,6 +36,7 @@ export interface NodeRendererProps {
 }
 
 export function NodeRenderer({ node, content, ctx }: NodeRendererProps) {
+  if (ctx.collapsedIds?.has(node.id)) return null;
   if (node.kind === "element")
     return <ElementRenderer node={node} content={content} ctx={ctx} />;
   if (node.kind === "widget")
@@ -739,105 +743,31 @@ function WidgetRenderer({
     return <GatedWidgetUpsell node={node} ctx={ctx} />;
   }
 
-  // If rendering a user card (not editing template in builder) and blocks array is passed:
+  // On a user card (blocks passed, not the builder): optional block widgets
+  // (FAQ, Gallery, Contact Form…) only render through the user's blocks, and
+  // links/social widgets with nothing to show disappear.
   if (!ctx.isEditing && Array.isArray(ctx.blocks)) {
-    const w = node.widget?.toUpperCase() || "";
-
-    // Primary card widgets are driven by card data (links, profile, vcard, etc.):
-    const isCoreWidget = [
-      "PROFILE",
-      "CONNECT_BUTTONS",
-      "HEADER",
-      "NAV",
-      "CONTACT_LINKS",
-      "CONTACT_BUTTONS",
-      "LINK_BUTTONS",
-      "CUSTOM_LINKS",
-      "LINKS",
-      "SOCIAL_ICONS",
-      "SOCIAL_LINKS",
-      "SOCIAL",
-      "COPYRIGHT",
-      "VCARD_BUTTON",
-      "SHARE_BUTTON",
-    ].includes(w);
-
-    if (isCoreWidget) {
-      // CONTACT_LINKS / LINK_BUTTONS / LINKS check if user has links or blocks
-      if (
-        [
-          "CONTACT_LINKS",
-          "CONTACT_BUTTONS",
-          "LINK_BUTTONS",
-          "CUSTOM_LINKS",
-          "LINKS",
-        ].includes(w)
-      ) {
-        const hasLinks = Array.isArray(ctx.links) && ctx.links.length > 0;
-        const hasBlock = ctx.blocks.some(
-          (b) =>
-            b.type === "LINKS" ||
-            b.type === "LINK_BUTTONS" ||
-            b.type === "CONTACT_LINKS" ||
-            b.widget === "LINKS" ||
-            b.widget === "CONTACT_LINKS",
-        );
-        if (!hasLinks && !hasBlock) return null;
-      }
-      // SOCIAL_ICONS check if user has social links or blocks
-      else if (["SOCIAL_ICONS", "SOCIAL_LINKS", "SOCIAL"].includes(w)) {
-        const hasSocialLinks =
-          Array.isArray(ctx.links) &&
-          ctx.links.some(
-            (l) =>
-              l.group === "social" ||
-              [
-                "instagram",
-                "facebook",
-                "twitter",
-                "x",
-                "linkedin",
-                "youtube",
-                "tiktok",
-                "github",
-                "whatsapp",
-                "telegram",
-                "discord",
-                "pinterest",
-              ].some((platform) =>
-                (l.type || l.title || l.url || "")
-                  .toLowerCase()
-                  .includes(platform),
-              ),
-          );
-        const hasBlock = ctx.blocks.some(
-          (b) =>
-            b.type === "SOCIAL" ||
-            b.type === "SOCIAL_ICONS" ||
-            b.widget === "SOCIAL",
-        );
-        if (!hasSocialLinks && !hasBlock) return null;
-      }
-    } else {
-      // Optional block widgets (FAQ, Gallery, Contact Form, Video, Custom HTML, etc.)
-      if (!ctx.isRenderingUserBlocks) {
-        if (
-          node.id === ctx.placeholderId &&
-          ctx.renderUserBlocks &&
-          !ctx.injectBefore
-        ) {
-          return <>{ctx.renderUserBlocks()}</>;
-        }
-        return null;
-      }
+    if (
+      !isCoreWidget(node.widget) &&
+      !ctx.isRenderingUserBlocks &&
+      node.id === ctx.placeholderId &&
+      ctx.renderUserBlocks &&
+      !ctx.injectBefore
+    ) {
+      return <>{ctx.renderUserBlocks()}</>;
     }
+    if (isWidgetHiddenOnCard(node, ctx)) return null;
   }
 
   // Tag every analytics event from this widget with its stable node key so
   // the backend can attribute clicks to the specific widget instance
   // (dynamic per-widget analytics).
+  //
+  // `collapsedIds` holds TEMPLATE ids; a widget's layout reuses short ids
+  // ("root", "title", "item"…) that could collide, so it stops here.
   const widgetCtx: RenderCtx = {
     ...ctx,
+    collapsedIds: undefined,
     track: (event: Record<string, unknown>) =>
       ctx.track({ widgetKey: node.key, ...event }),
   };

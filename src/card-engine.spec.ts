@@ -1397,3 +1397,47 @@ describe("nested widgets", () => {
     expect(renderCard(def)).toContain('data-widget="CONNECT_BUTTONS"');
   });
 });
+
+describe("user card: empty section frames collapse", () => {
+  // root > [ profile section (PROFILE), faq section (heading + FAQ) ]
+  function sectionDef(): TemplateDefinition {
+    const def = blankDefinition("t");
+    def.root.children = [
+      {
+        kind: "element", id: "secProfile", tag: "frame",
+        children: [{ kind: "widget", id: "wp", widget: "PROFILE", key: "profile", label: "P" } as WidgetNode],
+      } as ElementNode,
+      {
+        kind: "element", id: "secFaq", tag: "frame",
+        children: [
+          { kind: "element", id: "secTitle", tag: "heading", props: { text: "Section title" } } as ElementNode,
+          { kind: "widget", id: "wf", widget: "FAQ", key: "faq", label: "FAQ", defaultContent: getWidgetMeta("FAQ")!.defaultContent } as WidgetNode,
+        ],
+      } as ElementNode,
+    ];
+    return def;
+  }
+  const render = (blocks: any[] | undefined, isEditing = false) =>
+    renderToStaticMarkup(
+      React.createElement(CardRenderer as any, {
+        definition: sectionDef(), content: {}, card: { firstName: "A" }, links: [], blocks, isEditing,
+      }),
+    );
+
+  it("drops a section whose only widget is hidden (no blocks)", () => {
+    const html = render([]);
+    expect(html).not.toContain("nsecFaq");
+    expect(html).not.toContain("Section title");
+    expect(html).toContain("nsecProfile");
+  });
+
+  it("keeps the section when it hosts the user's blocks", () => {
+    const html = render([{ id: "b1", widget: "RICH_TEXT", content: { html: "<p>Hi</p>" } }]);
+    expect(html).toContain("nsecFaq");
+  });
+
+  it("builder / template preview (no blocks prop) still renders every section", () => {
+    expect(render(undefined)).toContain("nsecFaq");
+    expect(render([], true)).toContain("nsecFaq");
+  });
+});

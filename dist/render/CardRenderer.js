@@ -8,6 +8,7 @@ const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = __importDefault(require("react"));
 const node_1 = require("../types/node");
 const BlockRenderer_1 = require("./BlockRenderer");
+const card_visibility_1 = require("./card-visibility");
 const NodeRenderer_1 = require("./NodeRenderer");
 function CardRenderer({ definition, content, card, links, isEditing, gatedWidgetKeys, onTrack, onActionClick, blocks, theme, }) {
     const placeholder = react_1.default.useMemo(() => {
@@ -23,22 +24,9 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
                 if (w === 'COPYRIGHT' && !copyrightId) {
                     copyrightId = n.id;
                 }
-                const isCoreWidget = [
-                    'PROFILE',
-                    'CONNECT_BUTTONS',
-                    'HEADER',
-                    'NAV',
-                    'CONTACT_LINKS',
-                    'CONTACT_BUTTONS',
-                    'LINK_BUTTONS',
-                    'CUSTOM_LINKS',
-                    'LINKS',
-                    'SOCIAL_ICONS',
-                    'SOCIAL_LINKS',
-                    'SOCIAL',
-                    'COPYRIGHT',
-                ].includes(w);
-                if (!isCoreWidget)
+                // Same core list the widget renderer uses — a widget it treats as core
+                // (e.g. VCARD_BUTTON) must never be picked to host the user's blocks.
+                if (!(0, card_visibility_1.isCoreWidget)(w))
                     optionalId = n.id;
             }
         });
@@ -48,6 +36,15 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
             return { id: copyrightId, injectBefore: true };
         return null;
     }, [definition.root, isEditing, blocks]);
+    // Section frames left empty once unused widgets are hidden (blank boxes).
+    const collapsedIds = react_1.default.useMemo(() => (0, card_visibility_1.collectCollapsedIds)(definition.root, {
+        links,
+        blocks,
+        isEditing,
+        gatedWidgetKeys,
+        placeholderId: placeholder?.id || null,
+        injectBefore: placeholder?.injectBefore || false,
+    }), [definition.root, links, blocks, isEditing, gatedWidgetKeys, placeholder]);
     const ctx = {
         card: { ...card, links: links ?? card?.links },
         links,
@@ -59,10 +56,16 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
         rootId: definition.root.id,
         placeholderId: placeholder?.id || null,
         injectBefore: placeholder?.injectBefore || false,
+        collapsedIds,
         renderUserBlocks: () => {
             if (!blocks || blocks.length === 0)
                 return null;
-            const blockCtx = { ...ctx, renderUserBlocks: undefined, isRenderingUserBlocks: true };
+            const blockCtx = {
+                ...ctx,
+                renderUserBlocks: undefined,
+                isRenderingUserBlocks: true,
+                collapsedIds: undefined,
+            };
             return ((0, jsx_runtime_1.jsx)(react_1.default.Fragment, { children: blocks
                     .filter((b) => b.hidden !== true && b.isVisible !== false)
                     .map((b) => {

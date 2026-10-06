@@ -3,6 +3,7 @@ import type { BlockInstance, CardTheme } from '../types/block';
 import type { TemplateDefinition } from '../types/definition';
 import { isWidget, walkNodes } from '../types/node';
 import { BlockRenderer } from './BlockRenderer';
+import { collectCollapsedIds, isCoreWidget } from './card-visibility';
 import { NodeRenderer, type RenderCtx } from './NodeRenderer';
 
 export interface CardRendererProps {
@@ -41,28 +42,29 @@ export function CardRenderer({
         if (w === 'COPYRIGHT' && !copyrightId) {
           copyrightId = n.id;
         }
-        const isCoreWidget = [
-          'PROFILE',
-          'CONNECT_BUTTONS',
-          'HEADER',
-          'NAV',
-          'CONTACT_LINKS',
-          'CONTACT_BUTTONS',
-          'LINK_BUTTONS',
-          'CUSTOM_LINKS',
-          'LINKS',
-          'SOCIAL_ICONS',
-          'SOCIAL_LINKS',
-          'SOCIAL',
-          'COPYRIGHT',
-        ].includes(w);
-        if (!isCoreWidget) optionalId = n.id;
+        // Same core list the widget renderer uses — a widget it treats as core
+        // (e.g. VCARD_BUTTON) must never be picked to host the user's blocks.
+        if (!isCoreWidget(w)) optionalId = n.id;
       }
     });
     if (optionalId) return { id: optionalId, injectBefore: false };
     if (copyrightId) return { id: copyrightId, injectBefore: true };
     return null;
   }, [definition.root, isEditing, blocks]);
+
+  // Section frames left empty once unused widgets are hidden (blank boxes).
+  const collapsedIds = React.useMemo(
+    () =>
+      collectCollapsedIds(definition.root, {
+        links,
+        blocks,
+        isEditing,
+        gatedWidgetKeys,
+        placeholderId: placeholder?.id || null,
+        injectBefore: placeholder?.injectBefore || false,
+      }),
+    [definition.root, links, blocks, isEditing, gatedWidgetKeys, placeholder],
+  );
 
   const ctx: RenderCtx = {
     card: { ...card, links: links ?? card?.links },
@@ -75,9 +77,15 @@ export function CardRenderer({
     rootId: definition.root.id,
     placeholderId: placeholder?.id || null,
     injectBefore: placeholder?.injectBefore || false,
+    collapsedIds,
     renderUserBlocks: () => {
       if (!blocks || blocks.length === 0) return null;
-      const blockCtx: RenderCtx = { ...ctx, renderUserBlocks: undefined, isRenderingUserBlocks: true };
+      const blockCtx: RenderCtx = {
+        ...ctx,
+        renderUserBlocks: undefined,
+        isRenderingUserBlocks: true,
+        collapsedIds: undefined,
+      };
       return (
         <React.Fragment>
           {blocks
