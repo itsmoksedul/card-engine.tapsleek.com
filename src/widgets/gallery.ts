@@ -260,7 +260,7 @@ export const meta: WidgetModule["meta"] = {
           },
           children: [
             {
-              id: "image",
+              id: "image_1",
               kind: "element",
               tag: "image",
               name: "Image",
@@ -270,7 +270,7 @@ export const meta: WidgetModule["meta"] = {
               },
             },
             {
-              id: "caption",
+              id: "caption_1",
               kind: "element",
               tag: "text",
               name: "Caption",

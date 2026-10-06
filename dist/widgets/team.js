@@ -188,8 +188,8 @@ exports.meta = {
                         name: "Info",
                         style: { base: { display: "flex", flexDirection: "column", gap: "{space.1}" } },
                         children: [
-                            { id: "name", kind: "element", tag: "heading", name: "Name", props: { level: 4 }, bind: { source: "self", path: "name" }, style: { base: { fontSize: "{size.base}", fontWeight: 600, color: "{color.text}" } } },
-                            { id: "role", kind: "element", tag: "text", name: "Role", bind: { source: "self", path: "role" }, style: { base: { fontSize: "{size.sm}", color: "{color.primary}", fontWeight: 500 } } },
+                            { id: "name_1", kind: "element", tag: "heading", name: "Name", props: { level: 4 }, bind: { source: "self", path: "name" }, style: { base: { fontSize: "{size.base}", fontWeight: 600, color: "{color.text}" } } },
+                            { id: "role_1", kind: "element", tag: "text", name: "Role", bind: { source: "self", path: "role" }, style: { base: { fontSize: "{size.sm}", color: "{color.primary}", fontWeight: 500 } } },
                         ]
                     }
                 ],

@@ -122,7 +122,7 @@ export const meta: WidgetModule['meta'] = {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backdropBlur: '{blur.sm}'
+        backdropBlur: '4px'
       }
     },
     caption: { 

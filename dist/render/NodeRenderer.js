@@ -584,7 +584,11 @@ function mergeLayoutTrees(instance, defaultLayout) {
             return child;
         });
     }
-    else if (defaultLayout.children && defaultLayout.children.length > 0) {
+    else if (merged.children === undefined &&
+        defaultLayout.children &&
+        defaultLayout.children.length > 0) {
+        // Only fill children the instance never had. An explicit `[]` means the
+        // admin deleted them — refilling made the last child undeletable.
         merged.children = structuredClone(defaultLayout.children);
     }
     return merged;

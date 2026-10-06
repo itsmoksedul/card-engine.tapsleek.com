@@ -260,7 +260,7 @@ exports.meta = {
                 },
                 children: [
                     {
-                        id: "image",
+                        id: "image_1",
                         kind: "element",
                         tag: "image",
                         name: "Image",
@@ -270,7 +270,7 @@ exports.meta = {
                         },
                     },
                     {
-                        id: "caption",
+                        id: "caption_1",
                         kind: "element",
                         tag: "text",
                         name: "Caption",
