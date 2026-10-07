@@ -20,6 +20,8 @@ export interface RegisteredWidget {
 }
 /** Every registered type, in palette order. */
 export declare const WIDGET_TYPES: string[];
+export declare const WIDGET_ALIASES: Record<string, string>;
+export declare function normalizeWidgetType(type: string): string;
 export declare function getWidget(type: string): RegisteredWidget | undefined;
 export declare function getWidgetMeta(type: string): AnyWidgetMeta | undefined;
 export declare function hasWidget(type: string): boolean;

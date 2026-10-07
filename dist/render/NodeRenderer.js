@@ -333,17 +333,27 @@ function ElementRenderer({ node, content, ctx, }) {
             if (!url)
                 break;
             // Very basic YouTube detection for embed mapping
-            if (url.includes("youtube.com/watch") || url.includes("youtu.be/")) {
-                const vid = url.includes("v=")
-                    ? new URL(url).searchParams.get("v")
-                    : url.split("/").pop();
-                const src = `https://www.youtube.com/embed/${vid}`;
-                children = ((0, jsx_runtime_1.jsx)("iframe", { src: src, style: { width: "100%", height: "100%", border: 0 }, allowFullScreen: true }));
+            if (url.includes("youtube.com") ||
+                url.includes("youtube-nocookie.com") ||
+                url.includes("youtu.be/")) {
+                let vid = "";
+                try {
+                    const parsed = new URL(url);
+                    vid =
+                        parsed.searchParams.get("v") ||
+                            parsed.pathname.split("/").filter(Boolean).pop() ||
+                            "";
+                }
+                catch {
+                    vid = url.split("/").pop() || "";
+                }
+                const src = `https://www.youtube-nocookie.com/embed/${vid}`;
+                children = ((0, jsx_runtime_1.jsx)("iframe", { src: src, style: { width: "100%", height: "100%", border: 0 }, allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share", allowFullScreen: true, referrerPolicy: "strict-origin-when-cross-origin" }));
             }
             else if (url.includes("vimeo.com/")) {
                 const vid = url.split("/").pop();
                 const src = `https://player.vimeo.com/video/${vid}`;
-                children = ((0, jsx_runtime_1.jsx)("iframe", { src: src, style: { width: "100%", height: "100%", border: 0 }, allowFullScreen: true }));
+                children = ((0, jsx_runtime_1.jsx)("iframe", { src: src, style: { width: "100%", height: "100%", border: 0 }, allow: "autoplay; fullscreen; picture-in-picture", allowFullScreen: true, referrerPolicy: "strict-origin-when-cross-origin" }));
             }
             else {
                 children = ((0, jsx_runtime_1.jsx)("video", { src: url, poster: ctx.selfData?.thumbnail || undefined, controls: props.controls, autoPlay: props.autoplay, loop: props.loop, style: { width: "100%", height: "100%", objectFit: "cover" } }));

@@ -16,9 +16,11 @@ const NodeRenderer_1 = require("./NodeRenderer");
  * read `ctx.card` / `ctx.links`.
  */
 function BlockRenderer({ definition, block, ctx, }) {
-    const Widget = widgets_1.WIDGET_RENDERERS[block.widget];
-    const { design, layout } = (0, resolve_design_1.resolveBlockDesign)(definition, block.widget);
-    const meta = (0, registry_1.getWidgetMeta)(block.widget);
+    const rawType = block.widget || block.type || '';
+    const widgetType = (0, registry_1.normalizeWidgetType)(rawType);
+    const Widget = widgets_1.WIDGET_RENDERERS[widgetType];
+    const { design, layout } = (0, resolve_design_1.resolveBlockDesign)(definition, widgetType);
+    const meta = (0, registry_1.getWidgetMeta)(widgetType);
     const content = block.content ?? meta?.defaultContent ?? {};
     const mergedDesign = { ...(design || {}), ...(content || {}) };
     if (layout) {

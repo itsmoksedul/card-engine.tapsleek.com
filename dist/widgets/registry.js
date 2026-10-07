@@ -47,7 +47,8 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.WIDGET_TYPES = void 0;
+exports.WIDGET_ALIASES = exports.WIDGET_TYPES = void 0;
+exports.normalizeWidgetType = normalizeWidgetType;
 exports.getWidget = getWidget;
 exports.getWidgetMeta = getWidgetMeta;
 exports.hasWidget = hasWidget;
@@ -129,14 +130,33 @@ const MODULES = [
 const BY_TYPE = new Map(MODULES.map((m) => [m.meta.type, m]));
 /** Every registered type, in palette order. */
 exports.WIDGET_TYPES = MODULES.map((m) => m.meta.type);
+exports.WIDGET_ALIASES = {
+    MAPS: 'MAP',
+    HOURS: 'BUSINESS_HOURS',
+    REVIEWS: 'TESTIMONIALS',
+    BUTTON: 'CTA_BUTTON',
+    SOCIAL_ICON: 'SOCIAL_ICONS',
+    HR: 'DIVIDER',
+    SPACE: 'SPACER',
+    HTML_EMBED: 'EMBED',
+    VCARD: 'VCARD_BUTTON',
+    LINKS: 'CONTACT_LINKS',
+};
+function normalizeWidgetType(type) {
+    const upper = (type || '').toUpperCase();
+    return exports.WIDGET_ALIASES[upper] || upper;
+}
 function getWidget(type) {
-    return BY_TYPE.get(type);
+    const norm = normalizeWidgetType(type);
+    return BY_TYPE.get(norm) ?? BY_TYPE.get(type);
 }
 function getWidgetMeta(type) {
-    return BY_TYPE.get(type)?.meta;
+    const norm = normalizeWidgetType(type);
+    return BY_TYPE.get(norm)?.meta ?? BY_TYPE.get(type)?.meta;
 }
 function hasWidget(type) {
-    return BY_TYPE.has(type);
+    const norm = normalizeWidgetType(type);
+    return BY_TYPE.has(norm) || BY_TYPE.has(type);
 }
 /**
  * JSON-safe descriptor list. This is what the builder palette renders and what

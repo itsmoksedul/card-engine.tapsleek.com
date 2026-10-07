@@ -192,7 +192,7 @@ function formatValue(
       const mapType = design?.mapType === "k" ? "k" : "m"; // k=satellite
       const src = `https://maps.google.com/maps?q=${encodeURIComponent(address)}&t=${mapType}&z=14&ie=UTF8&iwloc=&output=embed`;
       // Goes through the "embed" sanitizer, which re-checks the iframe host.
-      return `<iframe src="${src}" width="100%" height="${height}" frameborder="0" loading="lazy" title="Map" allowfullscreen></iframe>`;
+      return `<iframe src="${src}" width="100%" height="${height}" style="border:0;width:100%;height:${height}px;display:block" frameborder="0" loading="lazy" title="Map" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
     }
     case "mapDirectionsUrl": {
       if (design?.showDirectionsBtn === false) return "";

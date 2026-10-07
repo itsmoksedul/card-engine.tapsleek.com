@@ -5,7 +5,7 @@ const jsx_runtime_1 = require("react/jsx-runtime");
 const shared_1 = require("./shared");
 const NativeCarousel_1 = require("../components/NativeCarousel");
 function getYoutubeId(url) {
-    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+    const match = url.match(/(?:youtu\.be\/|(?:www\.)?youtube(?:-nocookie)?\.com\/(?:embed\/|v\/|shorts\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
     return match ? match[1] : null;
 }
 function VideoGalleryRender({ design, content, cls, ctx }) {

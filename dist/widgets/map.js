@@ -146,6 +146,7 @@ exports.meta = {
                 borderRadius: { all: '{radius.full}' },
                 fontWeight: 600,
                 margin: { t: '{space.2}' },
+                textDecoration: 'none',
                 transition: { property: ['background-color', 'transform'], duration: 150, easing: 'ease' }
             }
         }

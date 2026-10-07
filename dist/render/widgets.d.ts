@@ -62,6 +62,15 @@ export declare const WIDGET_RENDERERS: {
     VIDEO_GALLERY: typeof VideoGalleryRender;
     EMBED: typeof EmbedRender;
     MAP: typeof MapRender;
+    MAPS: typeof MapRender;
+    HOURS: typeof BusinessHoursRender;
+    REVIEWS: typeof TestimonialsRender;
+    BUTTON: typeof CtaButtonRender;
+    SOCIAL_ICON: typeof SocialIconsRender;
+    HR: typeof DividerRender;
+    SPACE: typeof SpacerRender;
+    HTML_EMBED: typeof EmbedRender;
+    VCARD: typeof CtaButtonRender;
     STATS: typeof StatsRender;
     TIMELINE: typeof TimelineRender;
     PRICE_LIST: typeof PriceListRender;

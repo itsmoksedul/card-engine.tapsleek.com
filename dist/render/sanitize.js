@@ -128,9 +128,9 @@ function iframeAttrs(attribs) {
         .filter((s) => IFRAME_ALLOW.has(s));
     if (allow.length)
         out.push(`allow="${allow.join("; ")}"`);
-    for (const key of ["width", "height", "title", "loading", "frameborder"]) {
+    for (const key of ["width", "height", "title", "loading", "frameborder", "style"]) {
         const v = attribs[key];
-        if (v !== undefined && /^[\w .%-]{0,100}$/.test(v))
+        if (v !== undefined && /^[\w .%:;=-]{0,200}$/.test(v))
             out.push(`${key}="${escapeAttr(v)}"`);
     }
     if ("allowfullscreen" in attribs)

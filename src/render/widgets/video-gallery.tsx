@@ -3,7 +3,7 @@ import { asArray, EmptyState, navProps, str, type WidgetRenderProps } from './sh
 import { NativeCarousel } from '../components/NativeCarousel';
 
 function getYoutubeId(url: string) {
-  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+  const match = url.match(/(?:youtu\.be\/|(?:www\.)?youtube(?:-nocookie)?\.com\/(?:embed\/|v\/|shorts\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
   return match ? match[1] : null;
 }
 

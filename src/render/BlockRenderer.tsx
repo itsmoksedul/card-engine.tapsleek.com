@@ -2,7 +2,7 @@ import React from 'react';
 import type { TemplateDefinition } from '../types/definition';
 import type { BlockInstance } from '../types/block';
 import { resolveBlockDesign, blockClass } from '../blocks/resolve-design';
-import { getWidgetMeta } from '../widgets/registry';
+import { getWidgetMeta, normalizeWidgetType } from '../widgets/registry';
 import { WIDGET_RENDERERS } from './widgets';
 import { NodeRenderer, type RenderCtx } from './NodeRenderer';
 
@@ -24,9 +24,11 @@ export function BlockRenderer({
   block: BlockInstance;
   ctx: RenderCtx;
 }) {
-  const Widget = WIDGET_RENDERERS[block.widget as keyof typeof WIDGET_RENDERERS] as any;
-  const { design, layout } = resolveBlockDesign(definition, block.widget);
-  const meta = getWidgetMeta(block.widget);
+  const rawType = block.widget || (block as any).type || '';
+  const widgetType = normalizeWidgetType(rawType);
+  const Widget = WIDGET_RENDERERS[widgetType as keyof typeof WIDGET_RENDERERS] as any;
+  const { design, layout } = resolveBlockDesign(definition, widgetType);
+  const meta = getWidgetMeta(widgetType);
   const content = (block.content as Record<string, unknown>) ?? meta?.defaultContent ?? {};
   const mergedDesign = { ...(design || {}), ...(content || {}) };
 

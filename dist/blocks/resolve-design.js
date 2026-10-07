@@ -25,11 +25,38 @@ function templateInstance(def, type) {
  * the card's template. Deterministic and pure.
  */
 function resolveBlockDesign(def, type) {
-    const inst = templateInstance(def, type);
-    const meta = (0, registry_1.getWidgetMeta)(type);
+    const normType = (type || '').toUpperCase();
+    const aliasMap = {
+        MAPS: 'MAP',
+        HOURS: 'BUSINESS_HOURS',
+        REVIEWS: 'TESTIMONIALS',
+        BUTTON: 'CTA_BUTTON',
+        SOCIAL_ICON: 'SOCIAL_ICONS',
+        HR: 'DIVIDER',
+        SPACE: 'SPACER',
+        HTML_EMBED: 'EMBED',
+        VCARD: 'VCARD_BUTTON',
+        LINKS: 'CONTACT_LINKS',
+    };
+    const targetType = aliasMap[normType] || normType;
+    const inst = templateInstance(def, targetType) ?? templateInstance(def, type);
+    const meta = (0, registry_1.getWidgetMeta)(targetType) ?? (0, registry_1.getWidgetMeta)(type);
+    // Deep-merge partStyles so parts omitted in template instances retain their widget defaults
+    const partStyles = { ...(meta?.defaultPartStyles ?? {}) };
+    if (inst?.partStyles) {
+        for (const [part, set] of Object.entries(inst.partStyles)) {
+            partStyles[part] = {
+                ...(partStyles[part] ?? {}),
+                ...(set ?? {}),
+                base: { ...(partStyles[part]?.base ?? {}), ...(set?.base ?? {}) },
+                sm: { ...(partStyles[part]?.sm ?? {}), ...(set?.sm ?? {}) },
+                md: { ...(partStyles[part]?.md ?? {}), ...(set?.md ?? {}) },
+            };
+        }
+    }
     return {
         design: { ...(meta?.defaultDesign ?? {}), ...(inst?.design ?? {}) },
-        partStyles: inst?.partStyles ?? meta?.defaultPartStyles ?? {},
+        partStyles,
         layout: inst?.layout ?? meta?.defaultLayout,
         rootStyle: inst?.rootStyle,
         rootHidden: inst?.rootHidden,

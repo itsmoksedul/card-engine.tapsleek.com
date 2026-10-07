@@ -429,16 +429,29 @@ function ElementRenderer({
       const url = bound ?? props.url ?? "";
       if (!url) break;
       // Very basic YouTube detection for embed mapping
-      if (url.includes("youtube.com/watch") || url.includes("youtu.be/")) {
-        const vid = url.includes("v=")
-          ? new URL(url).searchParams.get("v")
-          : url.split("/").pop();
-        const src = `https://www.youtube.com/embed/${vid}`;
+      if (
+        url.includes("youtube.com") ||
+        url.includes("youtube-nocookie.com") ||
+        url.includes("youtu.be/")
+      ) {
+        let vid = "";
+        try {
+          const parsed = new URL(url);
+          vid =
+            parsed.searchParams.get("v") ||
+            parsed.pathname.split("/").filter(Boolean).pop() ||
+            "";
+        } catch {
+          vid = url.split("/").pop() || "";
+        }
+        const src = `https://www.youtube-nocookie.com/embed/${vid}`;
         children = (
           <iframe
             src={src}
             style={{ width: "100%", height: "100%", border: 0 }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
           />
         );
       } else if (url.includes("vimeo.com/")) {
@@ -448,7 +461,9 @@ function ElementRenderer({
           <iframe
             src={src}
             style={{ width: "100%", height: "100%", border: 0 }}
+            allow="autoplay; fullscreen; picture-in-picture"
             allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
           />
         );
       } else {

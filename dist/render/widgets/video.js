@@ -22,13 +22,13 @@ function parseVideoUrl(url, d) {
         params.set('loop', '1');
     const query = params.toString() ? `?${params.toString()}` : '';
     // YouTube
-    const ytMatch = raw.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+    const ytMatch = raw.match(/(?:youtu\.be\/|(?:www\.)?youtube(?:-nocookie)?\.com\/(?:embed\/|v\/|shorts\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
     if (ytMatch && ytMatch[1]) {
         // For YouTube looping, playlist=VIDEO_ID is required
         if (d.loop)
             params.set('playlist', ytMatch[1]);
         const ytQuery = params.toString() ? `?${params.toString()}` : '';
-        return { type: 'iframe', src: `https://www.youtube.com/embed/${ytMatch[1]}${ytQuery}` };
+        return { type: 'iframe', src: `https://www.youtube-nocookie.com/embed/${ytMatch[1]}${ytQuery}` };
     }
     // Vimeo
     const vimeoMatch = raw.match(/vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/([^\/]*)\/videos\/|album\/(\d+)\/video\/|)(\d+)(?:$|\/|\?)/);
@@ -46,5 +46,5 @@ function VideoRender({ design, content, cls, ctx }) {
         return (0, jsx_runtime_1.jsx)(shared_1.EmptyState, { cls: cls, ctx: ctx, label: "No video URL" });
     }
     const aspectRatio = d.aspectRatio ?? '16/9';
-    return ((0, jsx_runtime_1.jsxs)("div", { className: cls('root'), children: [(0, jsx_runtime_1.jsx)("div", { className: cls('player'), style: { aspectRatio }, children: video.type === 'iframe' ? ((0, jsx_runtime_1.jsx)("iframe", { src: video.src, style: { width: '100%', height: '100%', border: 'none', position: 'absolute', top: 0, left: 0 }, allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture", allowFullScreen: true, title: "Video player" })) : ((0, jsx_runtime_1.jsx)("video", { src: video.src, style: { width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }, controls: d.controls !== false, autoPlay: d.autoplay, muted: d.autoplay, loop: d.loop, playsInline: true })) }), c.caption && (0, jsx_runtime_1.jsx)("div", { className: cls('caption'), children: c.caption })] }));
+    return ((0, jsx_runtime_1.jsxs)("div", { className: cls('root'), children: [(0, jsx_runtime_1.jsx)("div", { className: cls('player'), style: { aspectRatio }, children: video.type === 'iframe' ? ((0, jsx_runtime_1.jsx)("iframe", { src: video.src, style: { width: '100%', height: '100%', border: 'none', position: 'absolute', top: 0, left: 0 }, allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share", allowFullScreen: true, referrerPolicy: "strict-origin-when-cross-origin", title: "Video player" })) : ((0, jsx_runtime_1.jsx)("video", { src: video.src, style: { width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }, controls: d.controls !== false, autoPlay: d.autoplay, muted: d.autoplay, loop: d.loop, playsInline: true })) }), c.caption && (0, jsx_runtime_1.jsx)("div", { className: cls('caption'), children: c.caption })] }));
 }

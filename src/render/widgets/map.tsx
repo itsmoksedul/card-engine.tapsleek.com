@@ -32,13 +32,14 @@ export function MapRender({ design, content, cls, ctx }: WidgetRenderProps) {
         <div className={cls('address')}>{address}</div>
       )}
 
-      <div className={cls('mapWrapper')} style={{ height }}>
+      <div className={cls('mapWrapper')} style={{ height, minHeight: height }}>
         <iframe
           width="100%"
           height="100%"
-          style={{ border: 0 }}
+          style={{ width: '100%', height: '100%', border: 0, display: 'block' }}
           loading="lazy"
           allowFullScreen
+          referrerPolicy="strict-origin-when-cross-origin"
           src={embedUrl}
           title={`Map to ${address}`}
         />

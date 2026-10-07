@@ -2,6 +2,7 @@ import React from 'react';
 import type { BlockInstance, CardTheme } from '../types/block';
 import type { TemplateDefinition } from '../types/definition';
 import { isWidget, walkNodes } from '../types/node';
+import { normalizeWidgetType } from '../widgets/registry';
 import { BlockRenderer } from './BlockRenderer';
 import { collectCollapsedIds, isCoreWidget } from './card-visibility';
 import { NodeRenderer, type RenderCtx } from './NodeRenderer';
@@ -93,7 +94,7 @@ export function CardRenderer({
             .map((b) => {
               const normalizedBlock: BlockInstance = {
                 ...b,
-                widget: b.widget || (b as any).type,
+                widget: normalizeWidgetType(b.widget || (b as any).type),
               };
               return (
                 <BlockRenderer

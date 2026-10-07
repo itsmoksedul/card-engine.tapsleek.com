@@ -7,6 +7,7 @@ exports.CardRenderer = CardRenderer;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = __importDefault(require("react"));
 const node_1 = require("../types/node");
+const registry_1 = require("../widgets/registry");
 const BlockRenderer_1 = require("./BlockRenderer");
 const card_visibility_1 = require("./card-visibility");
 const NodeRenderer_1 = require("./NodeRenderer");
@@ -71,7 +72,7 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
                     .map((b) => {
                     const normalizedBlock = {
                         ...b,
-                        widget: b.widget || b.type,
+                        widget: (0, registry_1.normalizeWidgetType)(b.widget || b.type),
                     };
                     return ((0, jsx_runtime_1.jsx)(BlockRenderer_1.BlockRenderer, { definition: definition, block: normalizedBlock, ctx: blockCtx }, b.id));
                 }) }));

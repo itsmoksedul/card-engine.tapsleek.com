@@ -104,16 +104,37 @@ const BY_TYPE = new Map<string, RegisteredWidget>(
 /** Every registered type, in palette order. */
 export const WIDGET_TYPES: string[] = MODULES.map((m) => m.meta.type);
 
+export const WIDGET_ALIASES: Record<string, string> = {
+  MAPS: 'MAP',
+  HOURS: 'BUSINESS_HOURS',
+  REVIEWS: 'TESTIMONIALS',
+  BUTTON: 'CTA_BUTTON',
+  SOCIAL_ICON: 'SOCIAL_ICONS',
+  HR: 'DIVIDER',
+  SPACE: 'SPACER',
+  HTML_EMBED: 'EMBED',
+  VCARD: 'VCARD_BUTTON',
+  LINKS: 'CONTACT_LINKS',
+};
+
+export function normalizeWidgetType(type: string): string {
+  const upper = (type || '').toUpperCase();
+  return WIDGET_ALIASES[upper] || upper;
+}
+
 export function getWidget(type: string): RegisteredWidget | undefined {
-  return BY_TYPE.get(type);
+  const norm = normalizeWidgetType(type);
+  return BY_TYPE.get(norm) ?? BY_TYPE.get(type);
 }
 
 export function getWidgetMeta(type: string): AnyWidgetMeta | undefined {
-  return BY_TYPE.get(type)?.meta;
+  const norm = normalizeWidgetType(type);
+  return BY_TYPE.get(norm)?.meta ?? BY_TYPE.get(type)?.meta;
 }
 
 export function hasWidget(type: string): boolean {
-  return BY_TYPE.has(type);
+  const norm = normalizeWidgetType(type);
+  return BY_TYPE.has(norm) || BY_TYPE.has(type);
 }
 
 /**
