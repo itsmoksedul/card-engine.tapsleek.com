@@ -304,7 +304,14 @@ export function compileCss(
         ],
       });
       if (partStyles && Object.keys(partStyles).length) {
-        compilePartStyles(partStyles, sel, bucket, states, warnings);
+        compilePartStyles(
+          partStyles,
+          sel,
+          bucket,
+          states,
+          warnings,
+          layout ? (layout.id || "root") : "root",
+        );
       }
       if (rootStyle || rootHidden) {
         for (const bp of ["base", "sm", "md"] as const) {

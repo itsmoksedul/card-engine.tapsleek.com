@@ -6,6 +6,7 @@ exports.blockClass = blockClass;
 const definition_1 = require("../types/definition");
 const node_1 = require("../types/node");
 const registry_1 = require("../widgets/registry");
+const NodeRenderer_1 = require("../render/NodeRenderer");
 /** First widget instance of `type` found in the template tree, if any. */
 function templateInstance(def, type) {
     for (const root of (0, definition_1.definitionRoots)(def)) {
@@ -54,10 +55,39 @@ function resolveBlockDesign(def, type) {
             };
         }
     }
+    // Merge inst.layout with meta.defaultLayout so custom element styles (fonts, margins) are preserved
+    const rawLayout = inst?.layout && meta?.defaultLayout
+        ? (0, NodeRenderer_1.mergeLayoutTrees)(inst.layout, meta.defaultLayout)
+        : (inst?.layout ?? meta?.defaultLayout);
+    let layout = rawLayout ? structuredClone(rawLayout) : undefined;
+    if (layout) {
+        const rootStyle = inst?.rootStyle;
+        const rootPartStyle = inst?.partStyles?.root;
+        if (rootStyle || rootPartStyle) {
+            layout.style = {
+                ...(layout.style ?? {}),
+                base: {
+                    ...(layout.style?.base ?? {}),
+                    ...(rootPartStyle?.base ?? {}),
+                    ...(rootStyle?.base ?? {}),
+                },
+                sm: {
+                    ...(layout.style?.sm ?? {}),
+                    ...(rootPartStyle?.sm ?? {}),
+                    ...(rootStyle?.sm ?? {}),
+                },
+                md: {
+                    ...(layout.style?.md ?? {}),
+                    ...(rootPartStyle?.md ?? {}),
+                    ...(rootStyle?.md ?? {}),
+                },
+            };
+        }
+    }
     return {
         design: { ...(meta?.defaultDesign ?? {}), ...(inst?.design ?? {}) },
         partStyles,
-        layout: inst?.layout ?? meta?.defaultLayout,
+        layout,
         hasCustomLayout: Boolean(inst?.layout),
         rootStyle: inst?.rootStyle,
         rootHidden: inst?.rootHidden,

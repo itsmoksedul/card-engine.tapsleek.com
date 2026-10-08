@@ -7,6 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CarouselContext = void 0;
 exports.NodeRenderer = NodeRenderer;
 exports.structuralFrom = structuralFrom;
+exports.mergeLayoutTrees = mergeLayoutTrees;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const embla_carousel_autoplay_1 = __importDefault(require("embla-carousel-autoplay"));
 const embla_carousel_react_1 = __importDefault(require("embla-carousel-react"));

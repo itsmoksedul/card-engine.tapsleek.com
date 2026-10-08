@@ -2,6 +2,7 @@ import { definitionRoots, type TemplateDefinition } from '../types/definition';
 import { isWidget, walkTreeOrder, type ElementNode } from '../types/node';
 import type { StyleSet } from '../types/style';
 import { getWidgetMeta } from '../widgets/registry';
+import { mergeLayoutTrees } from '../render/NodeRenderer';
 
 export interface BlockDesign {
   design: Record<string, unknown>;
@@ -65,10 +66,42 @@ export function resolveBlockDesign(def: TemplateDefinition, type: string): Block
     }
   }
 
+  // Merge inst.layout with meta.defaultLayout so custom element styles (fonts, margins) are preserved
+  const rawLayout =
+    inst?.layout && meta?.defaultLayout
+      ? mergeLayoutTrees(inst.layout, meta.defaultLayout)
+      : (inst?.layout ?? meta?.defaultLayout);
+
+  let layout = rawLayout ? structuredClone(rawLayout) : undefined;
+  if (layout) {
+    const rootStyle = inst?.rootStyle;
+    const rootPartStyle = inst?.partStyles?.root;
+    if (rootStyle || rootPartStyle) {
+      layout.style = {
+        ...(layout.style ?? {}),
+        base: {
+          ...(layout.style?.base ?? {}),
+          ...(rootPartStyle?.base ?? {}),
+          ...(rootStyle?.base ?? {}),
+        },
+        sm: {
+          ...(layout.style?.sm ?? {}),
+          ...(rootPartStyle?.sm ?? {}),
+          ...(rootStyle?.sm ?? {}),
+        },
+        md: {
+          ...(layout.style?.md ?? {}),
+          ...(rootPartStyle?.md ?? {}),
+          ...(rootStyle?.md ?? {}),
+        },
+      };
+    }
+  }
+
   return {
     design: { ...(meta?.defaultDesign ?? {}), ...(inst?.design ?? {}) },
     partStyles,
-    layout: inst?.layout ?? meta?.defaultLayout,
+    layout,
     hasCustomLayout: Boolean(inst?.layout),
     rootStyle: inst?.rootStyle,
     rootHidden: inst?.rootHidden,

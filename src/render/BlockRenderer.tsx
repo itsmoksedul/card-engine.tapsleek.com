@@ -1,6 +1,7 @@
 import { blockClass, resolveBlockDesign } from "../blocks/resolve-design";
 import type { BlockInstance } from "../types/block";
 import type { TemplateDefinition } from "../types/definition";
+import type { ElementNode } from "../types/node";
 import { getWidgetMeta, normalizeWidgetType } from "../widgets/registry";
 import { NodeRenderer, type RenderCtx } from "./NodeRenderer";
 import { WIDGET_RENDERERS } from "./widgets";
@@ -38,10 +39,6 @@ export function BlockRenderer({
       (block.content as Record<string, unknown>) ??
       customBlock.defaultContent ??
       {};
-    const safeLayout =
-      customBlock.layout.id === "root"
-        ? { ...customBlock.layout, id: `${customBlock.id}-root` }
-        : customBlock.layout;
 
     const nodeContentMap: Record<string, any> = {};
     for (const f of customBlock.fields ?? []) {
@@ -57,28 +54,38 @@ export function BlockRenderer({
       ...blockContent,
     };
 
+    const cbLayout = customBlock.layout as ElementNode;
+    const blockLayout: ElementNode = {
+      ...cbLayout,
+      id:
+        cbLayout.id === "root"
+          ? `${customBlock.id}-root`
+          : cbLayout.id,
+      props: {
+        ...(cbLayout.props || {}),
+        className: [
+          blockClass(customBlock.id),
+          cbLayout.props?.className,
+        ]
+          .filter(Boolean)
+          .join(" "),
+        "data-widget": customBlock.id,
+        "data-custom-block": "true",
+        ...(ctx.isEditing ? { "data-block-id": block.id } : {}),
+      },
+    };
+
     return (
-      <div
-        className={blockClass(customBlock.id)}
-        data-widget={customBlock.id}
-        data-custom-block="true"
-        data-block-id={ctx.isEditing ? block.id : undefined}
-        style={{ width: "100%", boxSizing: "border-box" }}
-      >
-        <NodeRenderer
-          node={safeLayout}
-          content={{ [block.id]: blockContent, ...mergedData }}
-          ctx={{ ...ctx, selfData: mergedData }}
-        />
-      </div>
+      <NodeRenderer
+        node={blockLayout}
+        content={{ [block.id]: blockContent, ...mergedData }}
+        ctx={{ ...ctx, selfData: mergedData }}
+      />
     );
   }
 
   const widgetType = normalizeWidgetType(rawType);
-  const Widget = WIDGET_RENDERERS[
-    widgetType as keyof typeof WIDGET_RENDERERS
-  ] as any;
-  const { design, layout, hasCustomLayout } = resolveBlockDesign(
+  const { design, layout } = resolveBlockDesign(
     definition,
     widgetType,
   );
@@ -87,34 +94,46 @@ export function BlockRenderer({
     (block.content as Record<string, unknown>) ?? meta?.defaultContent ?? {};
   const mergedDesign = { ...(design || {}), ...(content || {}) };
 
-  // 1. If the template explicitly defined a custom layout tree for this widget instance, render it:
-  if (hasCustomLayout && layout) {
-    const safeLayout =
-      layout.id === "root"
-        ? { ...layout, id: `${widgetType.toLowerCase()}-root` }
-        : layout;
+  // 1. If layout exists (either template instance layout or defaultLayout), render it directly!
+  // This ensures identical DOM hierarchy, padding, margin, font-size, background as Admin!
+  if (layout) {
+    const blockLayout: ElementNode = {
+      ...layout,
+      id:
+        layout.id === "root"
+          ? `${widgetType.toLowerCase()}-root`
+          : layout.id,
+      props: {
+        ...(layout.props || {}),
+        className: [
+          blockClass(widgetType),
+          layout.props?.className,
+        ]
+          .filter(Boolean)
+          .join(" "),
+        "data-widget": widgetType,
+        ...(ctx.isEditing ? { "data-block-id": block.id } : {}),
+      },
+    };
+
     return (
-      <div
-        className={blockClass(block.widget)}
-        data-widget={block.widget}
-        data-block-id={ctx.isEditing ? block.id : undefined}
-        style={{ width: "100%", boxSizing: "border-box" }}
-      >
-        <NodeRenderer
-          node={safeLayout}
-          content={{ [block.id]: content, _design: mergedDesign }}
-          ctx={{ ...ctx, selfData: content }}
-        />
-      </div>
+      <NodeRenderer
+        node={blockLayout}
+        content={{ [block.id]: content, _design: mergedDesign }}
+        ctx={{ ...ctx, selfData: content }}
+      />
     );
   }
 
-  // 2. Specialized Widget renderer (Video with YouTube iframe, Map, Title, Description, etc.)
+  // 2. Specialized Widget renderer fallback ONLY if no layout exists
+  const Widget = WIDGET_RENDERERS[
+    widgetType as keyof typeof WIDGET_RENDERERS
+  ] as any;
   if (Widget) {
     return (
       <div
-        className={blockClass(block.widget)}
-        data-widget={block.widget}
+        className={blockClass(widgetType)}
+        data-widget={widgetType}
         data-block-id={ctx.isEditing ? block.id : undefined}
         style={{ width: "100%", boxSizing: "border-box" }}
       >
@@ -128,31 +147,9 @@ export function BlockRenderer({
     );
   }
 
-  // 3. Fallback to defaultLayout if no specialized Widget renderer exists
-  if (layout) {
-    const safeLayout =
-      layout.id === "root"
-        ? { ...layout, id: `${widgetType.toLowerCase()}-root` }
-        : layout;
-    return (
-      <div
-        className={blockClass(block.widget)}
-        data-widget={block.widget}
-        data-block-id={ctx.isEditing ? block.id : undefined}
-        style={{ width: "100%", boxSizing: "border-box" }}
-      >
-        <NodeRenderer
-          node={safeLayout}
-          content={{ [block.id]: content, _design: mergedDesign }}
-          ctx={{ ...ctx, selfData: content }}
-        />
-      </div>
-    );
-  }
-
   return (
     <div
-      className={blockClass(block.widget)}
+      className={blockClass(widgetType)}
       data-block-id={ctx.isEditing ? block.id : undefined}
       style={{ width: "100%", boxSizing: "border-box" }}
     >

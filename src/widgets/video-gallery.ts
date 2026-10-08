@@ -57,7 +57,7 @@ export const meta: WidgetModule['meta'] = {
       fields: [
         { key: 'url', type: 'url', label: 'Video URL' },
         { key: 'caption', type: 'text', label: 'Caption', max: 100 },
-        { key: 'thumbnail', type: 'image', label: 'Custom Thumbnail (Optional)' },
+        { key: 'thumbnail', type: 'image', label: 'Custom Thumbnail (Optional)', ratio: '16/9' },
       ]
     }
   ],

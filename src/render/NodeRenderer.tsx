@@ -755,7 +755,7 @@ export function structuralFrom(def: ElementNode): Partial<ElementNode> {
   return out;
 }
 
-function mergeLayoutTrees(
+export function mergeLayoutTrees(
   instance: ElementNode,
   defaultLayout: ElementNode,
 ): ElementNode {

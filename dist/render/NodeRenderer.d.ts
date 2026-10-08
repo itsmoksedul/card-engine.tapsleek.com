@@ -37,3 +37,4 @@ export declare const CarouselContext: React.Context<{
  * hidden stay the instance's (that is what the admin edits).
  */
 export declare function structuralFrom(def: ElementNode): Partial<ElementNode>;
+export declare function mergeLayoutTrees(instance: ElementNode, defaultLayout: ElementNode): ElementNode;

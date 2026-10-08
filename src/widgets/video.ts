@@ -72,7 +72,7 @@ export const meta: WidgetModule['meta'] = {
   ],
   contentSchema: [
     { key: 'url', type: 'url', label: 'Video URL', hint: 'YouTube, Vimeo, or direct MP4 link.' },
-    { key: 'thumbnail', type: 'image', label: 'Thumbnail Image', hint: 'Only applies to direct MP4 videos. YouTube/Vimeo fetch their own.' },
+    { key: 'thumbnail', type: 'image', label: 'Thumbnail Image', ratio: '16/9', hint: 'Only applies to direct MP4 videos. YouTube/Vimeo fetch their own.' },
     { key: 'caption', type: 'text', label: 'Caption', max: 120 },
   ],
   defaultDesign: { aspectRatio: '16/9', controls: true, autoplay: false, loop: false },

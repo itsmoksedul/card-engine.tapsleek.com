@@ -25,9 +25,6 @@ function BlockRenderer({ definition, block, ctx, }) {
         const blockContent = block.content ??
             customBlock.defaultContent ??
             {};
-        const safeLayout = customBlock.layout.id === "root"
-            ? { ...customBlock.layout, id: `${customBlock.id}-root` }
-            : customBlock.layout;
         const nodeContentMap = {};
         for (const f of customBlock.fields ?? []) {
             const val = blockContent[f.key];
@@ -40,31 +37,58 @@ function BlockRenderer({ definition, block, ctx, }) {
             ...nodeContentMap,
             ...blockContent,
         };
-        return ((0, jsx_runtime_1.jsx)("div", { className: (0, resolve_design_1.blockClass)(customBlock.id), "data-widget": customBlock.id, "data-custom-block": "true", "data-block-id": ctx.isEditing ? block.id : undefined, style: { width: "100%", boxSizing: "border-box" }, children: (0, jsx_runtime_1.jsx)(NodeRenderer_1.NodeRenderer, { node: safeLayout, content: { [block.id]: blockContent, ...mergedData }, ctx: { ...ctx, selfData: mergedData } }) }));
+        const cbLayout = customBlock.layout;
+        const blockLayout = {
+            ...cbLayout,
+            id: cbLayout.id === "root"
+                ? `${customBlock.id}-root`
+                : cbLayout.id,
+            props: {
+                ...(cbLayout.props || {}),
+                className: [
+                    (0, resolve_design_1.blockClass)(customBlock.id),
+                    cbLayout.props?.className,
+                ]
+                    .filter(Boolean)
+                    .join(" "),
+                "data-widget": customBlock.id,
+                "data-custom-block": "true",
+                ...(ctx.isEditing ? { "data-block-id": block.id } : {}),
+            },
+        };
+        return ((0, jsx_runtime_1.jsx)(NodeRenderer_1.NodeRenderer, { node: blockLayout, content: { [block.id]: blockContent, ...mergedData }, ctx: { ...ctx, selfData: mergedData } }));
     }
     const widgetType = (0, registry_1.normalizeWidgetType)(rawType);
-    const Widget = widgets_1.WIDGET_RENDERERS[widgetType];
-    const { design, layout, hasCustomLayout } = (0, resolve_design_1.resolveBlockDesign)(definition, widgetType);
+    const { design, layout } = (0, resolve_design_1.resolveBlockDesign)(definition, widgetType);
     const meta = (0, registry_1.getWidgetMeta)(widgetType);
     const content = block.content ?? meta?.defaultContent ?? {};
     const mergedDesign = { ...(design || {}), ...(content || {}) };
-    // 1. If the template explicitly defined a custom layout tree for this widget instance, render it:
-    if (hasCustomLayout && layout) {
-        const safeLayout = layout.id === "root"
-            ? { ...layout, id: `${widgetType.toLowerCase()}-root` }
-            : layout;
-        return ((0, jsx_runtime_1.jsx)("div", { className: (0, resolve_design_1.blockClass)(block.widget), "data-widget": block.widget, "data-block-id": ctx.isEditing ? block.id : undefined, style: { width: "100%", boxSizing: "border-box" }, children: (0, jsx_runtime_1.jsx)(NodeRenderer_1.NodeRenderer, { node: safeLayout, content: { [block.id]: content, _design: mergedDesign }, ctx: { ...ctx, selfData: content } }) }));
-    }
-    // 2. Specialized Widget renderer (Video with YouTube iframe, Map, Title, Description, etc.)
-    if (Widget) {
-        return ((0, jsx_runtime_1.jsx)("div", { className: (0, resolve_design_1.blockClass)(block.widget), "data-widget": block.widget, "data-block-id": ctx.isEditing ? block.id : undefined, style: { width: "100%", boxSizing: "border-box" }, children: (0, jsx_runtime_1.jsx)(Widget, { content: content, design: mergedDesign, cls: (part) => `p-${part}`, ctx: ctx }) }));
-    }
-    // 3. Fallback to defaultLayout if no specialized Widget renderer exists
+    // 1. If layout exists (either template instance layout or defaultLayout), render it directly!
+    // This ensures identical DOM hierarchy, padding, margin, font-size, background as Admin!
     if (layout) {
-        const safeLayout = layout.id === "root"
-            ? { ...layout, id: `${widgetType.toLowerCase()}-root` }
-            : layout;
-        return ((0, jsx_runtime_1.jsx)("div", { className: (0, resolve_design_1.blockClass)(block.widget), "data-widget": block.widget, "data-block-id": ctx.isEditing ? block.id : undefined, style: { width: "100%", boxSizing: "border-box" }, children: (0, jsx_runtime_1.jsx)(NodeRenderer_1.NodeRenderer, { node: safeLayout, content: { [block.id]: content, _design: mergedDesign }, ctx: { ...ctx, selfData: content } }) }));
+        const blockLayout = {
+            ...layout,
+            id: layout.id === "root"
+                ? `${widgetType.toLowerCase()}-root`
+                : layout.id,
+            props: {
+                ...(layout.props || {}),
+                className: [
+                    (0, resolve_design_1.blockClass)(widgetType),
+                    layout.props?.className,
+                ]
+                    .filter(Boolean)
+                    .join(" "),
+                "data-widget": widgetType,
+                ...(ctx.isEditing ? { "data-block-id": block.id } : {}),
+            },
+        };
+        return ((0, jsx_runtime_1.jsx)(NodeRenderer_1.NodeRenderer, { node: blockLayout, content: { [block.id]: content, _design: mergedDesign }, ctx: { ...ctx, selfData: content } }));
     }
-    return ((0, jsx_runtime_1.jsx)("div", { className: (0, resolve_design_1.blockClass)(block.widget), "data-block-id": ctx.isEditing ? block.id : undefined, style: { width: "100%", boxSizing: "border-box" }, children: ctx.isEditing ? `Unknown widget: ${block.widget}` : null }));
+    // 2. Specialized Widget renderer fallback ONLY if no layout exists
+    const Widget = widgets_1.WIDGET_RENDERERS[widgetType];
+    if (Widget) {
+        return ((0, jsx_runtime_1.jsx)("div", { className: (0, resolve_design_1.blockClass)(widgetType), "data-widget": widgetType, "data-block-id": ctx.isEditing ? block.id : undefined, style: { width: "100%", boxSizing: "border-box" }, children: (0, jsx_runtime_1.jsx)(Widget, { content: content, design: mergedDesign, cls: (part) => `p-${part}`, ctx: ctx }) }));
+    }
+    return ((0, jsx_runtime_1.jsx)("div", { className: (0, resolve_design_1.blockClass)(widgetType), "data-block-id": ctx.isEditing ? block.id : undefined, style: { width: "100%", boxSizing: "border-box" }, children: ctx.isEditing ? `Unknown widget: ${block.widget}` : null }));
 }

@@ -1013,7 +1013,7 @@ describe("blocks: userBlockTypes", () => {
     expect(list).not.toContain("CONTACT_LINKS");
     expect(list).not.toContain("LEAD_FORM");
     expect(list).toContain("SERVICE_LIST");
-    expect(list).toContain("FAQ");
+    expect(list).toContain("VIDEO");
   });
 });
 
@@ -1025,13 +1025,13 @@ describe("compileCss: block presets (emitBlockPresets)", () => {
   it('"template" emits .tsb-<type> for the types the template uses', () => {
     const { css } = compileCss(fixture(), { emitBlockPresets: "template" });
     expect(css).toContain(".tsb-SERVICE_LIST .p-item");
-    expect(css).not.toContain(".tsb-FAQ"); // FAQ isn't in the fixture
+    expect(css).not.toContain(".tsb-VIDEO"); // VIDEO isn't in the fixture
   });
 
   it('"all" also covers types the template never used', () => {
     const { css } = compileCss(fixture(), { emitBlockPresets: "all" });
     expect(css).toContain(".tsb-SERVICE_LIST");
-    expect(css).toContain(".tsb-FAQ");
+    expect(css).toContain(".tsb-VIDEO");
   });
 
   it("block presets follow the desktop-first cascade (max-width)", () => {
