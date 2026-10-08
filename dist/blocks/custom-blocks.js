@@ -254,7 +254,10 @@ function findById(root, id) {
 function cleanCustomBlockSources(def) {
     if (!def.customBlocks?.length || !def.root)
         return def;
-    const sources = new Set(def.customBlocks.map((cb) => cb.sourceNodeId).filter(Boolean));
+    const sources = new Set(def.customBlocks
+        .filter((cb) => !cb.libraryId)
+        .map((cb) => cb.sourceNodeId)
+        .filter(Boolean));
     let changed = false;
     const strip = (n) => {
         if (n.kind !== "element" || n.repeat)
@@ -294,6 +297,9 @@ function syncCustomBlocks(input) {
     return {
         ...def,
         customBlocks: def.customBlocks.map((cb) => {
+            // Library copies belong to another template's layers.
+            if (cb.libraryId)
+                return cb;
             const src = cb.sourceNodeId ? findById(def.root, cb.sourceNodeId) : null;
             return src ? syncCustomBlock(cb, src) : cb;
         }),

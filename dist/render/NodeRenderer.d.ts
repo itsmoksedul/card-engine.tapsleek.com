@@ -21,6 +21,11 @@ export interface RenderCtx {
     isRenderingUserBlocks?: boolean;
     /** Template elements that would be empty chrome on this card — skipped. */
     collapsedIds?: Set<string>;
+    /**
+     * Template layers that are the source of a custom block. Like optional
+     * widgets, on a user card they only render through the user's blocks.
+     */
+    customBlockSourceIds?: Set<string>;
 }
 export interface NodeRendererProps {
     node: Node;

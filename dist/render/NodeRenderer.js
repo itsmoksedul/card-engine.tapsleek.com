@@ -21,6 +21,8 @@ const icon_helper_1 = require("./widgets/icon-helper");
 function NodeRenderer({ node, content, ctx }) {
     if (ctx.collapsedIds?.has(node.id))
         return null;
+    if ((0, card_visibility_1.isCustomBlockSourceHidden)(node.id, ctx))
+        return null;
     if (node.kind === "element")
         return (0, jsx_runtime_1.jsx)(ElementRenderer, { node: node, content: content, ctx: ctx });
     if (node.kind === "widget")
@@ -832,13 +834,8 @@ function WidgetRenderer({ node, content, ctx, }) {
                 [node.key]: widgetContent,
                 _design: { ...(node.design || {}), ...(widgetContent || {}) },
             }, ctx: { ...widgetCtx, selfData: widgetContent } }));
-        if (!ctx.isEditing &&
-            Array.isArray(ctx.blocks) &&
-            node.id === ctx.placeholderId &&
-            ctx.injectBefore &&
-            ctx.renderUserBlocks) {
-            return ((0, jsx_runtime_1.jsxs)(react_1.default.Fragment, { children: [ctx.renderUserBlocks(), renderedLayout] }));
-        }
+        // "Inject before" placeholders are handled by the parent element's child
+        // loop; doing it here too rendered every user block twice.
         return renderedLayout;
     }
     // No layout and no custom Widget renderer — this shouldn't happen in normal flow
@@ -849,13 +846,7 @@ function WidgetRenderer({ node, content, ctx, }) {
     const design = node.design ?? {};
     const cls = (part) => `p-${part} n${part}`;
     const renderedWidget = ((0, jsx_runtime_1.jsx)("div", { className: `n${node.id}`, "data-node-id": ctx.isEditing ? node.id : undefined, "data-widget": node.widget, "data-widget-key": node.key || undefined, children: (0, jsx_runtime_1.jsx)(Widget, { content: widgetContent, design: design, cls: cls, ctx: widgetCtx }) }));
-    if (!ctx.isEditing &&
-        Array.isArray(ctx.blocks) &&
-        node.id === ctx.placeholderId &&
-        ctx.injectBefore &&
-        ctx.renderUserBlocks) {
-        return ((0, jsx_runtime_1.jsxs)(react_1.default.Fragment, { children: [ctx.renderUserBlocks(), renderedWidget] }));
-    }
+    // "Inject before" is handled by the parent element's child loop.
     return renderedWidget;
 }
 // ─── Slots ───────────────────────────────────────────────────────────────────

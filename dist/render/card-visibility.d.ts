@@ -16,7 +16,14 @@ export interface VisibilityCtx {
     injectBefore?: boolean;
     isRenderingUserBlocks?: boolean;
     showPlaceholders?: boolean;
+    customBlockSourceIds?: Set<string>;
 }
+/**
+ * A custom block's source layer group lives in the template tree. On a user
+ * card it must not render there — only as the user's block — or it shows up
+ * before being added and twice once added.
+ */
+export declare function isCustomBlockSourceHidden(id: string, ctx: VisibilityCtx): boolean;
 /**
  * True when a template widget renders nothing on a user card: an optional
  * widget that isn't hosting the user's blocks, or a links/social widget with

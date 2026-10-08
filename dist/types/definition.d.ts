@@ -82,6 +82,16 @@ export interface TemplateCustomBlock {
     icon?: string;
     description?: string;
     sourceNodeId?: string;
+    /**
+     * Set when the backend synced this block from the admin widget library.
+     * Such blocks are owned by the library: templates don't edit or re-derive
+     * them, and their `sourceNodeId` refers to another template.
+     */
+    libraryId?: string;
+    /** Plan needed to add it in the card editor (library widgets). */
+    tier?: "FREE" | "PRO";
+    /** Disabled in the library: existing cards render it, nobody can add it. */
+    hidden?: boolean;
     layout: Node;
     fields: CustomBlockField[];
     defaultContent: Record<string, unknown>;

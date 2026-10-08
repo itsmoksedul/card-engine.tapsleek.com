@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CORE_WIDGETS = void 0;
 exports.isCoreWidget = isCoreWidget;
+exports.isCustomBlockSourceHidden = isCustomBlockSourceHidden;
 exports.isWidgetHiddenOnCard = isWidgetHiddenOnCard;
 exports.collectCollapsedIds = collectCollapsedIds;
 const node_1 = require("../types/node");
@@ -50,6 +51,17 @@ const SOCIAL_PLATFORMS = [
 ];
 function isCoreWidget(widget) {
     return exports.CORE_WIDGETS.has((widget || '').toUpperCase());
+}
+/**
+ * A custom block's source layer group lives in the template tree. On a user
+ * card it must not render there — only as the user's block — or it shows up
+ * before being added and twice once added.
+ */
+function isCustomBlockSourceHidden(id, ctx) {
+    if (ctx.isEditing || !Array.isArray(ctx.blocks) || ctx.isRenderingUserBlocks) {
+        return false;
+    }
+    return Boolean(ctx.customBlockSourceIds?.has(id));
 }
 /**
  * True when a template widget renders nothing on a user card: an optional
@@ -111,6 +123,9 @@ function collectCollapsedIds(root, ctx) {
         return undefined;
     const collapsed = new Set();
     const visit = (node) => {
+        // Hidden like an unused optional widget, so its section frame collapses too.
+        if (isCustomBlockSourceHidden(node.id, ctx))
+            return 'removed';
         if ((0, node_1.isWidget)(node))
             return isWidgetHiddenOnCard(node, ctx) ? 'removed' : 'live';
         if ((0, node_1.isSlot)(node))

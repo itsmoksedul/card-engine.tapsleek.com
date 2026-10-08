@@ -295,7 +295,10 @@ function findById(root: Node, id: string): Node | null {
 export function cleanCustomBlockSources<T extends TemplateDefinition>(def: T): T {
   if (!def.customBlocks?.length || !def.root) return def;
   const sources = new Set(
-    def.customBlocks.map((cb) => cb.sourceNodeId).filter(Boolean) as string[],
+    def.customBlocks
+      .filter((cb) => !cb.libraryId)
+      .map((cb) => cb.sourceNodeId)
+      .filter(Boolean) as string[],
   );
   let changed = false;
 
@@ -335,6 +338,8 @@ export function syncCustomBlocks<T extends TemplateDefinition>(input: T): T {
   return {
     ...def,
     customBlocks: def.customBlocks.map((cb) => {
+      // Library copies belong to another template's layers.
+      if (cb.libraryId) return cb;
       const src = cb.sourceNodeId ? findById(def.root, cb.sourceNodeId) : null;
       return src ? syncCustomBlock(cb, src) : cb;
     }),

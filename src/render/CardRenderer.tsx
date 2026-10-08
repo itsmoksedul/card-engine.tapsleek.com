@@ -75,6 +75,14 @@ export function CardRenderer({
     return null;
   }, [definition.root, isEditing, blocks]);
 
+  const customBlockSourceIds = React.useMemo(() => {
+    const ids = (definition.customBlocks ?? [])
+      .filter((cb) => !cb.libraryId)
+      .map((cb) => cb.sourceNodeId)
+      .filter((id): id is string => Boolean(id));
+    return ids.length ? new Set(ids) : undefined;
+  }, [definition.customBlocks]);
+
   // Section frames left empty once unused widgets are hidden (blank boxes).
   const collapsedIds = React.useMemo(
     () =>
@@ -86,6 +94,7 @@ export function CardRenderer({
         placeholderId: placeholder?.id || null,
         injectBefore: placeholder?.injectBefore || false,
         showPlaceholders: effectiveShowPlaceholders,
+        customBlockSourceIds,
       }),
     [
       definition.root,
@@ -95,6 +104,7 @@ export function CardRenderer({
       gatedWidgetKeys,
       placeholder,
       effectiveShowPlaceholders,
+      customBlockSourceIds,
     ],
   );
 
@@ -114,6 +124,7 @@ export function CardRenderer({
     placeholderId: placeholder?.id || null,
     injectBefore: placeholder?.injectBefore || false,
     collapsedIds,
+    customBlockSourceIds,
     renderBlock: (block: BlockInstance) => {
       const normalizedBlock: BlockInstance = {
         ...block,

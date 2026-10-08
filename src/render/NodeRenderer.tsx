@@ -4,7 +4,11 @@ import useEmblaCarousel from "embla-carousel-react";
 import React from "react";
 import type { ElementNode, Node, SlotNode, WidgetNode } from "../types/node";
 import { getWidgetMeta } from "../widgets";
-import { isCoreWidget, isWidgetHiddenOnCard } from "./card-visibility";
+import {
+  isCoreWidget,
+  isCustomBlockSourceHidden,
+  isWidgetHiddenOnCard,
+} from "./card-visibility";
 import { resolveBinding } from "./resolveBinding";
 import { safeHref, sanitizeHtml } from "./sanitize";
 import { WIDGET_RENDERERS } from "./widgets";
@@ -31,6 +35,11 @@ export interface RenderCtx {
   isRenderingUserBlocks?: boolean;
   /** Template elements that would be empty chrome on this card — skipped. */
   collapsedIds?: Set<string>;
+  /**
+   * Template layers that are the source of a custom block. Like optional
+   * widgets, on a user card they only render through the user's blocks.
+   */
+  customBlockSourceIds?: Set<string>;
 }
 
 export interface NodeRendererProps {
@@ -41,6 +50,7 @@ export interface NodeRendererProps {
 
 export function NodeRenderer({ node, content, ctx }: NodeRendererProps) {
   if (ctx.collapsedIds?.has(node.id)) return null;
+  if (isCustomBlockSourceHidden(node.id, ctx)) return null;
   if (node.kind === "element")
     return <ElementRenderer node={node} content={content} ctx={ctx} />;
   if (node.kind === "widget")
@@ -1029,21 +1039,8 @@ function WidgetRenderer({
       />
     );
 
-    if (
-      !ctx.isEditing &&
-      Array.isArray(ctx.blocks) &&
-      node.id === ctx.placeholderId &&
-      ctx.injectBefore &&
-      ctx.renderUserBlocks
-    ) {
-      return (
-        <React.Fragment>
-          {ctx.renderUserBlocks()}
-          {renderedLayout}
-        </React.Fragment>
-      );
-    }
-
+    // "Inject before" placeholders are handled by the parent element's child
+    // loop; doing it here too rendered every user block twice.
     return renderedLayout;
   }
 
@@ -1080,21 +1077,7 @@ function WidgetRenderer({
     </div>
   );
 
-  if (
-    !ctx.isEditing &&
-    Array.isArray(ctx.blocks) &&
-    node.id === ctx.placeholderId &&
-    ctx.injectBefore &&
-    ctx.renderUserBlocks
-  ) {
-    return (
-      <React.Fragment>
-        {ctx.renderUserBlocks()}
-        {renderedWidget}
-      </React.Fragment>
-    );
-  }
-
+  // "Inject before" is handled by the parent element's child loop.
   return renderedWidget;
 }
 

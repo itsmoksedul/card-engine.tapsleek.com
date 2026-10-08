@@ -63,6 +63,19 @@ export interface VisibilityCtx {
   injectBefore?: boolean;
   isRenderingUserBlocks?: boolean;
   showPlaceholders?: boolean;
+  customBlockSourceIds?: Set<string>;
+}
+
+/**
+ * A custom block's source layer group lives in the template tree. On a user
+ * card it must not render there — only as the user's block — or it shows up
+ * before being added and twice once added.
+ */
+export function isCustomBlockSourceHidden(id: string, ctx: VisibilityCtx): boolean {
+  if (ctx.isEditing || !Array.isArray(ctx.blocks) || ctx.isRenderingUserBlocks) {
+    return false;
+  }
+  return Boolean(ctx.customBlockSourceIds?.has(id));
 }
 
 /**
@@ -144,6 +157,8 @@ export function collectCollapsedIds(root: Node, ctx: VisibilityCtx): Set<string>
   const collapsed = new Set<string>();
 
   const visit = (node: Node): Presence => {
+    // Hidden like an unused optional widget, so its section frame collapses too.
+    if (isCustomBlockSourceHidden(node.id, ctx)) return 'removed';
     if (isWidget(node)) return isWidgetHiddenOnCard(node, ctx) ? 'removed' : 'live';
     if (isSlot(node)) return 'live';
     if (!isElement(node)) return 'static';
