@@ -270,6 +270,8 @@ function ElementRenderer({
 
   const bound = resolveBinding(node.bind, ctx.card, content, ctx.selfData);
   const props = (node.props ?? {}) as Record<string, any>;
+  const isBound = Boolean(node.bind);
+  const isCardBound = node.bind?.source === "card";
 
   // Check fallback from content/selfData by nodeId or key if unbound
   const fallbackVal =
@@ -281,14 +283,27 @@ function ElementRenderer({
       ? ((activeVal as any).text ?? (activeVal as any).value ?? "")
       : activeVal;
 
-  if (
-    node.hideIfEmpty &&
-    isEmpty(resolvedText) &&
-    !props.src &&
-    !props.text &&
-    !props.html
-  ) {
-    return null;
+  if (node.hideIfEmpty) {
+    if (isBound) {
+      const isValEmpty =
+        node.tag === "image"
+          ? isEmpty(bound ?? fallbackVal)
+          : node.tag === "video"
+            ? isEmpty(bound ?? fallbackVal)
+            : isEmpty(resolvedText);
+      if (isValEmpty) {
+        return null;
+      }
+    } else {
+      if (
+        isEmpty(resolvedText) &&
+        !props.src &&
+        !props.text &&
+        !props.html
+      ) {
+        return null;
+      }
+    }
   }
 
   const tag =
@@ -376,7 +391,10 @@ function ElementRenderer({
       break;
     }
     case "image": {
-      const src = bound ?? props.src ?? "";
+      const src =
+        bound ??
+        (isCardBound && ctx.card ? undefined : props.src) ??
+        "";
       if (!src) {
         if (ctx.isEditing) {
           dom["data-empty"] = "true";
@@ -417,25 +435,44 @@ function ElementRenderer({
     }
     case "heading":
     case "text": {
-      children = !isEmpty(resolvedText) ? resolvedText : (props.text ?? "");
+      if (isBound) {
+        if (!isEmpty(resolvedText)) {
+          children = resolvedText;
+        } else if (isCardBound && ctx.card) {
+          children = "";
+        } else if (ctx.selfData !== undefined || content !== undefined) {
+          children = "";
+        } else {
+          children = props.text ?? "";
+        }
+      } else {
+        children = !isEmpty(resolvedText) ? resolvedText : (props.text ?? "");
+      }
       break;
     }
     case "richtext": {
-      const rawHtml = bound ?? props.html ?? "";
+      const rawHtml =
+        bound ??
+        (isCardBound && ctx.card ? "" : props.html ?? "");
       dom.dangerouslySetInnerHTML = {
         __html: sanitizeHtml(String(rawHtml), "richtext"),
       };
       break;
     }
     case "embed": {
-      const rawHtml = bound ?? props.html ?? "";
+      const rawHtml =
+        bound ??
+        (isCardBound && ctx.card ? "" : props.html ?? "");
       dom.dangerouslySetInnerHTML = {
         __html: sanitizeHtml(String(rawHtml), "embed"),
       };
       break;
     }
     case "video": {
-      const url = bound ?? props.url ?? "";
+      const url =
+        bound ??
+        (isCardBound && ctx.card ? undefined : props.url) ??
+        "";
       if (!url) break;
       // Very basic YouTube detection for embed mapping
       if (
