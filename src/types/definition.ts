@@ -81,6 +81,25 @@ export interface DefinitionSettings {
   colorScheme?: 'light' | 'dark';
 }
 
+export interface CustomBlockField {
+  nodeId: string;
+  key: string;
+  label: string;
+  type: 'text' | 'textarea' | 'url' | 'image' | 'video';
+  default?: unknown;
+}
+
+export interface TemplateCustomBlock {
+  id: string;
+  label: string;
+  icon?: string;
+  description?: string;
+  sourceNodeId?: string;
+  layout: ElementNode;
+  fields: CustomBlockField[];
+  defaultContent: Record<string, unknown>;
+}
+
 export interface TemplateDefinition {
   schemaVersion: typeof SCHEMA_VERSION;
   meta: {
@@ -95,6 +114,7 @@ export interface TemplateDefinition {
   fonts?: FontSpec[];
   root: ElementNode;
   popups?: PopupDef[];
+  customBlocks?: TemplateCustomBlock[];
   settings?: DefinitionSettings;
 }
 

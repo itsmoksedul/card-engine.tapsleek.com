@@ -17,6 +17,15 @@ const NodeRenderer_1 = require("./NodeRenderer");
  */
 function BlockRenderer({ definition, block, ctx, }) {
     const rawType = block.widget || block.type || '';
+    // 0. Template Custom Block (authored from Layer Groups in Admin)
+    const customBlock = definition.customBlocks?.find((cb) => cb.id === rawType || cb.id === block.widget || cb.id === block.type);
+    if (customBlock) {
+        const blockContent = block.content ?? customBlock.defaultContent ?? {};
+        const safeLayout = customBlock.layout.id === 'root'
+            ? { ...customBlock.layout, id: `${customBlock.id}-root` }
+            : customBlock.layout;
+        return ((0, jsx_runtime_1.jsx)("div", { className: (0, resolve_design_1.blockClass)(customBlock.id), "data-widget": customBlock.id, "data-custom-block": "true", "data-block-id": ctx.isEditing ? block.id : undefined, style: { width: '100%', boxSizing: 'border-box' }, children: (0, jsx_runtime_1.jsx)(NodeRenderer_1.NodeRenderer, { node: safeLayout, content: { [block.id]: blockContent, ...blockContent }, ctx: { ...ctx, selfData: blockContent } }) }));
+    }
     const widgetType = (0, registry_1.normalizeWidgetType)(rawType);
     const Widget = widgets_1.WIDGET_RENDERERS[widgetType];
     const { design, layout, hasCustomLayout } = (0, resolve_design_1.resolveBlockDesign)(definition, widgetType);

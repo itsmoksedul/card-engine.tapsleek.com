@@ -25,6 +25,37 @@ export function BlockRenderer({
   ctx: RenderCtx;
 }) {
   const rawType = block.widget || (block as any).type || '';
+
+  // 0. Template Custom Block (authored from Layer Groups in Admin)
+  const customBlock = definition.customBlocks?.find(
+    (cb) => cb.id === rawType || cb.id === block.widget || cb.id === (block as any).type,
+  );
+
+  if (customBlock) {
+    const blockContent =
+      (block.content as Record<string, unknown>) ?? customBlock.defaultContent ?? {};
+    const safeLayout =
+      customBlock.layout.id === 'root'
+        ? { ...customBlock.layout, id: `${customBlock.id}-root` }
+        : customBlock.layout;
+
+    return (
+      <div
+        className={blockClass(customBlock.id)}
+        data-widget={customBlock.id}
+        data-custom-block="true"
+        data-block-id={ctx.isEditing ? block.id : undefined}
+        style={{ width: '100%', boxSizing: 'border-box' }}
+      >
+        <NodeRenderer
+          node={safeLayout}
+          content={{ [block.id]: blockContent, ...blockContent }}
+          ctx={{ ...ctx, selfData: blockContent }}
+        />
+      </div>
+    );
+  }
+
   const widgetType = normalizeWidgetType(rawType);
   const Widget = WIDGET_RENDERERS[widgetType as keyof typeof WIDGET_RENDERERS] as any;
   const { design, layout, hasCustomLayout } = resolveBlockDesign(definition, widgetType);

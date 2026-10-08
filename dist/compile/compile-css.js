@@ -234,6 +234,40 @@ function compileCss(def, options = {}) {
                 });
             }
         }
+        // ── 3.6 Custom template blocks (v2.2) ──────────────────────────────────
+        // Custom blocks authored from Layer Groups in Admin.
+        for (const customBlock of def.customBlocks ?? []) {
+            const sel = `.${scope} .${(0, resolve_design_1.blockClass)(customBlock.id)}`;
+            bucket["base"].push({
+                selector: sel,
+                decls: [
+                    ["width", "100%"],
+                    ["box-sizing", "border-box"],
+                ],
+            });
+            if (customBlock.layout) {
+                (0, node_1.walkTreeOrder)(customBlock.layout, (layoutNode) => {
+                    const layoutCls = nodeClass(layoutNode.id, warnings);
+                    if (!layoutCls)
+                        return;
+                    const layoutPart = layoutCls.replace(/^n/, "");
+                    const layoutSel = layoutNode === customBlock.layout
+                        ? sel
+                        : `${sel} .p-${layoutPart}, ${sel} .${layoutCls}`;
+                    for (const bp of ["base", "sm", "md"]) {
+                        const props = mergeHidden(layoutNode.style?.[bp], layoutNode.hidden?.[bp]);
+                        const decls = (0, declarations_1.declarationsFor)(props);
+                        if (decls.length)
+                            bucket[bp].push({ selector: layoutSel, decls });
+                    }
+                    for (const state of style_1.STATE_KEYS) {
+                        const decls = (0, declarations_1.declarationsFor)(layoutNode.style?.[state]);
+                        if (decls.length)
+                            states.push({ selector: `${layoutSel}:${state}`, decls });
+                    }
+                });
+            }
+        }
     }
     // ── 4. Popup chrome ────────────────────────────────────────────────────
     for (const popup of def.popups ?? []) {
