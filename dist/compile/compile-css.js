@@ -303,19 +303,20 @@ function compileCss(def, options = {}) {
     }
     else {
         // Desktop-first cascade: Tablet (wider max-width) first, Mobile last.
+        // Viewport media queries only. A card is never wider than its ~450px
+        // canvas, so container queries on it matched on every screen and forced
+        // the Tablet/Mobile design onto desktop browsers too.
         const mdCss = dedupe(md)
             .map((r) => rule(r.selector, r.decls, pretty))
             .join(nl);
         if (mdCss) {
             body.push(`@media ${style_1.BREAKPOINT_MEDIA.md}{${nl}${mdCss}${nl}}`);
-            body.push(`@container ${style_1.BREAKPOINT_MEDIA.md}{${nl}${mdCss}${nl}}`);
         }
         const smCss = dedupe(sm)
             .map((r) => rule(r.selector, r.decls, pretty))
             .join(nl);
         if (smCss) {
             body.push(`@media ${style_1.BREAKPOINT_MEDIA.sm}{${nl}${smCss}${nl}}`);
-            body.push(`@container ${style_1.BREAKPOINT_MEDIA.sm}{${nl}${smCss}${nl}}`);
         }
     }
     body.push(...dedupe(states).map((r) => rule(r.selector, r.decls, pretty)));
