@@ -201,7 +201,7 @@ export interface StyleProps {
   strokeWidth?: StyleValue;
 
   // decoration
-  background?: BackgroundValue;
+  background?: BackgroundValue | string;
   border?: BorderValue;
   borderRadius?: Corners4;
   boxShadow?: ShadowValue | ShadowValue[] | TokenRef;

@@ -162,7 +162,7 @@ export interface StyleProps {
     lineClamp?: number;
     color?: StyleValue;
     strokeWidth?: StyleValue;
-    background?: BackgroundValue;
+    background?: BackgroundValue | string;
     border?: BorderValue;
     borderRadius?: Corners4;
     boxShadow?: ShadowValue | ShadowValue[] | TokenRef;

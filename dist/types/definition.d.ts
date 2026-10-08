@@ -68,7 +68,11 @@ export interface CustomBlockField {
     nodeId: string;
     key: string;
     label: string;
-    type: "text" | "textarea" | "url" | "image" | "video";
+    type: "text" | "textarea" | "richtext" | "url" | "image" | "video" | "icon";
+    /** The child layer's prop this field writes (text, html, src, name, url, label, href). */
+    prop?: string;
+    /** `false` hides the field from the card editor; the template default renders. */
+    editable?: boolean;
     default?: unknown;
     hint?: string;
 }

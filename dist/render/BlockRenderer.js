@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BlockRenderer = BlockRenderer;
 const jsx_runtime_1 = require("react/jsx-runtime");
+const custom_blocks_1 = require("../blocks/custom-blocks");
 const resolve_design_1 = require("../blocks/resolve-design");
 const registry_1 = require("../widgets/registry");
 const NodeRenderer_1 = require("./NodeRenderer");
@@ -25,13 +26,21 @@ function BlockRenderer({ definition, block, ctx, }) {
         cb.id.toLowerCase() === rawTypeLower ||
         cb.label?.toLowerCase() === rawTypeLower);
     if (customBlock) {
-        const blockContent = block.content ??
-            customBlock.defaultContent ??
-            {};
+        // Defaults first so fields added to the template later still render.
+        const blockContent = {
+            ...(customBlock.defaultContent ?? {}),
+            ...(block.content ?? {}),
+        };
         const nodeContentMap = {};
         for (const f of customBlock.fields ?? []) {
+            // Locked fields always show the template's value.
+            if (f.editable === false) {
+                blockContent[f.key] = customBlock.defaultContent?.[f.key];
+            }
             const val = blockContent[f.key];
-            if (val !== undefined) {
+            // Prop-based fields are written straight into the layout below; the
+            // node-id fallback is only for blocks made before `prop` existed.
+            if (val !== undefined && !f.prop) {
                 nodeContentMap[f.nodeId] = val;
                 nodeContentMap[f.key] = val;
             }
@@ -40,7 +49,7 @@ function BlockRenderer({ definition, block, ctx, }) {
             ...nodeContentMap,
             ...blockContent,
         };
-        const cbLayout = customBlock.layout;
+        const cbLayout = (0, custom_blocks_1.applyCustomBlockContent)(customBlock, block.content);
         const blockLayout = {
             ...cbLayout,
             id: cbLayout.id === "root"

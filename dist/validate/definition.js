@@ -929,9 +929,58 @@ function sanitizeTemplateDefinition(input) {
         }
         resolve(rootNode);
     }
+    function cleanStyle(style) {
+        if (!style || typeof style !== "object")
+            return style;
+        for (const layerKey of ["base", "sm", "md", "hover", "active", "focus"]) {
+            const layer = style[layerKey];
+            if (!layer || typeof layer !== "object")
+                continue;
+            if (layer.background !== undefined && layer.background !== null && layer.background !== "") {
+                if (typeof layer.background === "string") {
+                    layer.background = { kind: "color", color: layer.background };
+                }
+                else if (typeof layer.background === "object") {
+                    if (layer.background.kind === "color") {
+                        if (!layer.background.color || layer.background.color === "") {
+                            delete layer.background;
+                        }
+                    }
+                    else if (layer.background.kind === "gradient") {
+                        if (!Array.isArray(layer.background.stops) || layer.background.stops.length < 2) {
+                            delete layer.background;
+                        }
+                    }
+                    else if (layer.background.kind === "image") {
+                        if (!layer.background.url || typeof layer.background.url !== "string") {
+                            delete layer.background;
+                        }
+                    }
+                    else {
+                        delete layer.background;
+                    }
+                }
+                else {
+                    delete layer.background;
+                }
+            }
+        }
+        return (0, style_1.sanitizeStyleSet)(style);
+    }
     function walkNode(node) {
         if (!node || typeof node !== "object")
             return;
+        // 0. Sanitize node style & widget partStyles
+        if (node.style) {
+            node.style = cleanStyle(node.style) ?? {};
+        }
+        if (node.partStyles && typeof node.partStyles === "object") {
+            for (const [k, v] of Object.entries(node.partStyles)) {
+                if (v && typeof v === "object") {
+                    node.partStyles[k] = cleanStyle(v) ?? {};
+                }
+            }
+        }
         // 1. Fix <button> with children -> convert tag to <link>
         if (node.kind === "element" &&
             node.tag === "button" &&
@@ -999,6 +1048,13 @@ function sanitizeTemplateDefinition(input) {
         deduplicateSubtreeIds(cloned.root);
         walkNode(cloned.root);
         deduplicateContentKeys(cloned);
+    }
+    if (Array.isArray(cloned.customBlocks)) {
+        cloned.customBlocks.forEach((cb) => {
+            if (cb && cb.node) {
+                walkNode(cb.node);
+            }
+        });
     }
     return cloned;
 }

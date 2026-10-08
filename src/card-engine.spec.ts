@@ -42,7 +42,7 @@ import { resolveBinding } from "./render/resolveBinding";
 import { blankDefinition, type TemplateDefinition } from "./types/definition";
 import { defaultsFor, walkFields } from "./types/field";
 import type { ElementNode, WidgetNode } from "./types/node";
-import { validateDefinition } from "./validate/definition";
+import { sanitizeTemplateDefinition, validateDefinition } from "./validate/definition";
 import { validateAgainstSchema } from "./validate/schema-to-zod";
 import { manifest, partKeys, WIDGET_TYPES } from "./widgets/registry";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -1476,3 +1476,45 @@ describe("user card: empty section frames collapse", () => {
     expect(render([], true)).toContain("nsecFaq");
   });
 });
+
+describe("sanitizeTemplateDefinition", () => {
+  it("normalizes string background and strips invalid background values that compiler would drop", () => {
+    const def = blankDefinition("t");
+    (def.root as any).children = [
+      {
+        kind: "element",
+        id: "el1",
+        tag: "frame",
+        style: {
+          base: {
+            background: "{color.bg}",
+          },
+        },
+      },
+      {
+        kind: "element",
+        id: "el2",
+        tag: "frame",
+        style: {
+          base: {
+            background: { kind: "color", color: "" },
+          },
+        },
+      },
+    ];
+
+    const sanitized = sanitizeTemplateDefinition(def) as any;
+    // el1 background is normalized to { kind: "color", color: "{color.bg}" }
+    expect(sanitized.root.children[0].style.base.background).toEqual({
+      kind: "color",
+      color: "{color.bg}",
+    });
+    // el2 invalid empty background is stripped
+    expect(sanitized.root.children[1].style.base?.background).toBeUndefined();
+
+    // The sanitized template passes definition validation without error
+    const val = validateDefinition(sanitized);
+    expect(val.ok).toBe(true);
+  });
+});
+

@@ -1,3 +1,4 @@
+import { applyCustomBlockContent } from "../blocks/custom-blocks";
 import { blockClass, resolveBlockDesign } from "../blocks/resolve-design";
 import type { BlockInstance } from "../types/block";
 import type { TemplateDefinition } from "../types/definition";
@@ -38,15 +39,22 @@ export function BlockRenderer({
   );
 
   if (customBlock) {
-    const blockContent =
-      (block.content as Record<string, unknown>) ??
-      customBlock.defaultContent ??
-      {};
+    // Defaults first so fields added to the template later still render.
+    const blockContent = {
+      ...(customBlock.defaultContent ?? {}),
+      ...((block.content as Record<string, unknown>) ?? {}),
+    };
 
     const nodeContentMap: Record<string, any> = {};
     for (const f of customBlock.fields ?? []) {
+      // Locked fields always show the template's value.
+      if (f.editable === false) {
+        blockContent[f.key] = customBlock.defaultContent?.[f.key];
+      }
       const val = blockContent[f.key];
-      if (val !== undefined) {
+      // Prop-based fields are written straight into the layout below; the
+      // node-id fallback is only for blocks made before `prop` existed.
+      if (val !== undefined && !f.prop) {
         nodeContentMap[f.nodeId] = val;
         nodeContentMap[f.key] = val;
       }
@@ -57,7 +65,10 @@ export function BlockRenderer({
       ...blockContent,
     };
 
-    const cbLayout = customBlock.layout as ElementNode;
+    const cbLayout = applyCustomBlockContent(
+      customBlock,
+      block.content as Record<string, unknown> | undefined,
+    ) as ElementNode;
     const blockLayout: ElementNode = {
       ...cbLayout,
       id:
