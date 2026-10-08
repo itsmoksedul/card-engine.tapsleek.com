@@ -11,11 +11,17 @@ const jsx_runtime_1 = require("react/jsx-runtime");
 /** Card owner's display name, assembled the same way the backend vCard does. */
 function displayName(card) {
     const name = [card?.firstName, card?.lastName].filter(Boolean).join(' ').trim();
-    return name || card?.name || '';
+    if (name || card?.name)
+        return name || card?.name;
+    if (card?.showPlaceholders)
+        return 'John Doe';
+    return '';
 }
 /** Job title · Company — skips the separator when either side is missing. */
 function subtitleOf(card) {
-    return [card?.jobTitle, card?.companyName].filter(Boolean).join(' · ');
+    const title = card?.jobTitle || (card?.showPlaceholders ? 'Job title' : '');
+    const comp = card?.companyName || (card?.showPlaceholders ? 'Company' : '');
+    return [title, comp].filter(Boolean).join(' · ');
 }
 function asArray(value) {
     return Array.isArray(value) ? value : [];

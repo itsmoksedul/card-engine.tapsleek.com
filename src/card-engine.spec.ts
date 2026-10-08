@@ -1165,6 +1165,22 @@ describe("composite widgets — layout subtree", () => {
         resolveBinding({ source: "self", path: "caption" }, {}, {}, content.cta_main),
       ).toBeUndefined();
     });
+
+    it("resolves system placeholders when card.showPlaceholders is true and fields are blank", () => {
+      const emptyCard = { showPlaceholders: true };
+      expect(resolveBinding({ source: "card", field: "fullName" }, emptyCard, {})).toBe("John Doe");
+      expect(resolveBinding({ source: "card", field: "firstName" }, emptyCard, {})).toBe("John");
+      expect(resolveBinding({ source: "card", field: "jobTitle" }, emptyCard, {})).toBe("Job title");
+      expect(resolveBinding({ source: "card", field: "companyName" }, emptyCard, {})).toBe("Company");
+      expect(resolveBinding({ source: "card", field: "profileImage" }, emptyCard, {})).toContain("data:image/svg+xml");
+      expect(resolveBinding({ source: "card", field: "coverPhoto" }, emptyCard, {})).toContain("data:image/svg+xml");
+    });
+
+    it("does not resolve placeholders when card.showPlaceholders is not set", () => {
+      const emptyCard = { firstName: "", lastName: "", jobTitle: "" };
+      expect(resolveBinding({ source: "card", field: "fullName" }, emptyCard, {})).toBeUndefined();
+      expect(resolveBinding({ source: "card", field: "jobTitle" }, emptyCard, {})).toBeUndefined();
+    });
   });
 
   // ── Compile: every subtree node is scoped under the widget, not as a part ──

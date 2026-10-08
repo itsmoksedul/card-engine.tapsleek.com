@@ -56,11 +56,13 @@ export function isCoreWidget(widget: string | undefined): boolean {
 export interface VisibilityCtx {
   links?: any[];
   blocks?: any[];
+  blockNodeMap?: Map<string, any>;
   isEditing?: boolean;
   gatedWidgetKeys?: string[];
   placeholderId?: string | null;
   injectBefore?: boolean;
   isRenderingUserBlocks?: boolean;
+  showPlaceholders?: boolean;
 }
 
 /**
@@ -73,6 +75,11 @@ export function isWidgetHiddenOnCard(node: WidgetNode, ctx: VisibilityCtx): bool
   if (ctx.isEditing || !Array.isArray(ctx.blocks)) return false;
   // A gated widget renders its upsell instead.
   if (ctx.gatedWidgetKeys?.includes(node.key) || ctx.gatedWidgetKeys?.includes(node.widget)) {
+    return false;
+  }
+
+  // If a block has been explicitly mapped to this template widget node, keep it visible!
+  if (ctx.blockNodeMap?.has(node.id)) {
     return false;
   }
 

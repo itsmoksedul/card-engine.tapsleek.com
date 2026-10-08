@@ -64,6 +64,10 @@ function isWidgetHiddenOnCard(node, ctx) {
     if (ctx.gatedWidgetKeys?.includes(node.key) || ctx.gatedWidgetKeys?.includes(node.widget)) {
         return false;
     }
+    // If a block has been explicitly mapped to this template widget node, keep it visible!
+    if (ctx.blockNodeMap?.has(node.id)) {
+        return false;
+    }
     const w = (node.widget || '').toUpperCase();
     const blocks = ctx.blocks;
     if (!exports.CORE_WIDGETS.has(w)) {

@@ -14,6 +14,8 @@ export interface RenderCtx {
   card: any;
   links: any[];
   blocks?: any[];
+  blockNodeMap?: Map<string, any>;
+  renderBlock?: (block: any) => React.ReactNode;
   isEditing?: boolean;
   gatedWidgetKeys?: string[];
   track: (event: any) => void;
@@ -832,6 +834,10 @@ function WidgetRenderer({
   // (FAQ, Gallery, Contact Form…) only render through the user's blocks, and
   // links/social widgets with nothing to show disappear.
   if (!ctx.isEditing && Array.isArray(ctx.blocks)) {
+    const matchedBlock = ctx.blockNodeMap?.get(node.id);
+    if (matchedBlock && ctx.renderBlock) {
+      return <>{ctx.renderBlock(matchedBlock)}</>;
+    }
     if (
       !isCoreWidget(node.widget) &&
       !ctx.isRenderingUserBlocks &&

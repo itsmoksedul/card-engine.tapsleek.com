@@ -12,5 +12,6 @@ export interface CardRendererProps {
     onActionClick?: (action: string) => void;
     blocks?: BlockInstance[];
     theme?: CardTheme;
+    showPlaceholders?: boolean;
 }
-export declare function CardRenderer({ definition, content, card, links, isEditing, gatedWidgetKeys, onTrack, onActionClick, blocks, theme, }: CardRendererProps): React.JSX.Element;
+export declare function CardRenderer({ definition, content, card, links, isEditing, gatedWidgetKeys, onTrack, onActionClick, blocks, theme, showPlaceholders, }: CardRendererProps): React.JSX.Element;

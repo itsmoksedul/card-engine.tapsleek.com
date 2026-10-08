@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolveBinding = resolveBinding;
 const links_1 = require("../catalog/links");
+const sample_preview_1 = require("../content/sample-preview");
 function formatLinkUrl(type, value) {
     if (!value)
         return "";
@@ -211,6 +212,7 @@ function getDynamicBase(slug) {
 function resolveCardField(field, card) {
     if (!card)
         return undefined;
+    const showPlaceholders = Boolean(card.showPlaceholders);
     switch (field) {
         // Assembled, not stored.
         case "fullName": {
@@ -218,17 +220,73 @@ function resolveCardField(field, card) {
                 .filter(Boolean)
                 .join(" ")
                 .trim();
-            return name || card.name || undefined;
+            return name || card.name || (showPlaceholders ? "John Doe" : undefined);
+        }
+        case "firstName": {
+            return card.firstName || (showPlaceholders ? "John" : undefined);
+        }
+        case "lastName": {
+            return card.lastName || (showPlaceholders ? "Doe" : undefined);
+        }
+        case "jobTitle": {
+            return card.jobTitle || (showPlaceholders ? "Job title" : undefined);
+        }
+        case "companyName":
+        case "company": {
+            return (card.companyName ||
+                card.company ||
+                (showPlaceholders ? "Company" : undefined));
+        }
+        case "location": {
+            return card.location || (showPlaceholders ? "Location" : undefined);
+        }
+        case "bio": {
+            return (card.bio ||
+                (showPlaceholders ? "Bio description goes here..." : undefined));
+        }
+        case "profileImage":
+        case "avatar": {
+            return (card.profileImage ||
+                card.avatar ||
+                (showPlaceholders ? sample_preview_1.DEMO_PREVIEW_ASSETS.avatar : undefined));
+        }
+        case "coverPhoto":
+        case "cover": {
+            return (card.coverPhoto ||
+                card.cover ||
+                (showPlaceholders ? sample_preview_1.DEMO_PREVIEW_ASSETS.cover : undefined));
+        }
+        case "companyLogo":
+        case "logo": {
+            return (card.companyLogo ||
+                card.logo ||
+                (showPlaceholders ? sample_preview_1.DEMO_PREVIEW_ASSETS.logo : undefined));
         }
         // Derived from the slug / share key.
         case "publicUrl":
-            return card.slug ? getDynamicBase(card.slug) : undefined;
+            return card.slug
+                ? getDynamicBase(card.slug)
+                : showPlaceholders
+                    ? "https://tapsleek.com/preview"
+                    : undefined;
         case "shareUrl":
-            return card.shareKey ? `${getDynamicBase()}/k/${card.shareKey}` : undefined;
+            return card.shareKey
+                ? `${getDynamicBase()}/k/${card.shareKey}`
+                : showPlaceholders
+                    ? "https://tapsleek.com/preview"
+                    : undefined;
         case "vcardUrl":
-            return card.slug ? `${getDynamicBase(card.slug)}/vcard` : undefined;
+            return card.slug
+                ? `${getDynamicBase(card.slug)}/vcard`
+                : showPlaceholders
+                    ? "#"
+                    : undefined;
         case "qrUrl":
-            return card.slug ? `${getDynamicBase(card.slug)}/qr` : undefined;
+            return card.slug
+                ? `${getDynamicBase(card.slug)}/qr`
+                : showPlaceholders
+                    ? "#"
+                    : undefined;
         default: {
             const value = card[field];
             // Normalise '' to undefined so `hideIfEmpty` behaves the same whether a

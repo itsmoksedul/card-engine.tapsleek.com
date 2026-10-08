@@ -26,12 +26,16 @@ export interface WidgetRenderProps<C = any, D = any> {
 /** Card owner's display name, assembled the same way the backend vCard does. */
 export function displayName(card: any): string {
   const name = [card?.firstName, card?.lastName].filter(Boolean).join(' ').trim();
-  return name || card?.name || '';
+  if (name || card?.name) return name || card?.name;
+  if (card?.showPlaceholders) return 'John Doe';
+  return '';
 }
 
 /** Job title · Company — skips the separator when either side is missing. */
 export function subtitleOf(card: any): string {
-  return [card?.jobTitle, card?.companyName].filter(Boolean).join(' · ');
+  const title = card?.jobTitle || (card?.showPlaceholders ? 'Job title' : '');
+  const comp = card?.companyName || (card?.showPlaceholders ? 'Company' : '');
+  return [title, comp].filter(Boolean).join(' · ');
 }
 
 export function asArray<T>(value: unknown): T[] {

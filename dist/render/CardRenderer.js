@@ -11,45 +11,115 @@ const registry_1 = require("../widgets/registry");
 const BlockRenderer_1 = require("./BlockRenderer");
 const card_visibility_1 = require("./card-visibility");
 const NodeRenderer_1 = require("./NodeRenderer");
-function CardRenderer({ definition, content, card, links, isEditing, gatedWidgetKeys, onTrack, onActionClick, blocks, theme, }) {
-    const placeholder = react_1.default.useMemo(() => {
-        if (isEditing || !blocks || blocks.length === 0)
-            return null;
-        let optionalId = null;
-        let copyrightId = null;
+function CardRenderer({ definition, content, card, links, isEditing, gatedWidgetKeys, onTrack, onActionClick, blocks, theme, showPlaceholders, }) {
+    const effectiveShowPlaceholders = Boolean(showPlaceholders ?? card?.showPlaceholders ?? isEditing);
+    // Map user blocks to specific template widget nodes so separate boxes designed
+    // in Admin builder are preserved and each block renders in its designated container.
+    const { blockNodeMap, unmatchedBlocks, placeholder } = react_1.default.useMemo(() => {
+        const map = new Map();
+        if (isEditing || !blocks || blocks.length === 0) {
+            return { blockNodeMap: map, unmatchedBlocks: [], placeholder: null };
+        }
+        const activeBlocks = blocks.filter((b) => b.hidden !== true && b.isVisible !== false);
+        // Collect all widget nodes in the template
+        const templateWidgets = [];
         (0, node_1.walkNodes)(definition.root, (n) => {
-            if (optionalId)
-                return;
             if ((0, node_1.isWidget)(n)) {
-                const w = (n.widget || '').toUpperCase();
-                if (w === 'COPYRIGHT' && !copyrightId) {
-                    copyrightId = n.id;
-                }
-                // Same core list the widget renderer uses — a widget it treats as core
-                // (e.g. VCARD_BUTTON) must never be picked to host the user's blocks.
-                if (!(0, card_visibility_1.isCoreWidget)(w))
-                    optionalId = n.id;
+                templateWidgets.push({ node: n, claimed: false });
             }
         });
-        if (optionalId)
-            return { id: optionalId, injectBefore: false };
-        if (copyrightId)
-            return { id: copyrightId, injectBefore: true };
-        return null;
+        const remainingBlocks = [];
+        // Pass 1: Match by exact ID or key
+        for (const b of activeBlocks) {
+            const match = templateWidgets.find((tw) => !tw.claimed &&
+                (tw.node.id === b.id ||
+                    tw.node.key === b.id ||
+                    b.nodeId === tw.node.id));
+            if (match) {
+                match.claimed = true;
+                map.set(match.node.id, b);
+            }
+            else {
+                remainingBlocks.push(b);
+            }
+        }
+        // Pass 2: Match by widget type (for non-core widgets or custom blocks)
+        const unmatched = [];
+        for (const b of remainingBlocks) {
+            const rawType = b.widget || b.type || "";
+            const normType = (0, registry_1.normalizeWidgetType)(rawType);
+            const match = templateWidgets.find((tw) => {
+                if (tw.claimed)
+                    return false;
+                const twType = (tw.node.widget || "").toUpperCase();
+                if ((0, card_visibility_1.isCoreWidget)(twType))
+                    return false;
+                return ((0, registry_1.normalizeWidgetType)(tw.node.widget) === normType ||
+                    tw.node.widget === rawType);
+            });
+            if (match) {
+                match.claimed = true;
+                map.set(match.node.id, b);
+            }
+            else {
+                unmatched.push(b);
+            }
+        }
+        // Pass 3: If any blocks remain unmatched, find a placeholder widget node
+        let placeholderResult = null;
+        if (unmatched.length > 0) {
+            const unclaimedNonCore = templateWidgets.find((tw) => !tw.claimed && !(0, card_visibility_1.isCoreWidget)(tw.node.widget));
+            if (unclaimedNonCore) {
+                placeholderResult = {
+                    id: unclaimedNonCore.node.id,
+                    injectBefore: false,
+                };
+            }
+            else {
+                const copyrightWidget = templateWidgets.find((tw) => (tw.node.widget || "").toUpperCase() === "COPYRIGHT");
+                if (copyrightWidget) {
+                    placeholderResult = {
+                        id: copyrightWidget.node.id,
+                        injectBefore: true,
+                    };
+                }
+            }
+        }
+        return {
+            blockNodeMap: map,
+            unmatchedBlocks: unmatched,
+            placeholder: placeholderResult,
+        };
     }, [definition.root, isEditing, blocks]);
     // Section frames left empty once unused widgets are hidden (blank boxes).
     const collapsedIds = react_1.default.useMemo(() => (0, card_visibility_1.collectCollapsedIds)(definition.root, {
         links,
         blocks,
+        blockNodeMap,
         isEditing,
         gatedWidgetKeys,
         placeholderId: placeholder?.id || null,
         injectBefore: placeholder?.injectBefore || false,
-    }), [definition.root, links, blocks, isEditing, gatedWidgetKeys, placeholder]);
-    const ctx = {
-        card: { ...card, links: links ?? card?.links },
+        showPlaceholders: effectiveShowPlaceholders,
+    }), [
+        definition.root,
         links,
         blocks,
+        blockNodeMap,
+        isEditing,
+        gatedWidgetKeys,
+        placeholder,
+        effectiveShowPlaceholders,
+    ]);
+    const ctx = {
+        card: {
+            ...card,
+            showPlaceholders: effectiveShowPlaceholders,
+            links: links ?? card?.links,
+        },
+        links,
+        blocks,
+        blockNodeMap,
         isEditing,
         gatedWidgetKeys,
         track: onTrack || (() => { }),
@@ -58,8 +128,21 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
         placeholderId: placeholder?.id || null,
         injectBefore: placeholder?.injectBefore || false,
         collapsedIds,
+        renderBlock: (block) => {
+            const normalizedBlock = {
+                ...block,
+                widget: (0, registry_1.normalizeWidgetType)(block.widget || block.type),
+            };
+            return ((0, jsx_runtime_1.jsx)(BlockRenderer_1.BlockRenderer, { definition: definition, block: normalizedBlock, ctx: {
+                    ...ctx,
+                    renderUserBlocks: undefined,
+                    isRenderingUserBlocks: true,
+                    collapsedIds: undefined,
+                } }, block.id));
+        },
         renderUserBlocks: () => {
-            if (!blocks || blocks.length === 0)
+            const blocksToRender = unmatchedBlocks.length > 0 ? unmatchedBlocks : blocks || [];
+            if (blocksToRender.length === 0)
                 return null;
             const blockCtx = {
                 ...ctx,
@@ -67,7 +150,7 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
                 isRenderingUserBlocks: true,
                 collapsedIds: undefined,
             };
-            return ((0, jsx_runtime_1.jsx)(react_1.default.Fragment, { children: blocks
+            return ((0, jsx_runtime_1.jsx)(react_1.default.Fragment, { children: blocksToRender
                     .filter((b) => b.hidden !== true && b.isVisible !== false)
                     .map((b) => {
                     const normalizedBlock = {

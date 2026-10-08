@@ -2,12 +2,18 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProfileRender = ProfileRender;
 const jsx_runtime_1 = require("react/jsx-runtime");
+const sample_preview_1 = require("../../content/sample-preview");
 const shared_1 = require("./shared");
 function ProfileRender({ design, cls, ctx }) {
     const card = ctx.card ?? {};
     const d = (design ?? {});
+    const showPlaceholders = Boolean(card.showPlaceholders);
     const name = (0, shared_1.displayName)(card);
     const subtitle = (0, shared_1.subtitleOf)(card);
-    const actions = Array.isArray(d.actions) ? d.actions : [];
-    return ((0, jsx_runtime_1.jsxs)("div", { className: cls('root'), "data-align": d.align ?? 'center', children: [d.showCover !== false && card.coverPhoto && ((0, jsx_runtime_1.jsx)("img", { className: cls('cover'), src: card.coverPhoto, alt: "", loading: "lazy" })), d.showAvatar !== false && card.profileImage && ((0, jsx_runtime_1.jsx)("img", { className: cls('avatar'), src: card.profileImage, alt: name, loading: "lazy" })), d.showLogo !== false && card.companyLogo && ((0, jsx_runtime_1.jsx)("img", { className: cls('logo'), src: card.companyLogo, alt: card.companyName ?? '', loading: "lazy" })), name && (0, jsx_runtime_1.jsx)("div", { className: cls('name'), children: name }), subtitle && (0, jsx_runtime_1.jsx)("div", { className: cls('subtitle'), children: subtitle }), d.showLocation !== false && card.location && ((0, jsx_runtime_1.jsx)("div", { className: cls('location'), children: card.location })), d.showBio !== false && card.bio && (0, jsx_runtime_1.jsx)("p", { className: cls('bio'), children: card.bio })] }));
+    const cover = card.coverPhoto || (showPlaceholders ? sample_preview_1.DEMO_PREVIEW_ASSETS.cover : undefined);
+    const avatar = card.profileImage || (showPlaceholders ? sample_preview_1.DEMO_PREVIEW_ASSETS.avatar : undefined);
+    const logo = card.companyLogo || (showPlaceholders ? sample_preview_1.DEMO_PREVIEW_ASSETS.logo : undefined);
+    const location = card.location || (showPlaceholders ? 'Location' : undefined);
+    const bio = card.bio || (showPlaceholders ? 'Bio description goes here...' : undefined);
+    return ((0, jsx_runtime_1.jsxs)("div", { className: cls('root'), "data-align": d.align ?? 'center', children: [d.showCover !== false && cover && ((0, jsx_runtime_1.jsx)("img", { className: cls('cover'), src: cover, alt: "", loading: "lazy" })), d.showAvatar !== false && avatar && ((0, jsx_runtime_1.jsx)("img", { className: cls('avatar'), src: avatar, alt: name || 'Avatar', loading: "lazy" })), d.showLogo !== false && logo && ((0, jsx_runtime_1.jsx)("img", { className: cls('logo'), src: logo, alt: card.companyName ?? '', loading: "lazy" })), name && (0, jsx_runtime_1.jsx)("div", { className: cls('name'), children: name }), subtitle && (0, jsx_runtime_1.jsx)("div", { className: cls('subtitle'), children: subtitle }), d.showLocation !== false && location && ((0, jsx_runtime_1.jsx)("div", { className: cls('location'), children: location })), d.showBio !== false && bio && (0, jsx_runtime_1.jsx)("p", { className: cls('bio'), children: bio })] }));
 }

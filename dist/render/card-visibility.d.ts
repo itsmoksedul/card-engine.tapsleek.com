@@ -9,11 +9,13 @@ export declare function isCoreWidget(widget: string | undefined): boolean;
 export interface VisibilityCtx {
     links?: any[];
     blocks?: any[];
+    blockNodeMap?: Map<string, any>;
     isEditing?: boolean;
     gatedWidgetKeys?: string[];
     placeholderId?: string | null;
     injectBefore?: boolean;
     isRenderingUserBlocks?: boolean;
+    showPlaceholders?: boolean;
 }
 /**
  * True when a template widget renders nothing on a user card: an optional

@@ -4,6 +4,8 @@ export interface RenderCtx {
     card: any;
     links: any[];
     blocks?: any[];
+    blockNodeMap?: Map<string, any>;
+    renderBlock?: (block: any) => React.ReactNode;
     isEditing?: boolean;
     gatedWidgetKeys?: string[];
     track: (event: any) => void;
