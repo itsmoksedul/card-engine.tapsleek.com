@@ -10,7 +10,7 @@ exports.meta = {
     contentVersion: 1,
     interactive: true,
     defaultLayout: {
-        id: 'root',
+        id: 'video-root',
         kind: 'element',
         tag: 'stack',
         style: {

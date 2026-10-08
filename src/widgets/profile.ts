@@ -18,7 +18,7 @@ export const meta: WidgetModule["meta"] = {
   contentVersion: 1,
   derived: true,
   defaultLayout: {
-    id: "root",
+    id: "profile-root",
     kind: "element",
     tag: "stack",
     style: {

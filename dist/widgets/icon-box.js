@@ -22,7 +22,7 @@ exports.meta = {
         link: "",
     },
     defaultLayout: {
-        id: "root",
+        id: "iconbox-root",
         kind: "element",
         tag: "link",
         bind: { source: "self", path: "link" },

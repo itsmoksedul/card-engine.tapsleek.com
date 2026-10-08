@@ -208,11 +208,14 @@ function formatValue(
 
 const MAP_HEIGHTS: Record<string, string> = { sm: "200", md: "300", lg: "450" };
 
-function base(): string {
+function getDynamicBase(slug?: string): string {
+  if (slug) {
+    return `https://${slug}.tapsleek.com`;
+  }
   const url =
     (typeof process !== "undefined" &&
       process.env?.NEXT_PUBLIC_CARD_BASE_URL) ||
-    "https://tapsleek.me";
+    "https://tapsleek.com";
   return String(url).replace(/\/+$/, "");
 }
 
@@ -231,13 +234,13 @@ function resolveCardField(field: string, card: any): any {
 
     // Derived from the slug / share key.
     case "publicUrl":
-      return card.slug ? `${base()}/${card.slug}` : undefined;
+      return card.slug ? getDynamicBase(card.slug) : undefined;
     case "shareUrl":
-      return card.shareKey ? `${base()}/k/${card.shareKey}` : undefined;
+      return card.shareKey ? `${getDynamicBase()}/k/${card.shareKey}` : undefined;
     case "vcardUrl":
-      return card.slug ? `${base()}/${card.slug}/vcard` : undefined;
+      return card.slug ? `${getDynamicBase(card.slug)}/vcard` : undefined;
     case "qrUrl":
-      return card.slug ? `${base()}/${card.slug}/qr` : undefined;
+      return card.slug ? `${getDynamicBase(card.slug)}/qr` : undefined;
 
     default: {
       const value = card[field];

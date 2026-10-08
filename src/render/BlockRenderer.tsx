@@ -27,20 +27,26 @@ export function BlockRenderer({
   const rawType = block.widget || (block as any).type || '';
   const widgetType = normalizeWidgetType(rawType);
   const Widget = WIDGET_RENDERERS[widgetType as keyof typeof WIDGET_RENDERERS] as any;
-  const { design, layout } = resolveBlockDesign(definition, widgetType);
+  const { design, layout, hasCustomLayout } = resolveBlockDesign(definition, widgetType);
   const meta = getWidgetMeta(widgetType);
   const content = (block.content as Record<string, unknown>) ?? meta?.defaultContent ?? {};
   const mergedDesign = { ...(design || {}), ...(content || {}) };
 
-  if (layout) {
+  // 1. If the template explicitly defined a custom layout tree for this widget instance, render it:
+  if (hasCustomLayout && layout) {
+    const safeLayout =
+      layout.id === 'root'
+        ? { ...layout, id: `${widgetType.toLowerCase()}-root` }
+        : layout;
     return (
       <div
         className={blockClass(block.widget)}
         data-widget={block.widget}
         data-block-id={ctx.isEditing ? block.id : undefined}
+        style={{ width: '100%', boxSizing: 'border-box' }}
       >
         <NodeRenderer
-          node={layout}
+          node={safeLayout}
           content={{ [block.id]: content, _design: mergedDesign }}
           ctx={{ ...ctx, selfData: content }}
         />
@@ -48,13 +54,38 @@ export function BlockRenderer({
     );
   }
 
-  if (!Widget) {
+  // 2. Specialized Widget renderer (Video with YouTube iframe, Map, Title, Description, etc.)
+  if (Widget) {
     return (
       <div
         className={blockClass(block.widget)}
+        data-widget={block.widget}
         data-block-id={ctx.isEditing ? block.id : undefined}
+        style={{ width: '100%', boxSizing: 'border-box' }}
       >
-        {ctx.isEditing ? `Unknown widget: ${block.widget}` : null}
+        <Widget content={content} design={mergedDesign} cls={(part: string) => `p-${part}`} ctx={ctx} />
+      </div>
+    );
+  }
+
+  // 3. Fallback to defaultLayout if no specialized Widget renderer exists
+  if (layout) {
+    const safeLayout =
+      layout.id === 'root'
+        ? { ...layout, id: `${widgetType.toLowerCase()}-root` }
+        : layout;
+    return (
+      <div
+        className={blockClass(block.widget)}
+        data-widget={block.widget}
+        data-block-id={ctx.isEditing ? block.id : undefined}
+        style={{ width: '100%', boxSizing: 'border-box' }}
+      >
+        <NodeRenderer
+          node={safeLayout}
+          content={{ [block.id]: content, _design: mergedDesign }}
+          ctx={{ ...ctx, selfData: content }}
+        />
       </div>
     );
   }
@@ -62,10 +93,10 @@ export function BlockRenderer({
   return (
     <div
       className={blockClass(block.widget)}
-      data-widget={block.widget}
       data-block-id={ctx.isEditing ? block.id : undefined}
+      style={{ width: '100%', boxSizing: 'border-box' }}
     >
-      <Widget content={content} design={design} cls={(part: string) => `p-${part}`} ctx={ctx} />
+      {ctx.isEditing ? `Unknown widget: ${block.widget}` : null}
     </div>
   );
 }

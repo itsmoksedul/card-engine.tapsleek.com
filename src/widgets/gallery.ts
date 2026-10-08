@@ -136,7 +136,7 @@ export const meta: WidgetModule["meta"] = {
     ],
   },
   defaultLayout: {
-    id: "root",
+    id: "gallery-root",
     kind: "element",
     tag: "stack",
     name: "Container",

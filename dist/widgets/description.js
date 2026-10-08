@@ -12,7 +12,7 @@ exports.meta = {
     defaultDesign: { align: "left" },
     defaultContent: { text: "Tell people a little about what you do." },
     defaultLayout: {
-        id: "root",
+        id: "desc-root",
         kind: "element",
         tag: "frame",
         style: {

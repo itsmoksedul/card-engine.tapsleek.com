@@ -227,8 +227,10 @@ function ElementRenderer({ node, content, ctx, }) {
     const customClass = typeof props.className === "string" && props.className.trim()
         ? ` ${props.className}`
         : "";
+    const isTemplateRoot = node.id === ctx.rootId && !ctx.isRenderingUserBlocks;
+    const domNodeClass = isTemplateRoot ? node.id : (node.id === "root" ? "elem-root" : node.id);
     const dom = {
-        className: `n${node.id} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}${customClass}`,
+        className: `n${domNodeClass} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}${customClass}`,
     };
     // Only forward allowlisted, primitive attributes.
     for (const [key, value] of Object.entries(props)) {

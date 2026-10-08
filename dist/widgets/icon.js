@@ -15,7 +15,7 @@ exports.meta = {
     defaultDesign: { align: "center" },
     defaultContent: { icon: "Star", link: "" },
     defaultLayout: {
-        id: "root",
+        id: "icon-root",
         kind: "element",
         tag: "icon",
         bind: { source: "self", path: "icon" },

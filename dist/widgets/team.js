@@ -10,7 +10,7 @@ exports.meta = {
     description: "A grid of team members with photos and roles.",
     contentVersion: 1,
     defaultLayout: {
-        id: "root",
+        id: "team-root",
         kind: "element",
         tag: "stack",
         style: {

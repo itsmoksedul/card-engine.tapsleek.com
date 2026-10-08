@@ -9,7 +9,7 @@ exports.meta = {
     description: "A vertical timeline of events, history, or steps.",
     contentVersion: 1,
     defaultLayout: {
-        id: "root",
+        id: "timeline-root",
         kind: "element",
         tag: "stack",
         style: {

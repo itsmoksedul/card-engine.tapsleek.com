@@ -5,6 +5,7 @@ export interface BlockDesign {
     design: Record<string, unknown>;
     partStyles: Record<string, StyleSet>;
     layout?: ElementNode;
+    hasCustomLayout?: boolean;
     rootStyle?: StyleSet;
     rootHidden?: Partial<Record<'base' | 'sm' | 'md', boolean>>;
 }

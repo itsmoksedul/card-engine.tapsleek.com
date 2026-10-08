@@ -58,6 +58,7 @@ function resolveBlockDesign(def, type) {
         design: { ...(meta?.defaultDesign ?? {}), ...(inst?.design ?? {}) },
         partStyles,
         layout: inst?.layout ?? meta?.defaultLayout,
+        hasCustomLayout: Boolean(inst?.layout),
         rootStyle: inst?.rootStyle,
         rootHidden: inst?.rootHidden,
     };

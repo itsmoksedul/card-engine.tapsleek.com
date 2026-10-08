@@ -14,7 +14,7 @@ exports.meta = {
     defaultDesign: { level: "h2", align: "left" },
     defaultContent: { text: "Section title" },
     defaultLayout: {
-        id: "root",
+        id: "title-root",
         kind: "element",
         tag: "frame",
         style: {

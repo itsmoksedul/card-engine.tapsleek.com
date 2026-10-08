@@ -108,7 +108,7 @@ exports.meta = {
     defaultContent: {},
     defaultLayout: {
         kind: "element",
-        id: "root",
+        id: "connect-root",
         tag: "stack",
         name: "Connect Buttons",
         style: {

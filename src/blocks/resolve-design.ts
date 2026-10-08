@@ -7,6 +7,7 @@ export interface BlockDesign {
   design: Record<string, unknown>;
   partStyles: Record<string, StyleSet>;
   layout?: ElementNode;
+  hasCustomLayout?: boolean;
   rootStyle?: StyleSet;
   rootHidden?: Partial<Record<'base' | 'sm' | 'md', boolean>>;
 }
@@ -68,6 +69,7 @@ export function resolveBlockDesign(def: TemplateDefinition, type: string): Block
     design: { ...(meta?.defaultDesign ?? {}), ...(inst?.design ?? {}) },
     partStyles,
     layout: inst?.layout ?? meta?.defaultLayout,
+    hasCustomLayout: Boolean(inst?.layout),
     rootStyle: inst?.rootStyle,
     rootHidden: inst?.rootHidden,
   };

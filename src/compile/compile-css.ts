@@ -150,13 +150,14 @@ export function compileCss(
     walkTreeOrder(root, function compileNode(node) {
       const cls = nodeClass(node.id, warnings);
       if (!cls) return;
-      const sel = `.${scope} .${cls}`;
+      const isCardRoot = node === root && root === def.root;
+      const sel = isCardRoot ? `.${scope} > .${cls}` : `.${scope} .${cls}`;
       let produced = 0;
 
       // base / sm / md
       for (const bp of ["base", "sm", "md"] as const) {
         const props = { ...mergeHidden(node.style?.[bp], node.hidden?.[bp]) };
-        if (node.id === "root") {
+        if (isCardRoot) {
           if (props.borderRadius && props.overflow === undefined) {
             props.overflow = "hidden";
           }
@@ -295,6 +296,13 @@ export function compileCss(
     for (const type of types) {
       const { partStyles, layout, rootStyle, rootHidden } = resolveBlockDesign(def, type);
       const sel = `.${scope} .${blockClass(type)}`;
+      bucket["base"].push({
+        selector: sel,
+        decls: [
+          ["width", "100%"],
+          ["box-sizing", "border-box"],
+        ],
+      });
       if (partStyles && Object.keys(partStyles).length) {
         compilePartStyles(partStyles, sel, bucket, states, warnings);
       }
@@ -314,7 +322,11 @@ export function compileCss(
         walkTreeOrder(layout, (layoutNode) => {
           const layoutCls = nodeClass(layoutNode.id, warnings);
           if (!layoutCls) return;
-          const layoutSel = layoutNode === layout ? sel : `${sel} .${layoutCls}`;
+          const layoutPart = layoutCls.replace(/^n/, "");
+          const layoutSel =
+            layoutNode === layout
+              ? sel
+              : `${sel} .p-${layoutPart}, ${sel} .${layoutCls}`;
           for (const bp of ["base", "sm", "md"] as const) {
             const props = mergeHidden(
               layoutNode.style?.[bp],

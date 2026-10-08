@@ -21,7 +21,7 @@ exports.meta = {
         text: "© 2026 TapSleek. All rights reserved.",
     },
     defaultLayout: {
-        id: "root",
+        id: "copyright-root",
         kind: "element",
         tag: "stack",
         style: {

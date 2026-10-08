@@ -10,7 +10,7 @@ export const meta: WidgetModule["meta"] = {
   deprecated: { since: "1.0", note: "QR Code widget is deprecated." },
   derived: true,
   defaultLayout: {
-    id: "root",
+    id: "qrcode-root",
     kind: "element",
     tag: "stack",
     style: {
