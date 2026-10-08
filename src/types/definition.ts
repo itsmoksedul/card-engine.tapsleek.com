@@ -87,6 +87,7 @@ export interface CustomBlockField {
   label: string;
   type: 'text' | 'textarea' | 'url' | 'image' | 'video';
   default?: unknown;
+  hint?: string;
 }
 
 export interface TemplateCustomBlock {
