@@ -679,33 +679,21 @@ function ElementRenderer({
     return React.createElement(tag, dom);
   }
 
-  // When rendering a user card (blocks present), sort the direct widget
-  // children of this element by the user's block position, so drag-reorder
-  // in the editor is immediately reflected in the preview.
-  let sortedChildren = node.children;
-  if (
-    !ctx.isEditing &&
-    ctx.blockPositionMap &&
-    ctx.blockPositionMap.size > 0 &&
-    node.children &&
-    node.children.some(
-      (c) => c.kind === "widget" && ctx.blockPositionMap!.has(c.id),
-    )
-  ) {
-    sortedChildren = [...node.children].sort((a, b) => {
-      const posA = ctx.blockPositionMap!.get(a.id) ?? Infinity;
-      const posB = ctx.blockPositionMap!.get(b.id) ?? Infinity;
-      return posA - posB;
-    });
-  }
-
   return React.createElement(
     tag,
     dom,
     <>
       {children}
-      {sortedChildren?.map((child) => (
-        <NodeRenderer key={child.id} node={child} content={content} ctx={ctx} />
+      {node.children?.map((child) => (
+        <React.Fragment key={child.id}>
+          {!ctx.isEditing &&
+            ctx.placeholderId &&
+            ctx.injectBefore &&
+            child.id === ctx.placeholderId &&
+            ctx.renderUserBlocks &&
+            ctx.renderUserBlocks()}
+          <NodeRenderer key={child.id} node={child} content={content} ctx={ctx} />
+        </React.Fragment>
       ))}
       {node.id === ctx.rootId &&
         !ctx.placeholderId &&

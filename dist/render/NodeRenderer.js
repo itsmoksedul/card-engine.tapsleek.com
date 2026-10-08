@@ -552,22 +552,12 @@ function ElementRenderer({ node, content, ctx, }) {
     if (VOID_DOM_TAGS.has(tag) || dom.dangerouslySetInnerHTML) {
         return react_1.default.createElement(tag, dom);
     }
-    // When rendering a user card (blocks present), sort the direct widget
-    // children of this element by the user's block position, so drag-reorder
-    // in the editor is immediately reflected in the preview.
-    let sortedChildren = node.children;
-    if (!ctx.isEditing &&
-        ctx.blockPositionMap &&
-        ctx.blockPositionMap.size > 0 &&
-        node.children &&
-        node.children.some((c) => c.kind === "widget" && ctx.blockPositionMap.has(c.id))) {
-        sortedChildren = [...node.children].sort((a, b) => {
-            const posA = ctx.blockPositionMap.get(a.id) ?? Infinity;
-            const posB = ctx.blockPositionMap.get(b.id) ?? Infinity;
-            return posA - posB;
-        });
-    }
-    return react_1.default.createElement(tag, dom, (0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [children, sortedChildren?.map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id))), node.id === ctx.rootId &&
+    return react_1.default.createElement(tag, dom, (0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [children, node.children?.map((child) => ((0, jsx_runtime_1.jsxs)(react_1.default.Fragment, { children: [!ctx.isEditing &&
+                        ctx.placeholderId &&
+                        ctx.injectBefore &&
+                        child.id === ctx.placeholderId &&
+                        ctx.renderUserBlocks &&
+                        ctx.renderUserBlocks(), (0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)] }, child.id))), node.id === ctx.rootId &&
                 !ctx.placeholderId &&
                 ctx.renderUserBlocks &&
                 ctx.renderUserBlocks()] }));
