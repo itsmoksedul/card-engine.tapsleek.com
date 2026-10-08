@@ -92,42 +92,48 @@ const VcardButton = __importStar(require("./vcard-button"));
 const Video = __importStar(require("./video"));
 const VideoGallery = __importStar(require("./video-gallery"));
 const MODULES = [
+    // System widgets (Header & Footer)
     Profile,
     ConnectButtons,
     ContactLinks,
-    LeadForm,
     Copyright,
+    // Active content widgets
     Title,
     Description,
-    RichText,
     ImageWidget,
-    IconBox,
+    Icon,
+    Video,
     ServiceList,
     Gallery,
-    Faq,
-    Testimonials,
-    BusinessHours,
-    Appointment,
-    CtaButton,
-    Icon,
-    SocialIcons,
-    Video,
-    VideoGallery,
-    Embed,
     MapWidget,
-    Stats,
-    Timeline,
-    PriceList,
-    Team,
+    CtaButton,
+    Embed,
     Spacer,
-    Divider,
-    QrCode,
-    VcardButton,
-    ShareButton,
-    LogoWall,
-    FeatureGrid,
 ];
-const BY_TYPE = new Map(MODULES.map((m) => [m.meta.type, m]));
+// Keep legacy widgets in lookup map so existing cards continue to render safely
+const ALL_MODULES = [
+    ...MODULES,
+    Appointment,
+    BusinessHours,
+    Faq,
+    FeatureGrid,
+    IconBox,
+    LeadForm,
+    LogoWall,
+    PriceList,
+    QrCode,
+    RichText,
+    ShareButton,
+    SocialIcons,
+    Stats,
+    Team,
+    Testimonials,
+    Timeline,
+    VcardButton,
+    VideoGallery,
+    Divider,
+];
+const BY_TYPE = new Map(ALL_MODULES.map((m) => [m.meta.type, m]));
 /** Every registered type, in palette order. */
 exports.WIDGET_TYPES = MODULES.map((m) => m.meta.type);
 exports.WIDGET_ALIASES = {

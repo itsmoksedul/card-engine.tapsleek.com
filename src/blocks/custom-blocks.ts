@@ -159,6 +159,7 @@ export function extractFieldsFromNode(rootNode: Node): {
           default: urlVal,
         });
         defaultContent[k] = urlVal;
+        n.key = k;
       } else if (widgetType === 'TITLE' || widgetType === 'HEADING') {
         const k = uniqueKey('title');
         const textVal = String(defContent.text ?? '');
@@ -170,6 +171,7 @@ export function extractFieldsFromNode(rootNode: Node): {
           default: textVal,
         });
         defaultContent[k] = textVal;
+        n.key = k;
       } else if (widgetType === 'DESCRIPTION' || widgetType === 'RICH_TEXT') {
         const k = uniqueKey('description');
         const textVal = String(defContent.text ?? '');
@@ -181,6 +183,7 @@ export function extractFieldsFromNode(rootNode: Node): {
           default: textVal,
         });
         defaultContent[k] = textVal;
+        n.key = k;
       } else if (widgetType === 'MAP' || widgetType === 'MAPS') {
         const k = uniqueKey('address');
         const addrVal = String(defContent.address ?? '');
@@ -192,6 +195,7 @@ export function extractFieldsFromNode(rootNode: Node): {
           default: addrVal,
         });
         defaultContent[k] = addrVal;
+        n.key = k;
       }
     }
   }

@@ -1,7 +1,6 @@
-import React from 'react';
-import type { TemplateDefinition } from '../types/definition';
-import type { BlockInstance } from '../types/block';
-import { type RenderCtx } from './NodeRenderer';
+import type { BlockInstance } from "../types/block";
+import type { TemplateDefinition } from "../types/definition";
+import { type RenderCtx } from "./NodeRenderer";
 /**
  * One user-composed block (v2.1).
  *
@@ -15,4 +14,4 @@ export declare function BlockRenderer({ definition, block, ctx, }: {
     definition: TemplateDefinition;
     block: BlockInstance;
     ctx: RenderCtx;
-}): React.JSX.Element;
+}): import("react").JSX.Element;

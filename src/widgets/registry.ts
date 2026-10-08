@@ -61,44 +61,52 @@ export interface RegisteredWidget {
 }
 
 const MODULES: RegisteredWidget[] = [
+  // System widgets (Header & Footer)
   Profile,
   ConnectButtons,
   ContactLinks,
-  LeadForm,
   Copyright,
+
+  // Active content widgets
   Title,
   Description,
-  RichText,
   ImageWidget,
-  IconBox,
+  Icon,
+  Video,
   ServiceList,
   Gallery,
-  Faq,
-  Testimonials,
-  BusinessHours,
-  Appointment,
-  CtaButton,
-  Icon,
-  SocialIcons,
-  Video,
-  VideoGallery,
-  Embed,
   MapWidget,
-  Stats,
-  Timeline,
-  PriceList,
-  Team,
+  CtaButton,
+  Embed,
   Spacer,
-  Divider,
-  QrCode,
-  VcardButton,
-  ShareButton,
-  LogoWall,
+] as RegisteredWidget[];
+
+// Keep legacy widgets in lookup map so existing cards continue to render safely
+const ALL_MODULES: RegisteredWidget[] = [
+  ...MODULES,
+  Appointment,
+  BusinessHours,
+  Faq,
   FeatureGrid,
+  IconBox,
+  LeadForm,
+  LogoWall,
+  PriceList,
+  QrCode,
+  RichText,
+  ShareButton,
+  SocialIcons,
+  Stats,
+  Team,
+  Testimonials,
+  Timeline,
+  VcardButton,
+  VideoGallery,
+  Divider,
 ] as RegisteredWidget[];
 
 const BY_TYPE = new Map<string, RegisteredWidget>(
-  MODULES.map((m) => [m.meta.type, m]),
+  ALL_MODULES.map((m) => [m.meta.type, m]),
 );
 
 /** Every registered type, in palette order. */

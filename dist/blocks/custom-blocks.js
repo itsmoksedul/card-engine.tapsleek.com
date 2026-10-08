@@ -154,6 +154,7 @@ function extractFieldsFromNode(rootNode) {
                     default: urlVal,
                 });
                 defaultContent[k] = urlVal;
+                n.key = k;
             }
             else if (widgetType === 'TITLE' || widgetType === 'HEADING') {
                 const k = uniqueKey('title');
@@ -166,6 +167,7 @@ function extractFieldsFromNode(rootNode) {
                     default: textVal,
                 });
                 defaultContent[k] = textVal;
+                n.key = k;
             }
             else if (widgetType === 'DESCRIPTION' || widgetType === 'RICH_TEXT') {
                 const k = uniqueKey('description');
@@ -178,6 +180,7 @@ function extractFieldsFromNode(rootNode) {
                     default: textVal,
                 });
                 defaultContent[k] = textVal;
+                n.key = k;
             }
             else if (widgetType === 'MAP' || widgetType === 'MAPS') {
                 const k = uniqueKey('address');
@@ -190,6 +193,7 @@ function extractFieldsFromNode(rootNode) {
                     default: addrVal,
                 });
                 defaultContent[k] = addrVal;
+                n.key = k;
             }
         }
     }

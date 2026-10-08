@@ -271,12 +271,19 @@ function ElementRenderer({
   const bound = resolveBinding(node.bind, ctx.card, content, ctx.selfData);
   const props = (node.props ?? {}) as Record<string, any>;
 
-  // A bound node that resolves empty disappears entirely — that's what stops an
-  // absent bio leaving a gap in the layout. But if the node has fallback static
-  // props (props.src, props.text, props.html), keep it so templates show placeholders.
+  // Check fallback from content/selfData by nodeId or key if unbound
+  const fallbackVal =
+    (node.id ? content?.[node.id] : undefined) ??
+    (node.id ? ctx.selfData?.[node.id] : undefined);
+  const activeVal = !isEmpty(bound) ? bound : fallbackVal;
+  const resolvedText =
+    typeof activeVal === "object" && activeVal !== null
+      ? ((activeVal as any).text ?? (activeVal as any).value ?? "")
+      : activeVal;
+
   if (
     node.hideIfEmpty &&
-    isEmpty(bound) &&
+    isEmpty(resolvedText) &&
     !props.src &&
     !props.text &&
     !props.html
@@ -410,7 +417,7 @@ function ElementRenderer({
     }
     case "heading":
     case "text": {
-      children = bound ?? props.text ?? "";
+      children = !isEmpty(resolvedText) ? resolvedText : (props.text ?? "");
       break;
     }
     case "richtext": {
@@ -818,7 +825,80 @@ function WidgetRenderer({
   ] as any;
 
   const widgetMeta = getWidgetMeta(node.widget);
-  const widgetContent = content?.[node.key] ?? node.defaultContent ?? {};
+  const wType = (node.widget || "").toUpperCase();
+
+  // Resolve content for this widget from direct keys, IDs, or selfData (custom blocks)
+  let rawWidgetContent =
+    (node.key ? content?.[node.key] : undefined) ??
+    (node.id ? content?.[node.id] : undefined) ??
+    (node.key ? ctx.selfData?.[node.key] : undefined) ??
+    (node.id ? ctx.selfData?.[node.id] : undefined);
+
+  // If inside a block/group and not matched directly, infer by widget type conventions
+  if (rawWidgetContent === undefined && ctx.selfData) {
+    if (wType === "TITLE" || wType === "HEADING") {
+      rawWidgetContent =
+        ctx.selfData.title ??
+        ctx.selfData.title_1 ??
+        ctx.selfData.heading ??
+        ctx.selfData.heading_1;
+    } else if (wType === "DESCRIPTION" || wType === "RICH_TEXT") {
+      rawWidgetContent =
+        ctx.selfData.description ??
+        ctx.selfData.description_1 ??
+        ctx.selfData.text ??
+        ctx.selfData.text_1;
+    } else if (wType === "VIDEO") {
+      rawWidgetContent =
+        ctx.selfData.videoUrl ??
+        ctx.selfData.videoUrl_1 ??
+        ctx.selfData.url;
+    } else if (wType === "IMAGE") {
+      rawWidgetContent =
+        ctx.selfData.imageUrl ??
+        ctx.selfData.imageUrl_1 ??
+        ctx.selfData.src;
+    }
+  }
+
+  // Normalize into standard widget data structure
+  let widgetContent: Record<string, any>;
+  if (typeof rawWidgetContent === "string" || typeof rawWidgetContent === "number") {
+    if (
+      wType === "TITLE" ||
+      wType === "HEADING" ||
+      wType === "DESCRIPTION" ||
+      wType === "RICH_TEXT"
+    ) {
+      widgetContent = {
+        ...(node.defaultContent ?? {}),
+        text: String(rawWidgetContent),
+      };
+    } else if (wType === "VIDEO") {
+      widgetContent = {
+        ...(node.defaultContent ?? {}),
+        url: String(rawWidgetContent),
+      };
+    } else if (wType === "IMAGE") {
+      widgetContent = {
+        ...(node.defaultContent ?? {}),
+        src: String(rawWidgetContent),
+      };
+    } else {
+      widgetContent = {
+        ...(node.defaultContent ?? {}),
+        text: String(rawWidgetContent),
+        value: String(rawWidgetContent),
+      };
+    }
+  } else if (rawWidgetContent && typeof rawWidgetContent === "object") {
+    widgetContent = { ...(node.defaultContent ?? {}), ...rawWidgetContent };
+  } else {
+    widgetContent =
+      (node.key ? content?.[node.key] : undefined) ??
+      node.defaultContent ??
+      {};
+  }
 
   // For derived widgets that have NO defaultLayout defined in their meta,
   // skip any stored node.layout and use the React render component directly.
