@@ -15,7 +15,7 @@ const zod_1 = require("zod");
 const field_1 = require("../types/field");
 /** URLs we accept in a `url` field — no javascript:, no data: (except vCard). */
 const URL_RE = /^(https?:\/\/[^\s]+|mailto:[^\s]+|tel:\+?[0-9()\s-]+|sms:\+?[0-9()\s-]+|\/[^\s]*|#[A-Za-z0-9_-]+)$/i;
-const HEX_OR_TOKEN_RE = /^#[0-9A-Fa-f]{3,8}$|^\{color\.[A-Za-z0-9_-]+\}$|^$/;
+const HEX_OR_TOKEN_RE = /^#[0-9A-Fa-f]{3,8}$|^\{color\.[A-Za-z0-9_-]+\}(?:\/\d+(?:\.\d+)?%?)?$|^$/;
 const ICON_RE = /^[A-Za-z0-9_-]{0,64}$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;

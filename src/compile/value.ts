@@ -19,9 +19,9 @@ import type {
   TransitionValue,
 } from "../types/style";
 
-/** `{group.name}` where name is `[a-z0-9_-]` (case-insensitive). */
+/** `{group.name}` optionally followed by `/alpha` (e.g. `{color.primary}/15%`). */
 const TOKEN_RE =
-  /^\{(color|space|radius|font|size|shadow)\.([A-Za-z0-9_-]+)\}$/;
+  /^\{(color|space|radius|font|size|shadow)\.([A-Za-z0-9_-]+)\}(?:\/(\d+(?:\.\d+)?%?))?$/;
 
 /** Safe CSS identifier — token names and node ids are held to this. */
 export const IDENT_RE = /^[A-Za-z0-9_-]+$/;
@@ -58,14 +58,23 @@ export function isTokenRef(v: unknown): v is string {
 
 export function parseTokenRef(
   v: string,
-): { group: TokenGroup; name: string } | null {
+): { group: TokenGroup; name: string; alpha?: string } | null {
   const m = TOKEN_RE.exec(v);
-  return m ? { group: m[1] as TokenGroup, name: m[2] } : null;
+  return m ? { group: m[1] as TokenGroup, name: m[2], alpha: m[3] } : null;
 }
 
-/** `{color.primary}` → `var(--c-primary)`. */
-export function tokenVar(group: TokenGroup, name: string): string {
-  return `var(${TOKEN_PREFIX[group]}${name})`;
+/** `{color.primary}` → `var(--c-primary)`. With alpha → `color-mix(in srgb, var(--c-primary) 15%, transparent)`. */
+export function tokenVar(group: TokenGroup, name: string, alpha?: string): string {
+  const v = `var(${TOKEN_PREFIX[group]}${name})`;
+  if (alpha) {
+    let p = alpha;
+    if (!p.endsWith("%")) {
+      const num = parseFloat(p);
+      p = num <= 1 ? `${Math.round(num * 100)}%` : `${num}%`;
+    }
+    return `color-mix(in srgb, ${v} ${p}, transparent)`;
+  }
+  return v;
 }
 
 /**
@@ -91,7 +100,7 @@ export function cssValue(
   if (s.length > 200) return null;
 
   const ref = parseTokenRef(s);
-  if (ref) return tokenVar(ref.group, ref.name);
+  if (ref) return tokenVar(ref.group, ref.name, ref.alpha);
 
   if (kind === "length" && /^-?\d+(\.\d+)?$/.test(s)) {
     return s === "0" ? "0" : `${s}px`;

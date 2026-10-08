@@ -35,9 +35,10 @@ export declare function isTokenRef(v: unknown): v is string;
 export declare function parseTokenRef(v: string): {
     group: TokenGroup;
     name: string;
+    alpha?: string;
 } | null;
-/** `{color.primary}` → `var(--c-primary)`. */
-export declare function tokenVar(group: TokenGroup, name: string): string;
+/** `{color.primary}` → `var(--c-primary)`. With alpha → `color-mix(in srgb, var(--c-primary) 15%, transparent)`. */
+export declare function tokenVar(group: TokenGroup, name: string, alpha?: string): string;
 /**
  * Resolve one scalar value to CSS text, or `null` if it fails validation.
  * A token ref always wins — its literal value is validated once, at the token

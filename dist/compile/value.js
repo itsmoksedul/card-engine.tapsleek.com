@@ -26,8 +26,8 @@ exports.transform = transform;
 exports.clamp = clamp;
 exports.utf8Bytes = utf8Bytes;
 const definition_1 = require("../types/definition");
-/** `{group.name}` where name is `[a-z0-9_-]` (case-insensitive). */
-const TOKEN_RE = /^\{(color|space|radius|font|size|shadow)\.([A-Za-z0-9_-]+)\}$/;
+/** `{group.name}` optionally followed by `/alpha` (e.g. `{color.primary}/15%`). */
+const TOKEN_RE = /^\{(color|space|radius|font|size|shadow)\.([A-Za-z0-9_-]+)\}(?:\/(\d+(?:\.\d+)?%?))?$/;
 /** Safe CSS identifier — token names and node ids are held to this. */
 exports.IDENT_RE = /^[A-Za-z0-9_-]+$/;
 exports.VALUE_RE = {
@@ -55,11 +55,20 @@ function isTokenRef(v) {
 }
 function parseTokenRef(v) {
     const m = TOKEN_RE.exec(v);
-    return m ? { group: m[1], name: m[2] } : null;
+    return m ? { group: m[1], name: m[2], alpha: m[3] } : null;
 }
-/** `{color.primary}` → `var(--c-primary)`. */
-function tokenVar(group, name) {
-    return `var(${definition_1.TOKEN_PREFIX[group]}${name})`;
+/** `{color.primary}` → `var(--c-primary)`. With alpha → `color-mix(in srgb, var(--c-primary) 15%, transparent)`. */
+function tokenVar(group, name, alpha) {
+    const v = `var(${definition_1.TOKEN_PREFIX[group]}${name})`;
+    if (alpha) {
+        let p = alpha;
+        if (!p.endsWith("%")) {
+            const num = parseFloat(p);
+            p = num <= 1 ? `${Math.round(num * 100)}%` : `${num}%`;
+        }
+        return `color-mix(in srgb, ${v} ${p}, transparent)`;
+    }
+    return v;
 }
 /**
  * Resolve one scalar value to CSS text, or `null` if it fails validation.
@@ -84,7 +93,7 @@ function cssValue(v, kind) {
         return null;
     const ref = parseTokenRef(s);
     if (ref)
-        return tokenVar(ref.group, ref.name);
+        return tokenVar(ref.group, ref.name, ref.alpha);
     if (kind === "length" && /^-?\d+(\.\d+)?$/.test(s)) {
         return s === "0" ? "0" : `${s}px`;
     }
