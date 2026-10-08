@@ -27,7 +27,7 @@ const UNSAFE_PROP_RE = /^(on[A-Za-z]|dangerouslySetInnerHTML$|innerHTML$|outerHT
 /** Mirrors the renderer: what `props.as` may turn a frame into. */
 const FRAME_AS_TAGS = new Set([
     "div", "section", "header", "footer", "nav", "main", "article", "aside",
-    "figure", "ul", "ol", "li", "span",
+    "figure", "ul", "ol", "li", "span", "a"
 ]);
 const NODE_ACTIONS = new Set([
     "link",

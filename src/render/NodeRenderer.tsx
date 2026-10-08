@@ -209,6 +209,7 @@ const FRAME_AS = new Set([
   "ol",
   "li",
   "span",
+  "a",
 ]);
 
 /** A bound value that is a link target rather than display text. */
@@ -531,7 +532,9 @@ function ElementRenderer({
       break;
     }
     case "button":
-    case "link": {
+    case "link":
+    case "frame": {
+      if (node.tag === "frame" && props.as !== "a") break;
       const action = (props.action as string) || "link";
       dom["data-action"] = action;
 
@@ -575,7 +578,7 @@ function ElementRenderer({
         node.id !== "connectNow" &&
         node.id !== "saveContact"
       ) {
-        if (node.tag === "link") {
+        if (node.tag === "link" || node.tag === "frame") {
           if (ctx.isEditing || ctx.onActionClick) {
             dom.onClick = interceptClick;
           } else {
@@ -657,11 +660,13 @@ function ElementRenderer({
         }
       }
       if (node.tag === "button") dom.type = "button";
-      if (node.tag === "link" && props.target === "_blank") {
+      if ((node.tag === "link" || node.tag === "frame") && props.target === "_blank") {
         dom.target = "_blank";
         dom.rel = "noopener noreferrer";
       }
-      children = props.label ?? boundLabel;
+      if (node.tag !== "frame") {
+        children = props.label ?? boundLabel;
+      }
       break;
     }
     case "divider":

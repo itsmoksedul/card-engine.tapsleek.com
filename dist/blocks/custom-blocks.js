@@ -108,8 +108,8 @@ function extractFieldsFromNode(rootNode) {
                 defaultContent[k] = srcVal;
                 n.bind = { source: "self", path: k };
             }
-            else if (tag === "button" || tag === "link") {
-                if (n.props?.text || n.props?.label) {
+            else if (tag === "button" || tag === "link" || (tag === "frame" && n.props?.as === "a")) {
+                if ((tag === "button" || tag === "link") && (n.props?.text || n.props?.label)) {
                     const kLabel = uniqueKey("buttonText");
                     const btnLabel = String(n.props?.label ?? n.props?.text ?? "Click here");
                     fields.push({
@@ -122,17 +122,20 @@ function extractFieldsFromNode(rootNode) {
                     defaultContent[kLabel] = btnLabel;
                     n.bind = { source: "self", path: kLabel };
                 }
-                if (n.props?.url || n.props?.href) {
+                if (n.props?.url || n.props?.href || tag === "frame") {
                     const kUrl = uniqueKey("buttonUrl");
                     const btnUrl = String(n.props?.url ?? n.props?.href ?? "");
                     fields.push({
                         nodeId: n.id,
                         key: kUrl,
-                        label: `${label} URL`,
+                        label: tag === "frame" ? `${label} Link` : `${label} URL`,
                         type: "url",
                         default: btnUrl,
                     });
                     defaultContent[kUrl] = btnUrl;
+                    if (tag === "frame") {
+                        n.bind = { source: "self", path: kUrl };
+                    }
                 }
             }
             if (Array.isArray(n.children)) {
@@ -154,7 +157,15 @@ function extractFieldsFromNode(rootNode) {
                     default: urlVal,
                 });
                 defaultContent[k] = urlVal;
-                n.key = k;
+                const el = n;
+                el.kind = "element";
+                el.tag = "video";
+                el.props = { url: urlVal };
+                el.bind = { source: "self", path: k };
+                delete el.widget;
+                delete el.key;
+                delete el.label;
+                delete el.defaultContent;
             }
             else if (widgetType === "TITLE" || widgetType === "HEADING") {
                 const k = uniqueKey("title");
@@ -167,9 +178,17 @@ function extractFieldsFromNode(rootNode) {
                     default: textVal,
                 });
                 defaultContent[k] = textVal;
-                n.key = k;
+                const el = n;
+                el.kind = "element";
+                el.tag = "heading";
+                el.props = { text: textVal, level: defContent.level ?? 2 };
+                el.bind = { source: "self", path: k };
+                delete el.widget;
+                delete el.key;
+                delete el.label;
+                delete el.defaultContent;
             }
-            else if (widgetType === "DESCRIPTION" || widgetType === "RICH_TEXT") {
+            else if (widgetType === "DESCRIPTION" || widgetType === "RICH_TEXT" || widgetType === "TEXT") {
                 const k = uniqueKey("description");
                 const textVal = String(defContent.text ?? "");
                 fields.push({
@@ -180,7 +199,15 @@ function extractFieldsFromNode(rootNode) {
                     default: textVal,
                 });
                 defaultContent[k] = textVal;
-                n.key = k;
+                const el = n;
+                el.kind = "element";
+                el.tag = widgetType === "RICH_TEXT" ? "richtext" : "text";
+                el.props = widgetType === "RICH_TEXT" ? { html: textVal } : { text: textVal };
+                el.bind = { source: "self", path: k };
+                delete el.widget;
+                delete el.key;
+                delete el.label;
+                delete el.defaultContent;
             }
             else if (widgetType === "MAP" || widgetType === "MAPS") {
                 const k = uniqueKey("address");
@@ -193,7 +220,64 @@ function extractFieldsFromNode(rootNode) {
                     default: addrVal,
                 });
                 defaultContent[k] = addrVal;
-                n.key = k;
+                const el = n;
+                el.kind = "element";
+                el.tag = "text";
+                el.props = { text: addrVal };
+                el.bind = { source: "self", path: k, format: "mapAddress" };
+                delete el.widget;
+                delete el.key;
+                delete el.label;
+                delete el.defaultContent;
+            }
+            else if (widgetType === "IMAGE" || widgetType === "AVATAR" || widgetType === "LOGO") {
+                const k = uniqueKey("imageUrl");
+                const srcVal = String(defContent.url ?? defContent.src ?? "");
+                fields.push({
+                    nodeId: n.id,
+                    key: k,
+                    label: `${label} Image`,
+                    type: "image",
+                    default: srcVal,
+                });
+                defaultContent[k] = srcVal;
+                const el = n;
+                el.kind = "element";
+                el.tag = "image";
+                el.props = { src: srcVal };
+                el.bind = { source: "self", path: k };
+                delete el.widget;
+                delete el.key;
+                delete el.label;
+                delete el.defaultContent;
+            }
+            else if (widgetType === "ICON") {
+                const el = n;
+                el.kind = "element";
+                el.tag = "icon";
+                el.props = { name: defContent.name ?? "Star" };
+                delete el.widget;
+                delete el.key;
+                delete el.label;
+                delete el.defaultContent;
+            }
+            else if (widgetType === "DIVIDER") {
+                const el = n;
+                el.kind = "element";
+                el.tag = "divider";
+                delete el.widget;
+                delete el.key;
+                delete el.label;
+                delete el.defaultContent;
+            }
+            else if (widgetType === "SPACER") {
+                const el = n;
+                el.kind = "element";
+                el.tag = "spacer";
+                delete el.widget;
+                delete el.key;
+                delete el.label;
+                delete el.defaultContent;
             }
         }
     }
