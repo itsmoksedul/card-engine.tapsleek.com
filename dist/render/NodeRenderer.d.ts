@@ -4,7 +4,9 @@ export interface RenderCtx {
     card: any;
     links: any[];
     blocks?: any[];
-    blockNodeMap?: Map<string, any>;
+    /** Template node id → the user's blocks rendered in that node's place. */
+    blockNodeMap?: Map<string, any[]>;
+    renderBlocks?: (blocks: any[]) => React.ReactNode;
     /** node.id → block.position — used to sort widget siblings in user-order */
     blockPositionMap?: Map<string, number>;
     renderBlock?: (block: any) => React.ReactNode;

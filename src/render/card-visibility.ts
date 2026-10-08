@@ -157,8 +157,10 @@ export function collectCollapsedIds(root: Node, ctx: VisibilityCtx): Set<string>
   const collapsed = new Set<string>();
 
   const visit = (node: Node): Presence => {
-    // The user's blocks are injected at the placeholder — its section stays.
+    // The user's blocks render at the placeholder and at their designed
+    // spots — those sections stay.
     if (node.id === ctx.placeholderId) return 'live';
+    if (ctx.blockNodeMap?.has(node.id)) return 'live';
     // Hidden like an unused optional widget, so its section frame collapses too.
     if (isCustomBlockSourceHidden(node.id, ctx)) return 'removed';
     if (isWidget(node)) return isWidgetHiddenOnCard(node, ctx) ? 'removed' : 'live';

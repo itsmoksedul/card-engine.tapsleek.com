@@ -19,6 +19,14 @@ const sanitize_1 = require("./sanitize");
 const widgets_2 = require("./widgets");
 const icon_helper_1 = require("./widgets/icon-helper");
 function NodeRenderer({ node, content, ctx }) {
+    // A template spot the user's blocks were assigned to renders them in its
+    // place (see CardRenderer's anchoring).
+    if (!ctx.isEditing &&
+        !ctx.isRenderingUserBlocks &&
+        ctx.renderBlocks &&
+        ctx.blockNodeMap?.has(node.id)) {
+        return (0, jsx_runtime_1.jsx)(jsx_runtime_1.Fragment, { children: ctx.renderBlocks(ctx.blockNodeMap.get(node.id)) });
+    }
     if (ctx.collapsedIds?.has(node.id))
         return null;
     if ((0, card_visibility_1.isCustomBlockSourceHidden)(node.id, ctx))
@@ -673,10 +681,6 @@ function WidgetRenderer({ node, content, ctx, }) {
     // (FAQ, Gallery, Contact Form…) only render through the user's blocks, and
     // links/social widgets with nothing to show disappear.
     if (!ctx.isEditing && Array.isArray(ctx.blocks)) {
-        const matchedBlock = ctx.blockNodeMap?.get(node.id);
-        if (matchedBlock && ctx.renderBlock) {
-            return (0, jsx_runtime_1.jsx)(jsx_runtime_1.Fragment, { children: ctx.renderBlock(matchedBlock) });
-        }
         if (!(0, card_visibility_1.isCoreWidget)(node.widget) &&
             !ctx.isRenderingUserBlocks &&
             node.id === ctx.placeholderId &&

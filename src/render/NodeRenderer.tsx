@@ -18,7 +18,9 @@ export interface RenderCtx {
   card: any;
   links: any[];
   blocks?: any[];
-  blockNodeMap?: Map<string, any>;
+  /** Template node id → the user's blocks rendered in that node's place. */
+  blockNodeMap?: Map<string, any[]>;
+  renderBlocks?: (blocks: any[]) => React.ReactNode;
   /** node.id → block.position — used to sort widget siblings in user-order */
   blockPositionMap?: Map<string, number>;
   renderBlock?: (block: any) => React.ReactNode;
@@ -49,6 +51,16 @@ export interface NodeRendererProps {
 }
 
 export function NodeRenderer({ node, content, ctx }: NodeRendererProps) {
+  // A template spot the user's blocks were assigned to renders them in its
+  // place (see CardRenderer's anchoring).
+  if (
+    !ctx.isEditing &&
+    !ctx.isRenderingUserBlocks &&
+    ctx.renderBlocks &&
+    ctx.blockNodeMap?.has(node.id)
+  ) {
+    return <>{ctx.renderBlocks(ctx.blockNodeMap.get(node.id)!)}</>;
+  }
   if (ctx.collapsedIds?.has(node.id)) return null;
   if (isCustomBlockSourceHidden(node.id, ctx)) return null;
   if (node.kind === "element")
@@ -862,10 +874,6 @@ function WidgetRenderer({
   // (FAQ, Gallery, Contact Form…) only render through the user's blocks, and
   // links/social widgets with nothing to show disappear.
   if (!ctx.isEditing && Array.isArray(ctx.blocks)) {
-    const matchedBlock = ctx.blockNodeMap?.get(node.id);
-    if (matchedBlock && ctx.renderBlock) {
-      return <>{ctx.renderBlock(matchedBlock)}</>;
-    }
     if (
       !isCoreWidget(node.widget) &&
       !ctx.isRenderingUserBlocks &&

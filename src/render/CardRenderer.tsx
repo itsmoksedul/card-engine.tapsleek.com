@@ -46,8 +46,82 @@ export function CardRenderer({
     return ids.length ? new Set(ids) : undefined;
   }, [definition.customBlocks]);
 
+  // The user's visible blocks, in their chosen order.
+  const activeBlocks = React.useMemo(
+    () =>
+      [...(blocks ?? [])]
+        .filter((b) => b.hidden !== true && (b as any).isVisible !== false)
+        .sort(
+          (a, b) => ((a as any).position ?? 0) - ((b as any).position ?? 0),
+        ),
+    [blocks],
+  );
+
+  /**
+   * Where each block renders. A block goes where the admin designed its kind
+   * in the template — a custom widget at its source layer group, a preset at
+   * the template's first widget of that type — so a card follows the
+   * template's sections (a widget placed outside the main section stays
+   * outside). Blocks with no such spot ("loose") go to the default
+   * placeholder below. Several blocks at one spot keep the user's order.
+   */
+  const anchoring = React.useMemo(() => {
+    if (isEditing || !activeBlocks.length) return null;
+    const typeAnchor = new Map<string, string>();
+    const presentSources = new Set<string>();
+    const visit = (n: any) => {
+      if (!n) return;
+      if (customBlockSourceIds?.has(n.id)) {
+        presentSources.add(n.id);
+        return;
+      }
+      if (isWidget(n)) {
+        const w = normalizeWidgetType(n.widget || '').toUpperCase();
+        if (!isCoreWidget(w) && !typeAnchor.has(w)) typeAnchor.set(w, n.id);
+        return;
+      }
+      (n.children ?? []).forEach(visit);
+    };
+    visit(definition.root);
+
+    const sourceAnchor = new Map<string, string>();
+    for (const cb of definition.customBlocks ?? []) {
+      if (
+        !cb.libraryId &&
+        cb.sourceNodeId &&
+        presentSources.has(cb.sourceNodeId)
+      ) {
+        sourceAnchor.set(cb.id, cb.sourceNodeId);
+      }
+    }
+
+    const byNode = new Map<string, BlockInstance[]>();
+    const loose: BlockInstance[] = [];
+    for (const b of activeBlocks) {
+      const raw = String(b.widget || (b as any).type || '');
+      const anchor =
+        sourceAnchor.get(raw) ??
+        typeAnchor.get(normalizeWidgetType(raw).toUpperCase());
+      if (!anchor) {
+        loose.push(b);
+        continue;
+      }
+      const list = byNode.get(anchor) ?? [];
+      list.push(b);
+      byNode.set(anchor, list);
+    }
+    return { byNode, loose };
+  }, [
+    isEditing,
+    activeBlocks,
+    definition.root,
+    definition.customBlocks,
+    customBlockSourceIds,
+  ]);
+
   const placeholder = React.useMemo(() => {
-    if (isEditing || !blocks || blocks.length === 0) return null;
+    // Only blocks without a designed spot need the default placeholder.
+    if (isEditing || !anchoring || anchoring.loose.length === 0) return null;
     let optionalId: string | null = null;
     let optionalIsSource = false;
     let copyrightId: string | null = null;
@@ -96,7 +170,36 @@ export function CardRenderer({
 
     if (copyrightId) return { id: copyrightId, injectBefore: true };
     return null;
-  }, [definition.root, isEditing, blocks, customBlockSourceIds]);
+  }, [definition.root, isEditing, anchoring, customBlockSourceIds]);
+
+  /**
+   * Final block spots. When the default placeholder is itself a designed spot
+   * that it replaces (not injects before), the loose blocks join that spot's
+   * blocks there, in user order — one render site per node.
+   */
+  const spots = React.useMemo(() => {
+    const empty: BlockInstance[] = [];
+    if (!anchoring) return { byNode: undefined, loose: empty, placeholder };
+    const byNode = new Map(anchoring.byNode);
+    let loose = anchoring.loose;
+    let ph = placeholder;
+    if (ph && !ph.injectBefore && byNode.has(ph.id)) {
+      const order = new Map(activeBlocks.map((b, i) => [b.id, i]));
+      byNode.set(
+        ph.id,
+        [...byNode.get(ph.id)!, ...loose].sort(
+          (a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0),
+        ),
+      );
+      loose = empty;
+      ph = null;
+    }
+    return {
+      byNode: byNode.size ? byNode : undefined,
+      loose,
+      placeholder: ph,
+    };
+  }, [anchoring, placeholder, activeBlocks]);
 
   // Section frames left empty once unused widgets are hidden (blank boxes).
   const collapsedIds = React.useMemo(
@@ -104,10 +207,11 @@ export function CardRenderer({
       collectCollapsedIds(definition.root, {
         links,
         blocks,
+        blockNodeMap: spots.byNode,
         isEditing,
         gatedWidgetKeys,
-        placeholderId: placeholder?.id || null,
-        injectBefore: placeholder?.injectBefore || false,
+        placeholderId: spots.placeholder?.id || null,
+        injectBefore: spots.placeholder?.injectBefore || false,
         showPlaceholders: effectiveShowPlaceholders,
         customBlockSourceIds,
       }),
@@ -115,13 +219,38 @@ export function CardRenderer({
       definition.root,
       links,
       blocks,
+      spots,
       isEditing,
       gatedWidgetKeys,
-      placeholder,
       effectiveShowPlaceholders,
       customBlockSourceIds,
     ],
   );
+
+  const renderList = (list: BlockInstance[]): React.ReactNode => {
+    if (!list.length) return null;
+    const blockCtx: RenderCtx = {
+      ...ctx,
+      renderUserBlocks: undefined,
+      isRenderingUserBlocks: true,
+      collapsedIds: undefined,
+    };
+    return (
+      <React.Fragment>
+        {list.map((b) => (
+          <BlockRenderer
+            key={b.id}
+            definition={definition}
+            block={{
+              ...b,
+              widget: normalizeWidgetType(b.widget || (b as any).type),
+            }}
+            ctx={blockCtx}
+          />
+        ))}
+      </React.Fragment>
+    );
+  };
 
   const ctx: RenderCtx = {
     card: {
@@ -131,65 +260,19 @@ export function CardRenderer({
     },
     links,
     blocks,
+    blockNodeMap: spots.byNode,
     isEditing,
     gatedWidgetKeys,
     track: onTrack || (() => {}),
     onActionClick,
     rootId: definition.root.id,
-    placeholderId: placeholder?.id || null,
-    injectBefore: placeholder?.injectBefore || false,
+    placeholderId: spots.placeholder?.id || null,
+    injectBefore: spots.placeholder?.injectBefore || false,
     collapsedIds,
     customBlockSourceIds,
-    renderBlock: (block: BlockInstance) => {
-      const normalizedBlock: BlockInstance = {
-        ...block,
-        widget: normalizeWidgetType(block.widget || (block as any).type),
-      };
-      return (
-        <BlockRenderer
-          key={block.id}
-          definition={definition}
-          block={normalizedBlock}
-          ctx={{
-            ...ctx,
-            renderUserBlocks: undefined,
-            isRenderingUserBlocks: true,
-            collapsedIds: undefined,
-          }}
-        />
-      );
-    },
-    renderUserBlocks: () => {
-      if (!blocks || blocks.length === 0) return null;
-      const blockCtx: RenderCtx = {
-        ...ctx,
-        renderUserBlocks: undefined,
-        isRenderingUserBlocks: true,
-        collapsedIds: undefined,
-      };
-      const activeBlocks = [...blocks]
-        .filter((b) => b.hidden !== true && (b as any).isVisible !== false)
-        .sort((a, b) => ((a as any).position ?? 0) - ((b as any).position ?? 0));
-
-      return (
-        <React.Fragment>
-          {activeBlocks.map((b) => {
-            const normalizedBlock: BlockInstance = {
-              ...b,
-              widget: normalizeWidgetType(b.widget || (b as any).type),
-            };
-            return (
-              <BlockRenderer
-                key={b.id}
-                definition={definition}
-                block={normalizedBlock}
-                ctx={blockCtx}
-              />
-            );
-          })}
-        </React.Fragment>
-      );
-    },
+    renderBlocks: renderList,
+    renderBlock: (block: BlockInstance) => renderList([block]),
+    renderUserBlocks: () => renderList(spots.loose),
   };
 
   // ── Template design render (admin preview / public page from the tree) ──
