@@ -864,19 +864,28 @@ function sanitizeTemplateDefinition(input) {
             return false;
         }
     }
-    function sanitizeObj(obj) {
-        if (!obj || typeof obj !== "object")
+    /**
+     * Clear external IMAGE urls only — the fields the widget's content schema
+     * declares as `image` (including inside repeaters/groups). Checking every
+     * string wiped any off-site link: a video's YouTube url, a button's href, a
+     * map link all vanished on save.
+     */
+    function sanitizeImages(fields, obj) {
+        if (!Array.isArray(fields) || !obj || typeof obj !== "object")
             return;
-        for (const key of Object.keys(obj)) {
-            const val = obj[key];
-            if (typeof val === "string" && isUnallowedImage(val)) {
-                obj[key] = "";
+        for (const field of fields) {
+            if (!field || typeof field.key !== "string")
+                continue;
+            const val = obj[field.key];
+            if (field.type === "image") {
+                if (typeof val === "string" && isUnallowedImage(val))
+                    obj[field.key] = "";
             }
-            else if (Array.isArray(val)) {
-                val.forEach((item) => sanitizeObj(item));
+            else if (field.type === "repeater" && Array.isArray(val)) {
+                val.forEach((item) => sanitizeImages(field.fields, item));
             }
-            else if (val && typeof val === "object") {
-                sanitizeObj(val);
+            else if (field.type === "group" && val && typeof val === "object") {
+                sanitizeImages(field.fields, val);
             }
         }
     }
@@ -990,7 +999,10 @@ function sanitizeTemplateDefinition(input) {
         }
         // 2. Clean widget defaultContent image URLs
         if (node.kind === "widget" && node.defaultContent) {
-            sanitizeObj(node.defaultContent);
+            const schema = typeof node.widget === "string" && (0, registry_1.hasWidget)(node.widget)
+                ? (0, registry_1.getWidgetMeta)(node.widget)?.contentSchema
+                : undefined;
+            sanitizeImages(schema, node.defaultContent);
         }
         // 3. Clean widget layout if present
         if (node.layout) {

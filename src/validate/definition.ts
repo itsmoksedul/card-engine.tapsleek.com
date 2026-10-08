@@ -1028,16 +1028,23 @@ export function sanitizeTemplateDefinition<T = unknown>(input: T): T {
     }
   }
 
-  function sanitizeObj(obj: any): void {
-    if (!obj || typeof obj !== "object") return;
-    for (const key of Object.keys(obj)) {
-      const val = obj[key];
-      if (typeof val === "string" && isUnallowedImage(val)) {
-        obj[key] = "";
-      } else if (Array.isArray(val)) {
-        val.forEach((item) => sanitizeObj(item));
-      } else if (val && typeof val === "object") {
-        sanitizeObj(val);
+  /**
+   * Clear external IMAGE urls only — the fields the widget's content schema
+   * declares as `image` (including inside repeaters/groups). Checking every
+   * string wiped any off-site link: a video's YouTube url, a button's href, a
+   * map link all vanished on save.
+   */
+  function sanitizeImages(fields: readonly any[] | undefined, obj: any): void {
+    if (!Array.isArray(fields) || !obj || typeof obj !== "object") return;
+    for (const field of fields) {
+      if (!field || typeof field.key !== "string") continue;
+      const val = obj[field.key];
+      if (field.type === "image") {
+        if (typeof val === "string" && isUnallowedImage(val)) obj[field.key] = "";
+      } else if (field.type === "repeater" && Array.isArray(val)) {
+        val.forEach((item) => sanitizeImages(field.fields, item));
+      } else if (field.type === "group" && val && typeof val === "object") {
+        sanitizeImages(field.fields, val);
       }
     }
   }
@@ -1158,7 +1165,11 @@ export function sanitizeTemplateDefinition<T = unknown>(input: T): T {
 
     // 2. Clean widget defaultContent image URLs
     if (node.kind === "widget" && node.defaultContent) {
-      sanitizeObj(node.defaultContent);
+      const schema =
+        typeof node.widget === "string" && hasWidget(node.widget)
+          ? getWidgetMeta(node.widget)?.contentSchema
+          : undefined;
+      sanitizeImages(schema as readonly any[] | undefined, node.defaultContent);
     }
 
     // 3. Clean widget layout if present
