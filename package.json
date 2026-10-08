@@ -1,6 +1,16 @@
 {
   "name": "@tapsleek/card-engine",
-  "version": "1.0.0",
+  "version": "0.0.1",
+  "description": "Core layout compiler, renderer and validator for Tapsleek cards and templates",
+  "author": "Moksedul Islam <hello@moksedul.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -19,6 +29,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "prepublishOnly": "npm run build",
     "dev": "tsc --watch",
     "test": "npx tsx scripts/run-spec.ts"
   },
