@@ -5,6 +5,8 @@ export interface RenderCtx {
     links: any[];
     blocks?: any[];
     blockNodeMap?: Map<string, any>;
+    /** node.id → block.position — used to sort widget siblings in user-order */
+    blockPositionMap?: Map<string, number>;
     renderBlock?: (block: any) => React.ReactNode;
     isEditing?: boolean;
     gatedWidgetKeys?: string[];

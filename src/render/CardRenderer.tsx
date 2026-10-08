@@ -40,15 +40,15 @@ export function CardRenderer({
 
   // Map user blocks to specific template widget nodes so separate boxes designed
   // in Admin builder are preserved and each block renders in its designated container.
-  const { blockNodeMap, unmatchedBlocks, placeholder } = React.useMemo(() => {
+  const { blockNodeMap, unmatchedBlocks, placeholder, blockPositionMap } = React.useMemo(() => {
     const map = new Map<string, BlockInstance>();
     if (isEditing || !blocks || blocks.length === 0) {
-      return { blockNodeMap: map, unmatchedBlocks: [], placeholder: null };
+      return { blockNodeMap: map, unmatchedBlocks: [], placeholder: null, blockPositionMap: new Map<string, number>() };
     }
 
-    const activeBlocks = blocks.filter(
-      (b) => b.hidden !== true && (b as any).isVisible !== false,
-    );
+    const activeBlocks = [...blocks]
+      .filter((b) => b.hidden !== true && (b as any).isVisible !== false)
+      .sort((a, b) => ((a as any).position ?? 0) - ((b as any).position ?? 0));
 
     // Collect all widget nodes in the template
     const templateWidgets: { node: any; claimed: boolean }[] = [];
@@ -82,13 +82,16 @@ export function CardRenderer({
     for (const b of remainingBlocks) {
       const rawType = b.widget || (b as any).type || "";
       const normType = normalizeWidgetType(rawType);
+      const rawTypeLower = rawType.toLowerCase();
       const match = templateWidgets.find((tw) => {
         if (tw.claimed) return false;
         const twType = (tw.node.widget || "").toUpperCase();
         if (isCoreWidget(twType)) return false;
+        // Case-insensitive match to handle custom blocks like "About Us" vs "about-us"
         return (
           normalizeWidgetType(tw.node.widget) === normType ||
-          tw.node.widget === rawType
+          tw.node.widget === rawType ||
+          tw.node.widget.toLowerCase() === rawTypeLower
         );
       });
       if (match) {
@@ -123,10 +126,17 @@ export function CardRenderer({
       }
     }
 
+    // Build a node.id → block.position map for widget children sorting
+    const blockPositionMap = new Map<string, number>();
+    for (const [nodeId, block] of map.entries()) {
+      blockPositionMap.set(nodeId, (block as any).position ?? 0);
+    }
+
     return {
       blockNodeMap: map,
       unmatchedBlocks: unmatched,
       placeholder: placeholderResult,
+      blockPositionMap,
     };
   }, [definition.root, isEditing, blocks]);
 
@@ -164,6 +174,7 @@ export function CardRenderer({
     links,
     blocks,
     blockNodeMap,
+    blockPositionMap,
     isEditing,
     gatedWidgetKeys,
     track: onTrack || (() => {}),
@@ -192,9 +203,7 @@ export function CardRenderer({
       );
     },
     renderUserBlocks: () => {
-      const blocksToRender =
-        unmatchedBlocks.length > 0 ? unmatchedBlocks : blocks || [];
-      if (blocksToRender.length === 0) return null;
+      if (!unmatchedBlocks || unmatchedBlocks.length === 0) return null;
       const blockCtx: RenderCtx = {
         ...ctx,
         renderUserBlocks: undefined,
@@ -203,7 +212,7 @@ export function CardRenderer({
       };
       return (
         <React.Fragment>
-          {blocksToRender
+          {unmatchedBlocks
             .filter((b) => b.hidden !== true && (b as any).isVisible !== false)
             .map((b) => {
               const normalizedBlock: BlockInstance = {

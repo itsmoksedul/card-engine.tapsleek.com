@@ -15,12 +15,14 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
     const effectiveShowPlaceholders = Boolean(showPlaceholders ?? card?.showPlaceholders ?? isEditing);
     // Map user blocks to specific template widget nodes so separate boxes designed
     // in Admin builder are preserved and each block renders in its designated container.
-    const { blockNodeMap, unmatchedBlocks, placeholder } = react_1.default.useMemo(() => {
+    const { blockNodeMap, unmatchedBlocks, placeholder, blockPositionMap } = react_1.default.useMemo(() => {
         const map = new Map();
         if (isEditing || !blocks || blocks.length === 0) {
-            return { blockNodeMap: map, unmatchedBlocks: [], placeholder: null };
+            return { blockNodeMap: map, unmatchedBlocks: [], placeholder: null, blockPositionMap: new Map() };
         }
-        const activeBlocks = blocks.filter((b) => b.hidden !== true && b.isVisible !== false);
+        const activeBlocks = [...blocks]
+            .filter((b) => b.hidden !== true && b.isVisible !== false)
+            .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
         // Collect all widget nodes in the template
         const templateWidgets = [];
         (0, node_1.walkNodes)(definition.root, (n) => {
@@ -48,14 +50,17 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
         for (const b of remainingBlocks) {
             const rawType = b.widget || b.type || "";
             const normType = (0, registry_1.normalizeWidgetType)(rawType);
+            const rawTypeLower = rawType.toLowerCase();
             const match = templateWidgets.find((tw) => {
                 if (tw.claimed)
                     return false;
                 const twType = (tw.node.widget || "").toUpperCase();
                 if ((0, card_visibility_1.isCoreWidget)(twType))
                     return false;
+                // Case-insensitive match to handle custom blocks like "About Us" vs "about-us"
                 return ((0, registry_1.normalizeWidgetType)(tw.node.widget) === normType ||
-                    tw.node.widget === rawType);
+                    tw.node.widget === rawType ||
+                    tw.node.widget.toLowerCase() === rawTypeLower);
             });
             if (match) {
                 match.claimed = true;
@@ -85,10 +90,16 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
                 }
             }
         }
+        // Build a node.id → block.position map for widget children sorting
+        const blockPositionMap = new Map();
+        for (const [nodeId, block] of map.entries()) {
+            blockPositionMap.set(nodeId, block.position ?? 0);
+        }
         return {
             blockNodeMap: map,
             unmatchedBlocks: unmatched,
             placeholder: placeholderResult,
+            blockPositionMap,
         };
     }, [definition.root, isEditing, blocks]);
     // Section frames left empty once unused widgets are hidden (blank boxes).
@@ -120,6 +131,7 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
         links,
         blocks,
         blockNodeMap,
+        blockPositionMap,
         isEditing,
         gatedWidgetKeys,
         track: onTrack || (() => { }),
@@ -141,8 +153,7 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
                 } }, block.id));
         },
         renderUserBlocks: () => {
-            const blocksToRender = unmatchedBlocks.length > 0 ? unmatchedBlocks : blocks || [];
-            if (blocksToRender.length === 0)
+            if (!unmatchedBlocks || unmatchedBlocks.length === 0)
                 return null;
             const blockCtx = {
                 ...ctx,
@@ -150,7 +161,7 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
                 isRenderingUserBlocks: true,
                 collapsedIds: undefined,
             };
-            return ((0, jsx_runtime_1.jsx)(react_1.default.Fragment, { children: blocksToRender
+            return ((0, jsx_runtime_1.jsx)(react_1.default.Fragment, { children: unmatchedBlocks
                     .filter((b) => b.hidden !== true && b.isVisible !== false)
                     .map((b) => {
                     const normalizedBlock = {

@@ -224,6 +224,15 @@ function resolveCardField(field: string, card: any): any {
   if (!card) return undefined;
 
   const showPlaceholders = Boolean(card.showPlaceholders);
+  const hasUserIdentity = Boolean(
+    card.firstName ||
+      card.lastName ||
+      card.name ||
+      card.jobTitle ||
+      card.companyName ||
+      card.profileImage ||
+      card.avatar,
+  );
 
   switch (field) {
     // Assembled, not stored.
@@ -232,40 +241,59 @@ function resolveCardField(field: string, card: any): any {
         .filter(Boolean)
         .join(" ")
         .trim();
-      return name || card.name || (showPlaceholders ? "John Doe" : undefined);
+      return (
+        name ||
+        card.name ||
+        (showPlaceholders && !hasUserIdentity ? "John Doe" : undefined)
+      );
     }
     case "firstName": {
-      return card.firstName || (showPlaceholders ? "John" : undefined);
+      return (
+        card.firstName ||
+        (showPlaceholders && !hasUserIdentity ? "John" : undefined)
+      );
     }
     case "lastName": {
-      return card.lastName || (showPlaceholders ? "Doe" : undefined);
+      return (
+        card.lastName ||
+        (showPlaceholders && !hasUserIdentity ? "Doe" : undefined)
+      );
     }
     case "jobTitle": {
-      return card.jobTitle || (showPlaceholders ? "Job title" : undefined);
+      return (
+        card.jobTitle ||
+        (showPlaceholders && !hasUserIdentity ? "Job title" : undefined)
+      );
     }
     case "companyName":
     case "company": {
       return (
         card.companyName ||
         card.company ||
-        (showPlaceholders ? "Company" : undefined)
+        (showPlaceholders && !hasUserIdentity ? "Company" : undefined)
       );
     }
     case "location": {
-      return card.location || (showPlaceholders ? "Location" : undefined);
+      // Optional user info — never show dummy "Location" placeholder
+      return card.location || undefined;
     }
     case "bio": {
-      return (
-        card.bio ||
-        (showPlaceholders ? "Bio description goes here..." : undefined)
-      );
+      // Optional user text — never show dummy "Bio description..." placeholder
+      return card.bio || undefined;
+    }
+    case "companyLogo":
+    case "logo": {
+      // Optional logo — never show dummy logo if not uploaded
+      return card.companyLogo || card.logo || undefined;
     }
     case "profileImage":
     case "avatar": {
       return (
         card.profileImage ||
         card.avatar ||
-        (showPlaceholders ? DEMO_PREVIEW_ASSETS.avatar : undefined)
+        (showPlaceholders && !hasUserIdentity
+          ? DEMO_PREVIEW_ASSETS.avatar
+          : undefined)
       );
     }
     case "coverPhoto":
@@ -273,15 +301,9 @@ function resolveCardField(field: string, card: any): any {
       return (
         card.coverPhoto ||
         card.cover ||
-        (showPlaceholders ? DEMO_PREVIEW_ASSETS.cover : undefined)
-      );
-    }
-    case "companyLogo":
-    case "logo": {
-      return (
-        card.companyLogo ||
-        card.logo ||
-        (showPlaceholders ? DEMO_PREVIEW_ASSETS.logo : undefined)
+        (showPlaceholders && !hasUserIdentity
+          ? DEMO_PREVIEW_ASSETS.cover
+          : undefined)
       );
     }
 

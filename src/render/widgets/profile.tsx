@@ -5,14 +5,27 @@ export function ProfileRender({ design, cls, ctx }: WidgetRenderProps) {
   const card = ctx.card ?? {};
   const d = (design ?? {}) as Record<string, any>;
   const showPlaceholders = Boolean(card.showPlaceholders);
+  const hasUserIdentity = Boolean(
+    card.firstName ||
+      card.lastName ||
+      card.name ||
+      card.jobTitle ||
+      card.companyName ||
+      card.profileImage ||
+      card.avatar,
+  );
 
   const name = displayName(card);
   const subtitle = subtitleOf(card);
-  const cover = card.coverPhoto || (showPlaceholders ? DEMO_PREVIEW_ASSETS.cover : undefined);
-  const avatar = card.profileImage || (showPlaceholders ? DEMO_PREVIEW_ASSETS.avatar : undefined);
-  const logo = card.companyLogo || (showPlaceholders ? DEMO_PREVIEW_ASSETS.logo : undefined);
-  const location = card.location || (showPlaceholders ? 'Location' : undefined);
-  const bio = card.bio || (showPlaceholders ? 'Bio description goes here...' : undefined);
+  const cover =
+    card.coverPhoto ||
+    (showPlaceholders && !hasUserIdentity ? DEMO_PREVIEW_ASSETS.cover : undefined);
+  const avatar =
+    card.profileImage ||
+    (showPlaceholders && !hasUserIdentity ? DEMO_PREVIEW_ASSETS.avatar : undefined);
+  const logo = card.companyLogo;
+  const location = card.location;
+  const bio = card.bio;
 
   return (
     <div className={cls('root')} data-align={d.align ?? 'center'}>

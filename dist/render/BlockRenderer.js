@@ -18,9 +18,12 @@ const widgets_1 = require("./widgets");
 function BlockRenderer({ definition, block, ctx, }) {
     const rawType = block.widget || block.type || "";
     // 0. Template Custom Block (authored from Layer Groups in Admin)
+    const rawTypeLower = rawType.toLowerCase();
     const customBlock = definition.customBlocks?.find((cb) => cb.id === rawType ||
         cb.id === block.widget ||
-        cb.id === block.type);
+        cb.id === block.type ||
+        cb.id.toLowerCase() === rawTypeLower ||
+        cb.label?.toLowerCase() === rawTypeLower);
     if (customBlock) {
         const blockContent = block.content ??
             customBlock.defaultContent ??

@@ -27,11 +27,14 @@ export function BlockRenderer({
   const rawType = block.widget || (block as any).type || "";
 
   // 0. Template Custom Block (authored from Layer Groups in Admin)
+  const rawTypeLower = rawType.toLowerCase();
   const customBlock = definition.customBlocks?.find(
     (cb) =>
       cb.id === rawType ||
       cb.id === block.widget ||
-      cb.id === (block as any).type,
+      cb.id === (block as any).type ||
+      cb.id.toLowerCase() === rawTypeLower ||
+      cb.label?.toLowerCase() === rawTypeLower,
   );
 
   if (customBlock) {

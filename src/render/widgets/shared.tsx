@@ -27,14 +27,33 @@ export interface WidgetRenderProps<C = any, D = any> {
 export function displayName(card: any): string {
   const name = [card?.firstName, card?.lastName].filter(Boolean).join(' ').trim();
   if (name || card?.name) return name || card?.name;
-  if (card?.showPlaceholders) return 'John Doe';
+  const hasUserIdentity = Boolean(
+    card?.jobTitle ||
+      card?.companyName ||
+      card?.profileImage ||
+      card?.avatar,
+  );
+  if (card?.showPlaceholders && !hasUserIdentity) return 'John Doe';
   return '';
 }
 
 /** Job title · Company — skips the separator when either side is missing. */
 export function subtitleOf(card: any): string {
-  const title = card?.jobTitle || (card?.showPlaceholders ? 'Job title' : '');
-  const comp = card?.companyName || (card?.showPlaceholders ? 'Company' : '');
+  const hasUserIdentity = Boolean(
+    card?.firstName ||
+      card?.lastName ||
+      card?.name ||
+      card?.jobTitle ||
+      card?.companyName ||
+      card?.profileImage ||
+      card?.avatar,
+  );
+  const title =
+    card?.jobTitle ||
+    (card?.showPlaceholders && !hasUserIdentity ? 'Job title' : '');
+  const comp =
+    card?.companyName ||
+    (card?.showPlaceholders && !hasUserIdentity ? 'Company' : '');
   return [title, comp].filter(Boolean).join(' · ');
 }
 

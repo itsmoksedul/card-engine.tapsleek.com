@@ -1174,6 +1174,25 @@ describe("composite widgets — layout subtree", () => {
       expect(resolveBinding({ source: "card", field: "companyName" }, emptyCard, {})).toBe("Company");
       expect(resolveBinding({ source: "card", field: "profileImage" }, emptyCard, {})).toContain("data:image/svg+xml");
       expect(resolveBinding({ source: "card", field: "coverPhoto" }, emptyCard, {})).toContain("data:image/svg+xml");
+      // Optional text fields must NEVER show dummy placeholders!
+      expect(resolveBinding({ source: "card", field: "bio" }, emptyCard, {})).toBeUndefined();
+      expect(resolveBinding({ source: "card", field: "location" }, emptyCard, {})).toBeUndefined();
+    });
+
+    it("does not resolve placeholders when user has entered profile data", () => {
+      const userCard = {
+        showPlaceholders: true,
+        firstName: "Moksedul",
+        lastName: "Islam",
+        jobTitle: "CTO",
+        bio: "",
+        location: "",
+      };
+      expect(resolveBinding({ source: "card", field: "fullName" }, userCard, {})).toBe("Moksedul Islam");
+      expect(resolveBinding({ source: "card", field: "jobTitle" }, userCard, {})).toBe("CTO");
+      expect(resolveBinding({ source: "card", field: "companyName" }, userCard, {})).toBeUndefined();
+      expect(resolveBinding({ source: "card", field: "bio" }, userCard, {})).toBeUndefined();
+      expect(resolveBinding({ source: "card", field: "location" }, userCard, {})).toBeUndefined();
     });
 
     it("does not resolve placeholders when card.showPlaceholders is not set", () => {
