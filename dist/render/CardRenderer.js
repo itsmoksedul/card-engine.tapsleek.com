@@ -13,14 +13,31 @@ const card_visibility_1 = require("./card-visibility");
 const NodeRenderer_1 = require("./NodeRenderer");
 function CardRenderer({ definition, content, card, links, isEditing, gatedWidgetKeys, onTrack, onActionClick, blocks, theme, showPlaceholders, }) {
     const effectiveShowPlaceholders = Boolean(showPlaceholders ?? card?.showPlaceholders ?? isEditing);
+    const customBlockSourceIds = react_1.default.useMemo(() => {
+        const ids = (definition.customBlocks ?? [])
+            .filter((cb) => !cb.libraryId)
+            .map((cb) => cb.sourceNodeId)
+            .filter((id) => Boolean(id));
+        return ids.length ? new Set(ids) : undefined;
+    }, [definition.customBlocks]);
     const placeholder = react_1.default.useMemo(() => {
         if (isEditing || !blocks || blocks.length === 0)
             return null;
         let optionalId = null;
+        let optionalIsSource = false;
         let copyrightId = null;
-        (0, node_1.walkNodes)(definition.root, (n) => {
-            if (optionalId)
+        // Tree order. A custom block's source group is itself an optional
+        // section (it only renders through the user's blocks), so it can host
+        // them — but never what is inside it: that subtree is hidden on a card,
+        // and a placeholder in there swallowed every user block.
+        const visit = (n) => {
+            if (optionalId || !n)
                 return;
+            if (customBlockSourceIds?.has(n.id)) {
+                optionalId = n.id;
+                optionalIsSource = true;
+                return;
+            }
             if ((0, node_1.isWidget)(n)) {
                 const w = (n.widget || '').toUpperCase();
                 if (w === 'COPYRIGHT' && !copyrightId) {
@@ -28,10 +45,15 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
                 }
                 if (!(0, card_visibility_1.isCoreWidget)(w))
                     optionalId = n.id;
+                return;
             }
-        });
+            (n.children ?? []).forEach(visit);
+        };
+        visit(definition.root);
+        // A hidden source group can't render blocks in its place, so they go
+        // right before it instead.
         if (optionalId)
-            return { id: optionalId, injectBefore: false };
+            return { id: optionalId, injectBefore: optionalIsSource };
         // If no non-core widget exists, check if root's children contains a footer frame with COPYRIGHT
         const rootChildren = definition.root?.children || [];
         for (const child of rootChildren) {
@@ -51,14 +73,7 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
         if (copyrightId)
             return { id: copyrightId, injectBefore: true };
         return null;
-    }, [definition.root, isEditing, blocks]);
-    const customBlockSourceIds = react_1.default.useMemo(() => {
-        const ids = (definition.customBlocks ?? [])
-            .filter((cb) => !cb.libraryId)
-            .map((cb) => cb.sourceNodeId)
-            .filter((id) => Boolean(id));
-        return ids.length ? new Set(ids) : undefined;
-    }, [definition.customBlocks]);
+    }, [definition.root, isEditing, blocks, customBlockSourceIds]);
     // Section frames left empty once unused widgets are hidden (blank boxes).
     const collapsedIds = react_1.default.useMemo(() => (0, card_visibility_1.collectCollapsedIds)(definition.root, {
         links,

@@ -38,21 +38,44 @@ export function CardRenderer({
     showPlaceholders ?? card?.showPlaceholders ?? isEditing,
   );
 
+  const customBlockSourceIds = React.useMemo(() => {
+    const ids = (definition.customBlocks ?? [])
+      .filter((cb) => !cb.libraryId)
+      .map((cb) => cb.sourceNodeId)
+      .filter((id): id is string => Boolean(id));
+    return ids.length ? new Set(ids) : undefined;
+  }, [definition.customBlocks]);
+
   const placeholder = React.useMemo(() => {
     if (isEditing || !blocks || blocks.length === 0) return null;
     let optionalId: string | null = null;
+    let optionalIsSource = false;
     let copyrightId: string | null = null;
-    walkNodes(definition.root, (n) => {
-      if (optionalId) return;
+    // Tree order. A custom block's source group is itself an optional
+    // section (it only renders through the user's blocks), so it can host
+    // them — but never what is inside it: that subtree is hidden on a card,
+    // and a placeholder in there swallowed every user block.
+    const visit = (n: any) => {
+      if (optionalId || !n) return;
+      if (customBlockSourceIds?.has(n.id)) {
+        optionalId = n.id;
+        optionalIsSource = true;
+        return;
+      }
       if (isWidget(n)) {
         const w = (n.widget || '').toUpperCase();
         if (w === 'COPYRIGHT' && !copyrightId) {
           copyrightId = n.id;
         }
         if (!isCoreWidget(w)) optionalId = n.id;
+        return;
       }
-    });
-    if (optionalId) return { id: optionalId, injectBefore: false };
+      (n.children ?? []).forEach(visit);
+    };
+    visit(definition.root);
+    // A hidden source group can't render blocks in its place, so they go
+    // right before it instead.
+    if (optionalId) return { id: optionalId, injectBefore: optionalIsSource };
 
     // If no non-core widget exists, check if root's children contains a footer frame with COPYRIGHT
     const rootChildren = (definition.root as any)?.children || [];
@@ -73,15 +96,7 @@ export function CardRenderer({
 
     if (copyrightId) return { id: copyrightId, injectBefore: true };
     return null;
-  }, [definition.root, isEditing, blocks]);
-
-  const customBlockSourceIds = React.useMemo(() => {
-    const ids = (definition.customBlocks ?? [])
-      .filter((cb) => !cb.libraryId)
-      .map((cb) => cb.sourceNodeId)
-      .filter((id): id is string => Boolean(id));
-    return ids.length ? new Set(ids) : undefined;
-  }, [definition.customBlocks]);
+  }, [definition.root, isEditing, blocks, customBlockSourceIds]);
 
   // Section frames left empty once unused widgets are hidden (blank boxes).
   const collapsedIds = React.useMemo(

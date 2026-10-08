@@ -406,9 +406,12 @@ function ElementRenderer({
       break;
     }
     case "image": {
+      // A card-bound image the user left empty normally disappears. With
+      // "Hide when empty" turned off, the template's own image stands in
+      // (e.g. a default cover photo) instead.
       const src =
-        bound ??
-        (isCardBound && ctx.card ? undefined : props.src) ??
+        (!isEmpty(bound) ? bound : undefined) ??
+        (isCardBound && ctx.card && node.hideIfEmpty ? undefined : props.src) ??
         "";
       if (!src) {
         if (ctx.isEditing) {
