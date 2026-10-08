@@ -64,7 +64,11 @@ export function parseTokenRef(
 }
 
 /** `{color.primary}` → `var(--c-primary)`. With alpha → `color-mix(in srgb, var(--c-primary) 15%, transparent)`. */
-export function tokenVar(group: TokenGroup, name: string, alpha?: string): string {
+export function tokenVar(
+  group: TokenGroup,
+  name: string,
+  alpha?: string,
+): string {
   const v = `var(${TOKEN_PREFIX[group]}${name})`;
   if (alpha) {
     let p = alpha;
@@ -193,8 +197,12 @@ const BG_REPEATS = new Set(["no-repeat", "repeat", "repeat-x", "repeat-y"]);
 
 /** BackgroundValue → declarations. Image URLs must already be allowlisted. */
 export function background(
-  bg: BackgroundValue | undefined,
+  bg: BackgroundValue | string | undefined,
 ): [string, string][] {
+  if (typeof bg === "string") {
+    const c = color(bg);
+    return c ? [["background-color", c]] : [];
+  }
   if (!bg || typeof bg !== "object") return [];
 
   if (bg.kind === "color") {

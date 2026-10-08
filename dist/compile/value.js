@@ -180,6 +180,10 @@ const BG_SIZES = new Set(["cover", "contain", "auto"]);
 const BG_REPEATS = new Set(["no-repeat", "repeat", "repeat-x", "repeat-y"]);
 /** BackgroundValue → declarations. Image URLs must already be allowlisted. */
 function background(bg) {
+    if (typeof bg === "string") {
+        const c = color(bg);
+        return c ? [["background-color", c]] : [];
+    }
     if (!bg || typeof bg !== "object")
         return [];
     if (bg.kind === "color") {

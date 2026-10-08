@@ -58,7 +58,7 @@ export declare function corners4(c: Corners4 | string | number | undefined): str
 /** BorderValue → one or more declarations. */
 export declare function border(b: BorderValue | undefined): [string, string][];
 /** BackgroundValue → declarations. Image URLs must already be allowlisted. */
-export declare function background(bg: BackgroundValue | undefined): [string, string][];
+export declare function background(bg: BackgroundValue | string | undefined): [string, string][];
 /** Only https/protocol-relative, and no quote or paren injection. */
 export declare function safeUrl(u: unknown): string | null;
 /** ShadowValue(s) → one `box-shadow` value. A token ref passes straight through. */
