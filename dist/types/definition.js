@@ -11,15 +11,22 @@ exports.DEFINITION_LIMITS = exports.TOKEN_PREFIX = exports.TOKEN_GROUPS = export
 exports.blankDefinition = blankDefinition;
 exports.definitionRoots = definitionRoots;
 exports.SCHEMA_VERSION = 2;
-exports.TOKEN_GROUPS = ['color', 'space', 'radius', 'font', 'size', 'shadow'];
+exports.TOKEN_GROUPS = [
+    "color",
+    "space",
+    "radius",
+    "font",
+    "size",
+    "shadow",
+];
 /** CSS custom-property prefix per token group. */
 exports.TOKEN_PREFIX = {
-    color: '--c-',
-    space: '--sp-',
-    radius: '--r-',
-    font: '--f-',
-    size: '--sz-',
-    shadow: '--sh-',
+    color: "--c-",
+    space: "--sp-",
+    radius: "--r-",
+    font: "--f-",
+    size: "--sz-",
+    shadow: "--sh-",
 };
 // ─── Hard limits (enforced by the validator, not just the UI) ────────────────
 exports.DEFINITION_LIMITS = {
@@ -37,56 +44,72 @@ exports.DEFINITION_LIMITS = {
 function blankDefinition(name) {
     return {
         schemaVersion: exports.SCHEMA_VERSION,
-        meta: { name, canvasWidth: 450, background: '{color.bg}' },
+        meta: { name, canvasWidth: 450, background: "{color.bg}" },
         tokens: {
             color: {
-                primary: '#3B5BFE',
-                onPrimary: '#FFFFFF',
-                bg: '#F4F7FF',
-                surface: '#FFFFFF',
-                text: '#111827',
-                muted: '#6B7280',
-                border: '#E5E7EB',
+                primary: "#3B5BFE",
+                onPrimary: "#FFFFFF",
+                bg: "#F4F7FF",
+                surface: "#FFFFFF",
+                text: "#111827",
+                muted: "#6B7280",
+                border: "#E5E7EB",
             },
             space: {
-                '1': '4px',
-                '2': '8px',
-                '3': '12px',
-                '4': '16px',
-                '5': '20px',
-                '6': '24px',
-                '8': '32px',
+                "1": "4px",
+                "2": "8px",
+                "3": "12px",
+                "4": "16px",
+                "5": "20px",
+                "6": "24px",
+                "8": "32px",
             },
-            radius: { none: '0px', sm: '8px', md: '12px', lg: '16px', full: '9999px' },
-            font: { heading: 'Inter', body: 'Inter' },
+            radius: {
+                none: "0px",
+                sm: "8px",
+                md: "12px",
+                lg: "16px",
+                full: "9999px",
+            },
+            font: { heading: "Inter", body: "Inter" },
             size: {
-                xs: '11px',
-                sm: '13px',
-                base: '15px',
-                lg: '18px',
-                xl: '22px',
-                '2xl': '28px',
+                xs: "11px",
+                sm: "13px",
+                base: "15px",
+                lg: "18px",
+                xl: "22px",
+                "2xl": "28px",
             },
-            shadow: { sm: '0 1px 2px rgba(0,0,0,.06)', md: '0 4px 12px rgba(0,0,0,.08)' },
+            shadow: {
+                sm: "0 1px 2px rgba(0,0,0,.06)",
+                md: "0 4px 12px rgba(0,0,0,.08)",
+            },
         },
-        fonts: [{ family: 'Inter', weights: [400, 500, 600, 700], source: 'self', display: 'swap' }],
+        fonts: [
+            {
+                family: "Inter",
+                weights: [400, 500, 600, 700],
+                source: "self",
+                display: "swap",
+            },
+        ],
         root: {
-            kind: 'element',
-            id: 'root',
-            tag: 'frame',
-            name: 'Root',
+            kind: "element",
+            id: "root",
+            tag: "frame",
+            name: "Root",
             style: {
                 base: {
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '{space.4}',
-                    padding: { all: '{space.4}' },
-                    background: { kind: 'color', color: '{color.bg}' },
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "{space.4}",
+                    padding: { all: "{space.4}" },
+                    background: { kind: "color", color: "{color.bg}" },
                 },
             },
             children: [],
         },
-        settings: { allowTokenOverride: ['primary', 'bg', 'text'] },
+        settings: { allowTokenOverride: ["primary", "bg", "text"] },
     };
 }
 /** Convenience: every node in the definition, including popup trees. */

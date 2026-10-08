@@ -5,8 +5,8 @@
  * It contains style TOKENS, never CSS text. CSS is a build artifact produced
  * by `compileCss()` on publish and served immutably from R2.
  */
-import type { ElementNode, Node } from './node';
-import type { StyleSet, StyleValue } from './style';
+import type { ElementNode, Node } from "./node";
+import type { StyleSet, StyleValue } from "./style";
 export declare const SCHEMA_VERSION: 2;
 /**
  * Design tokens. Every group compiles to CSS custom properties on the card
@@ -35,13 +35,13 @@ export interface FontSpec {
     family: string;
     weights: number[];
     /** `self` = served from R2 (preferred). `google` = Google Fonts stylesheet. */
-    source: 'self' | 'google';
+    source: "self" | "google";
     italic?: boolean;
     /** Only for `source: 'self'` — R2 keys per weight. */
     files?: Record<string, string>;
-    display?: 'swap' | 'optional' | 'block';
+    display?: "swap" | "optional" | "block";
 }
-export type PopupTrigger = 'onLoad' | 'afterDelay' | 'onExit' | 'manual';
+export type PopupTrigger = "onLoad" | "afterDelay" | "onExit" | "manual";
 /**
  * A popup is just another node tree with a backdrop — which is how lead
  * capture stops being a hardcoded modal component.
@@ -62,13 +62,13 @@ export interface DefinitionSettings {
     /** Design keys unlocked to the user on every widget unless overridden. */
     defaultUserOptions?: string[];
     /** Extra `<html>`-level colour scheme hint. */
-    colorScheme?: 'light' | 'dark';
+    colorScheme?: "light" | "dark";
 }
 export interface CustomBlockField {
     nodeId: string;
     key: string;
     label: string;
-    type: 'text' | 'textarea' | 'url' | 'image' | 'video';
+    type: "text" | "textarea" | "url" | "image" | "video";
     default?: unknown;
     hint?: string;
 }
@@ -78,7 +78,7 @@ export interface TemplateCustomBlock {
     icon?: string;
     description?: string;
     sourceNodeId?: string;
-    layout: ElementNode;
+    layout: Node;
     fields: CustomBlockField[];
     defaultContent: Record<string, unknown>;
 }

@@ -6,8 +6,8 @@
  * by `compileCss()` on publish and served immutably from R2.
  */
 
-import type { ElementNode, Node } from './node';
-import type { StyleSet, StyleValue } from './style';
+import type { ElementNode, Node } from "./node";
+import type { StyleSet, StyleValue } from "./style";
 
 export const SCHEMA_VERSION = 2 as const;
 
@@ -31,31 +31,38 @@ export interface TokenSet {
   shadow: Record<string, string>;
 }
 
-export const TOKEN_GROUPS = ['color', 'space', 'radius', 'font', 'size', 'shadow'] as const;
+export const TOKEN_GROUPS = [
+  "color",
+  "space",
+  "radius",
+  "font",
+  "size",
+  "shadow",
+] as const;
 export type TokenGroup = (typeof TOKEN_GROUPS)[number];
 
 /** CSS custom-property prefix per token group. */
 export const TOKEN_PREFIX: Record<TokenGroup, string> = {
-  color: '--c-',
-  space: '--sp-',
-  radius: '--r-',
-  font: '--f-',
-  size: '--sz-',
-  shadow: '--sh-',
+  color: "--c-",
+  space: "--sp-",
+  radius: "--r-",
+  font: "--f-",
+  size: "--sz-",
+  shadow: "--sh-",
 };
 
 export interface FontSpec {
   family: string;
   weights: number[];
   /** `self` = served from R2 (preferred). `google` = Google Fonts stylesheet. */
-  source: 'self' | 'google';
+  source: "self" | "google";
   italic?: boolean;
   /** Only for `source: 'self'` — R2 keys per weight. */
   files?: Record<string, string>;
-  display?: 'swap' | 'optional' | 'block';
+  display?: "swap" | "optional" | "block";
 }
 
-export type PopupTrigger = 'onLoad' | 'afterDelay' | 'onExit' | 'manual';
+export type PopupTrigger = "onLoad" | "afterDelay" | "onExit" | "manual";
 
 /**
  * A popup is just another node tree with a backdrop — which is how lead
@@ -78,14 +85,14 @@ export interface DefinitionSettings {
   /** Design keys unlocked to the user on every widget unless overridden. */
   defaultUserOptions?: string[];
   /** Extra `<html>`-level colour scheme hint. */
-  colorScheme?: 'light' | 'dark';
+  colorScheme?: "light" | "dark";
 }
 
 export interface CustomBlockField {
   nodeId: string;
   key: string;
   label: string;
-  type: 'text' | 'textarea' | 'url' | 'image' | 'video';
+  type: "text" | "textarea" | "url" | "image" | "video";
   default?: unknown;
   hint?: string;
 }
@@ -96,7 +103,7 @@ export interface TemplateCustomBlock {
   icon?: string;
   description?: string;
   sourceNodeId?: string;
-  layout: ElementNode;
+  layout: Node;
   fields: CustomBlockField[];
   defaultContent: Record<string, unknown>;
 }
@@ -137,56 +144,72 @@ export const DEFINITION_LIMITS = {
 export function blankDefinition(name: string): TemplateDefinition {
   return {
     schemaVersion: SCHEMA_VERSION,
-    meta: { name, canvasWidth: 450, background: '{color.bg}' },
+    meta: { name, canvasWidth: 450, background: "{color.bg}" },
     tokens: {
       color: {
-        primary: '#3B5BFE',
-        onPrimary: '#FFFFFF',
-        bg: '#F4F7FF',
-        surface: '#FFFFFF',
-        text: '#111827',
-        muted: '#6B7280',
-        border: '#E5E7EB',
+        primary: "#3B5BFE",
+        onPrimary: "#FFFFFF",
+        bg: "#F4F7FF",
+        surface: "#FFFFFF",
+        text: "#111827",
+        muted: "#6B7280",
+        border: "#E5E7EB",
       },
       space: {
-        '1': '4px',
-        '2': '8px',
-        '3': '12px',
-        '4': '16px',
-        '5': '20px',
-        '6': '24px',
-        '8': '32px',
+        "1": "4px",
+        "2": "8px",
+        "3": "12px",
+        "4": "16px",
+        "5": "20px",
+        "6": "24px",
+        "8": "32px",
       },
-      radius: { none: '0px', sm: '8px', md: '12px', lg: '16px', full: '9999px' },
-      font: { heading: 'Inter', body: 'Inter' },
+      radius: {
+        none: "0px",
+        sm: "8px",
+        md: "12px",
+        lg: "16px",
+        full: "9999px",
+      },
+      font: { heading: "Inter", body: "Inter" },
       size: {
-        xs: '11px',
-        sm: '13px',
-        base: '15px',
-        lg: '18px',
-        xl: '22px',
-        '2xl': '28px',
+        xs: "11px",
+        sm: "13px",
+        base: "15px",
+        lg: "18px",
+        xl: "22px",
+        "2xl": "28px",
       },
-      shadow: { sm: '0 1px 2px rgba(0,0,0,.06)', md: '0 4px 12px rgba(0,0,0,.08)' },
+      shadow: {
+        sm: "0 1px 2px rgba(0,0,0,.06)",
+        md: "0 4px 12px rgba(0,0,0,.08)",
+      },
     },
-    fonts: [{ family: 'Inter', weights: [400, 500, 600, 700], source: 'self', display: 'swap' }],
+    fonts: [
+      {
+        family: "Inter",
+        weights: [400, 500, 600, 700],
+        source: "self",
+        display: "swap",
+      },
+    ],
     root: {
-      kind: 'element',
-      id: 'root',
-      tag: 'frame',
-      name: 'Root',
+      kind: "element",
+      id: "root",
+      tag: "frame",
+      name: "Root",
       style: {
         base: {
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '{space.4}',
-          padding: { all: '{space.4}' },
-          background: { kind: 'color', color: '{color.bg}' },
+          display: "flex",
+          flexDirection: "column",
+          gap: "{space.4}",
+          padding: { all: "{space.4}" },
+          background: { kind: "color", color: "{color.bg}" },
         },
       },
       children: [],
     },
-    settings: { allowTokenOverride: ['primary', 'bg', 'text'] },
+    settings: { allowTokenOverride: ["primary", "bg", "text"] },
   };
 }
 
