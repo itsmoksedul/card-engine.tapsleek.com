@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolveBlockDesign = resolveBlockDesign;
 exports.userBlockTypes = userBlockTypes;
 exports.blockClass = blockClass;
+const card_visibility_1 = require("../render/card-visibility");
 const definition_1 = require("../types/definition");
 const node_1 = require("../types/node");
 const registry_1 = require("../widgets/registry");
@@ -17,8 +18,8 @@ function templateInstance(def, type) {
                 return;
             if ((0, node_1.isWidget)(n)) {
                 const wNorm = (0, registry_1.normalizeWidgetType)(n.widget).toUpperCase();
-                const keyLower = (n.key || '').toLowerCase();
-                const labelLower = (n.label || '').toLowerCase();
+                const keyLower = (n.key || "").toLowerCase();
+                const labelLower = (n.label || "").toLowerCase();
                 if (wNorm === normTarget ||
                     n.widget === type ||
                     n.widget?.toUpperCase() === normTarget ||
@@ -40,29 +41,65 @@ function templateInstance(def, type) {
     return null;
 }
 /**
+ * Find the first non-core widget in the template tree. This is the generic
+ * "placeholder" for user blocks, so its custom outer styles (margin, border, background)
+ * should apply as a generic template to any block type the user adds.
+ */
+function templatePlaceholder(def) {
+    for (const root of (0, definition_1.definitionRoots)(def)) {
+        let matched = null;
+        (0, node_1.walkTreeOrder)(root, (n) => {
+            if (matched)
+                return;
+            if ((0, node_1.isWidget)(n)) {
+                if (!(0, card_visibility_1.isCoreWidget)(n.widget)) {
+                    matched = {
+                        rootStyle: n.style,
+                        rootHidden: n.hidden,
+                    };
+                }
+            }
+        });
+        if (matched)
+            return matched;
+    }
+    return null;
+}
+/**
  * The `(design, partStyles)` a user block of `type` should render with, given
  * the card's template. Deterministic and pure.
  */
 function resolveBlockDesign(def, type) {
-    const normType = (type || '').toUpperCase();
+    const normType = (type || "").toUpperCase();
     const aliasMap = {
-        MAPS: 'MAP',
-        LOCATION: 'MAP',
-        MAP: 'MAP',
-        ABOUT_US: 'DESCRIPTION',
-        ABOUT: 'DESCRIPTION',
-        HOURS: 'BUSINESS_HOURS',
-        REVIEWS: 'TESTIMONIALS',
-        BUTTON: 'CTA_BUTTON',
-        SOCIAL_ICON: 'SOCIAL_ICONS',
-        HR: 'DIVIDER',
-        SPACE: 'SPACER',
-        HTML_EMBED: 'EMBED',
-        VCARD: 'VCARD_BUTTON',
-        LINKS: 'CONTACT_LINKS',
+        MAPS: "MAP",
+        LOCATION: "MAP",
+        MAP: "MAP",
+        ABOUT_US: "DESCRIPTION",
+        ABOUT: "DESCRIPTION",
+        HOURS: "BUSINESS_HOURS",
+        REVIEWS: "TESTIMONIALS",
+        BUTTON: "CTA_BUTTON",
+        SOCIAL_ICON: "SOCIAL_ICONS",
+        HR: "DIVIDER",
+        SPACE: "SPACER",
+        HTML_EMBED: "EMBED",
+        VCARD: "VCARD_BUTTON",
+        LINKS: "CONTACT_LINKS",
     };
     const targetType = aliasMap[normType] || normType;
-    const inst = templateInstance(def, targetType) ?? templateInstance(def, type);
+    let inst = templateInstance(def, targetType) ?? templateInstance(def, type);
+    if (!inst) {
+        const placeholder = templatePlaceholder(def);
+        if (placeholder) {
+            // Fallback to the placeholder's explicitly authored root styles, so generic
+            // spacing/borders apply to all user blocks even if they don't match the placeholder's type.
+            inst = {
+                rootStyle: placeholder.rootStyle,
+                rootHidden: placeholder.rootHidden,
+            };
+        }
+    }
     const meta = (0, registry_1.getWidgetMeta)(targetType) ?? (0, registry_1.getWidgetMeta)(type);
     // Part styles: start with meta defaults, but NEVER inject automatic padding/margin onto root
     const partStyles = {};
@@ -70,7 +107,7 @@ function resolveBlockDesign(def, type) {
         for (const [part, set] of Object.entries(meta.defaultPartStyles)) {
             const cloned = structuredClone(set);
             // Strip automatic root padding/margin so admin design rules supreme
-            if (part === 'root' && cloned.base) {
+            if (part === "root" && cloned.base) {
                 delete cloned.base.padding;
                 delete cloned.base.margin;
             }
@@ -136,10 +173,12 @@ function resolveBlockDesign(def, type) {
  * and the lead form (edited in its own tab) are not.
  */
 function userBlockTypes(allTypes) {
-    const EXCLUDED = new Set(['LEAD_FORM']);
-    return allTypes.filter((m) => !m.derived && !EXCLUDED.has(m.type)).map((m) => m.type);
+    const EXCLUDED = new Set(["LEAD_FORM"]);
+    return allTypes
+        .filter((m) => !m.derived && !EXCLUDED.has(m.type))
+        .map((m) => m.type);
 }
 /** The CSS class a block wrapper carries so it picks up the template preset. */
 function blockClass(type) {
-    return `tsb-${String(type).replace(/[^A-Za-z0-9_-]/g, '')}`;
+    return `tsb-${String(type).replace(/[^A-Za-z0-9_-]/g, "")}`;
 }
