@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.extractFieldsFromNode = extractFieldsFromNode;
 exports.createCustomBlockFromNode = createCustomBlockFromNode;
 exports.syncCustomBlock = syncCustomBlock;
+exports.cleanCustomBlockSources = cleanCustomBlockSources;
 exports.syncCustomBlocks = syncCustomBlocks;
 exports.editableCustomBlockFields = editableCustomBlockFields;
 exports.applyCustomBlockContent = applyCustomBlockContent;
@@ -107,6 +108,9 @@ function extractFieldsFromNode(rootNode, previous = []) {
     const str = (v, fallback = "") => v ?? fallback;
     function walk(n) {
         if (n.kind === "element") {
+            // A repeater's rows bind to their item — data, not template content.
+            if (n.repeat)
+                return;
             // Bindings to card data stay live — they are not template content.
             if (n.bind?.source === "self")
                 delete n.bind;
@@ -238,8 +242,53 @@ function findById(root, id) {
     }
     return null;
 }
+/**
+ * Earlier versions of "Make Widget" wrote `{ source: "self" }` bindings onto
+ * the source layers themselves. Outside a widget a self binding falls back to
+ * the whole card's content map, so a heading bound to `title` rendered some
+ * other widget's title and a text bound to `description` rendered blank.
+ * Strips them from every custom block's source subtree (repeaters and inner
+ * widgets are left alone — their self bindings are real). Returns the same
+ * object when nothing needed cleaning.
+ */
+function cleanCustomBlockSources(def) {
+    if (!def.customBlocks?.length || !def.root)
+        return def;
+    const sources = new Set(def.customBlocks.map((cb) => cb.sourceNodeId).filter(Boolean));
+    let changed = false;
+    const strip = (n) => {
+        if (n.kind !== "element" || n.repeat)
+            return n;
+        let next = n;
+        if (n.bind?.source === "self") {
+            const { bind: _drop, ...rest } = n;
+            next = rest;
+            changed = true;
+        }
+        if (next.children) {
+            const kids = next.children.map(strip);
+            if (kids.some((k, i) => k !== next.children[i])) {
+                next = { ...next, children: kids };
+            }
+        }
+        return next;
+    };
+    const visit = (n) => {
+        if (n.kind !== "element")
+            return n;
+        if (sources.has(n.id))
+            return strip(n);
+        if (!n.children)
+            return n;
+        const kids = n.children.map(visit);
+        return kids.some((k, i) => k !== n.children[i]) ? { ...n, children: kids } : n;
+    };
+    const root = visit(def.root);
+    return changed ? { ...def, root } : def;
+}
 /** Sync every custom block whose source layer still exists in the template. */
-function syncCustomBlocks(def) {
+function syncCustomBlocks(input) {
+    const def = cleanCustomBlockSources(input);
     if (!def.customBlocks?.length || !def.root)
         return def;
     return {

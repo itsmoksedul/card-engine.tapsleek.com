@@ -306,6 +306,13 @@ function declarationsFor(props) {
         if (onVar)
             out.push(["color", `var(${onVar})`]);
     }
+    // "Fixed" size means fixed: inside a flex row the default flex-shrink:1
+    // squeezed a 50×50 frame's width but not its height, breaking its ratio.
+    const isFixedLength = (v) => typeof v === "string" && /^\d+(\.\d+)?(px|rem|em)$/.test(v.trim());
+    const hasExplicitShrink = p.flexShrink !== undefined && p.flexShrink !== null && p.flexShrink !== "";
+    if (!hasExplicitShrink && (isFixedLength(p.width) || isFixedLength(p.height))) {
+        out.push(["flex-shrink", "0"]);
+    }
     return out;
 }
 /** `[["color","red"]]` → `color:red` */

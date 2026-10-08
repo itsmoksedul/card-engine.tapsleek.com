@@ -122,7 +122,13 @@ function RenderIcon({ name, className, }) {
                 }, children: (0, jsx_runtime_1.jsx)("img", { src: iconValue.url, alt: "", style: { width: "100%", height: "100%", objectFit: "contain" } }) }));
         }
         if (iconValue.type === "react-icon" && iconValue.name) {
-            iconValue = iconValue.name;
+            // The icon picker stores react-icons export names ("LuDownload");
+            // lucide-react exports the same glyph without the prefix.
+            iconValue =
+                (iconValue.set === "lu" || !iconValue.set) &&
+                    /^Lu[A-Z0-9]/.test(iconValue.name)
+                    ? iconValue.name.slice(2)
+                    : iconValue.name;
         }
         else {
             return null;

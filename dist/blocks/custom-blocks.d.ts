@@ -29,8 +29,18 @@ export declare function createCustomBlockFromNode(node: Node, label: string, ico
  * field keys / labels / editable flags stable.
  */
 export declare function syncCustomBlock(block: TemplateCustomBlock, sourceNode: Node): TemplateCustomBlock;
+/**
+ * Earlier versions of "Make Widget" wrote `{ source: "self" }` bindings onto
+ * the source layers themselves. Outside a widget a self binding falls back to
+ * the whole card's content map, so a heading bound to `title` rendered some
+ * other widget's title and a text bound to `description` rendered blank.
+ * Strips them from every custom block's source subtree (repeaters and inner
+ * widgets are left alone — their self bindings are real). Returns the same
+ * object when nothing needed cleaning.
+ */
+export declare function cleanCustomBlockSources<T extends TemplateDefinition>(def: T): T;
 /** Sync every custom block whose source layer still exists in the template. */
-export declare function syncCustomBlocks<T extends TemplateDefinition>(def: T): T;
+export declare function syncCustomBlocks<T extends TemplateDefinition>(input: T): T;
 /** The fields an end user may edit in the card editor. */
 export declare function editableCustomBlockFields(block: TemplateCustomBlock): CustomBlockField[];
 /**

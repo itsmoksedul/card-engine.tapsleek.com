@@ -133,6 +133,8 @@ export function extractFieldsFromNode(
 
   function walk(n: Node) {
     if (n.kind === "element") {
+      // A repeater's rows bind to their item — data, not template content.
+      if (n.repeat) return;
       // Bindings to card data stay live — they are not template content.
       if (n.bind?.source === "self") delete n.bind;
       const cardBound = Boolean(n.bind);
@@ -281,8 +283,54 @@ function findById(root: Node, id: string): Node | null {
   return null;
 }
 
+/**
+ * Earlier versions of "Make Widget" wrote `{ source: "self" }` bindings onto
+ * the source layers themselves. Outside a widget a self binding falls back to
+ * the whole card's content map, so a heading bound to `title` rendered some
+ * other widget's title and a text bound to `description` rendered blank.
+ * Strips them from every custom block's source subtree (repeaters and inner
+ * widgets are left alone — their self bindings are real). Returns the same
+ * object when nothing needed cleaning.
+ */
+export function cleanCustomBlockSources<T extends TemplateDefinition>(def: T): T {
+  if (!def.customBlocks?.length || !def.root) return def;
+  const sources = new Set(
+    def.customBlocks.map((cb) => cb.sourceNodeId).filter(Boolean) as string[],
+  );
+  let changed = false;
+
+  const strip = (n: Node): Node => {
+    if (n.kind !== "element" || n.repeat) return n;
+    let next: ElementNode = n;
+    if (n.bind?.source === "self") {
+      const { bind: _drop, ...rest } = n;
+      next = rest as ElementNode;
+      changed = true;
+    }
+    if (next.children) {
+      const kids = next.children.map(strip);
+      if (kids.some((k, i) => k !== next.children![i])) {
+        next = { ...next, children: kids };
+      }
+    }
+    return next;
+  };
+
+  const visit = (n: Node): Node => {
+    if (n.kind !== "element") return n;
+    if (sources.has(n.id)) return strip(n);
+    if (!n.children) return n;
+    const kids = n.children.map(visit);
+    return kids.some((k, i) => k !== n.children![i]) ? { ...n, children: kids } : n;
+  };
+
+  const root = visit(def.root) as ElementNode;
+  return changed ? { ...def, root } : def;
+}
+
 /** Sync every custom block whose source layer still exists in the template. */
-export function syncCustomBlocks<T extends TemplateDefinition>(def: T): T {
+export function syncCustomBlocks<T extends TemplateDefinition>(input: T): T {
+  const def = cleanCustomBlockSources(input);
   if (!def.customBlocks?.length || !def.root) return def;
   return {
     ...def,

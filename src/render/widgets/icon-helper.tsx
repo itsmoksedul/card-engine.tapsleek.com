@@ -248,7 +248,13 @@ export function RenderIcon({
       );
     }
     if (iconValue.type === "react-icon" && iconValue.name) {
-      iconValue = iconValue.name;
+      // The icon picker stores react-icons export names ("LuDownload");
+      // lucide-react exports the same glyph without the prefix.
+      iconValue =
+        (iconValue.set === "lu" || !iconValue.set) &&
+        /^Lu[A-Z0-9]/.test(iconValue.name)
+          ? iconValue.name.slice(2)
+          : iconValue.name;
     } else {
       return null;
     }
