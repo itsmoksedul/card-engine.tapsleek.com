@@ -1127,9 +1127,53 @@ export function sanitizeTemplateDefinition<T = unknown>(input: T): T {
     }
   }
 
+  function deduplicateContentKeys(def: any): void {
+    if (!def || typeof def !== "object") return;
+    const seenKeys = new Set<string>();
+
+    function makeUniqueKey(base: string): string {
+      const slug =
+        base
+          .toLowerCase()
+          .replace(/[^a-z0-9_-]+/g, "_")
+          .replace(/^_+|_+$/g, "") || "widget";
+      if (!seenKeys.has(slug)) return slug;
+      for (let i = 2; i < 5000; i++) {
+        const candidate = `${slug}_${i}`;
+        if (!seenKeys.has(candidate)) return candidate;
+      }
+      return `${slug}_${Date.now().toString(36)}`;
+    }
+
+    function walk(node: any): void {
+      if (!node || typeof node !== "object") return;
+      if (
+        (node.kind === "widget" || node.kind === "slot") &&
+        typeof node.key === "string"
+      ) {
+        if (seenKeys.has(node.key)) {
+          const freshKey = makeUniqueKey(node.key);
+          node.key = freshKey;
+          seenKeys.add(freshKey);
+        } else {
+          seenKeys.add(node.key);
+        }
+      }
+      if (Array.isArray(node.children)) {
+        node.children.forEach(walk);
+      }
+    }
+
+    if (def.root) walk(def.root);
+    if (Array.isArray(def.popups)) {
+      def.popups.forEach((p: any) => p && p.root && walk(p.root));
+    }
+  }
+
   if (cloned.root) {
     deduplicateSubtreeIds(cloned.root);
     walkNode(cloned.root);
+    deduplicateContentKeys(cloned);
   }
 
   return cloned as T;

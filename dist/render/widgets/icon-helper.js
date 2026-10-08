@@ -87,6 +87,13 @@ function RenderIcon({ name, className, }) {
         return null;
     let iconValue = name;
     if (typeof name === "string") {
+        if (name.trim().startsWith("<svg") || name.trim().startsWith("<?xml")) {
+            return ((0, jsx_runtime_1.jsx)("span", { className: className, "data-icon": "custom-svg", "aria-hidden": true, style: {
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                }, dangerouslySetInnerHTML: { __html: (0, sanitize_1.sanitizeHtml)(name, "svg") } }));
+        }
         const def = (0, links_1.linkDef)(name);
         if (def && def.iconSvg) {
             return ((0, jsx_runtime_1.jsx)("span", { className: className, "data-icon": def.type, "aria-hidden": true, style: {

@@ -173,6 +173,22 @@ export function RenderIcon({
   let iconValue = name;
 
   if (typeof name === "string") {
+    if (name.trim().startsWith("<svg") || name.trim().startsWith("<?xml")) {
+      return (
+        <span
+          className={className}
+          data-icon="custom-svg"
+          aria-hidden
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(name, "svg") }}
+        />
+      );
+    }
+
     const def = linkDef(name);
     if (def && def.iconSvg) {
       return (
