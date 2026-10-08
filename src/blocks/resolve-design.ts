@@ -1,7 +1,7 @@
 import { definitionRoots, type TemplateDefinition } from '../types/definition';
 import { isWidget, walkTreeOrder, type ElementNode } from '../types/node';
 import type { StyleSet } from '../types/style';
-import { getWidgetMeta } from '../widgets/registry';
+import { getWidgetMeta, normalizeWidgetType } from '../widgets/registry';
 import { mergeLayoutTrees } from '../render/NodeRenderer';
 
 export interface BlockDesign {
@@ -17,14 +17,34 @@ type Instance = { design?: Record<string, unknown>; partStyles?: Record<string, 
 
 /** First widget instance of `type` found in the template tree, if any. */
 function templateInstance(def: TemplateDefinition, type: string): Instance | null {
+  const normTarget = normalizeWidgetType(type).toUpperCase();
+  const lowerType = type.toLowerCase();
   for (const root of definitionRoots(def)) {
-    const matches: Instance[] = [];
+    let matched: Instance | null = null;
     walkTreeOrder(root, (n) => {
-      if (isWidget(n) && n.widget === type) {
-        matches.push({ design: n.design, partStyles: n.partStyles, layout: n.layout, rootStyle: n.style, rootHidden: n.hidden });
+      if (matched) return;
+      if (isWidget(n)) {
+        const wNorm = normalizeWidgetType(n.widget).toUpperCase();
+        const keyLower = (n.key || '').toLowerCase();
+        const labelLower = (n.label || '').toLowerCase();
+        if (
+          wNorm === normTarget ||
+          n.widget === type ||
+          n.widget?.toUpperCase() === normTarget ||
+          keyLower === lowerType ||
+          labelLower === lowerType
+        ) {
+          matched = {
+            design: n.design,
+            partStyles: n.partStyles,
+            layout: n.layout,
+            rootStyle: n.style,
+            rootHidden: n.hidden,
+          };
+        }
       }
     });
-    if (matches.length) return matches[0];
+    if (matched) return matched;
   }
   return null;
 }
@@ -37,6 +57,10 @@ export function resolveBlockDesign(def: TemplateDefinition, type: string): Block
   const normType = (type || '').toUpperCase();
   const aliasMap: Record<string, string> = {
     MAPS: 'MAP',
+    LOCATION: 'MAP',
+    MAP: 'MAP',
+    ABOUT_US: 'DESCRIPTION',
+    ABOUT: 'DESCRIPTION',
     HOURS: 'BUSINESS_HOURS',
     REVIEWS: 'TESTIMONIALS',
     BUTTON: 'CTA_BUTTON',
@@ -52,8 +76,21 @@ export function resolveBlockDesign(def: TemplateDefinition, type: string): Block
   const inst = templateInstance(def, targetType) ?? templateInstance(def, type);
   const meta = getWidgetMeta(targetType) ?? getWidgetMeta(type);
 
-  // Deep-merge partStyles so parts omitted in template instances retain their widget defaults
-  const partStyles: Record<string, StyleSet> = { ...(meta?.defaultPartStyles ?? {}) };
+  // Part styles: start with meta defaults, but NEVER inject automatic padding/margin onto root
+  const partStyles: Record<string, StyleSet> = {};
+  if (meta?.defaultPartStyles) {
+    for (const [part, set] of Object.entries(meta.defaultPartStyles)) {
+      const cloned = structuredClone(set);
+      // Strip automatic root padding/margin so admin design rules supreme
+      if (part === 'root' && cloned.base) {
+        delete (cloned.base as any).padding;
+        delete (cloned.base as any).margin;
+      }
+      partStyles[part] = cloned;
+    }
+  }
+
+  // If a template instance exists from Admin, its authored partStyles take priority
   if (inst?.partStyles) {
     for (const [part, set] of Object.entries(inst.partStyles)) {
       partStyles[part] = {
@@ -66,13 +103,15 @@ export function resolveBlockDesign(def: TemplateDefinition, type: string): Block
     }
   }
 
-  // Merge inst.layout with meta.defaultLayout so custom element styles (fonts, margins) are preserved
-  const rawLayout =
-    inst?.layout && meta?.defaultLayout
-      ? mergeLayoutTrees(inst.layout, meta.defaultLayout)
-      : (inst?.layout ?? meta?.defaultLayout);
+  // Layout: If the admin authored a custom layout in the template, USE IT DIRECTLY!
+  // Do NOT merge defaultLayout over it, which re-injects unwanted default padding/margin/structure.
+  const rawLayout = inst?.layout
+    ? structuredClone(inst.layout)
+    : meta?.defaultLayout
+      ? structuredClone(meta.defaultLayout)
+      : undefined;
 
-  let layout = rawLayout ? structuredClone(rawLayout) : undefined;
+  let layout = rawLayout;
   if (layout) {
     const rootStyle = inst?.rootStyle;
     const rootPartStyle = inst?.partStyles?.root;

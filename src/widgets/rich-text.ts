@@ -22,7 +22,6 @@ export const meta: WidgetModule['meta'] = {
         display: 'flex',
         flexDirection: 'column',
         gap: '{space.2}',
-        padding: { all: '{space.4}' },
         background: { kind: 'color', color: '{color.surface}' },
         borderRadius: { all: '{radius.lg}' },
       },

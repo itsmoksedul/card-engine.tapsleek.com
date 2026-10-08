@@ -6,18 +6,36 @@ exports.blockClass = blockClass;
 const definition_1 = require("../types/definition");
 const node_1 = require("../types/node");
 const registry_1 = require("../widgets/registry");
-const NodeRenderer_1 = require("../render/NodeRenderer");
 /** First widget instance of `type` found in the template tree, if any. */
 function templateInstance(def, type) {
+    const normTarget = (0, registry_1.normalizeWidgetType)(type).toUpperCase();
+    const lowerType = type.toLowerCase();
     for (const root of (0, definition_1.definitionRoots)(def)) {
-        const matches = [];
+        let matched = null;
         (0, node_1.walkTreeOrder)(root, (n) => {
-            if ((0, node_1.isWidget)(n) && n.widget === type) {
-                matches.push({ design: n.design, partStyles: n.partStyles, layout: n.layout, rootStyle: n.style, rootHidden: n.hidden });
+            if (matched)
+                return;
+            if ((0, node_1.isWidget)(n)) {
+                const wNorm = (0, registry_1.normalizeWidgetType)(n.widget).toUpperCase();
+                const keyLower = (n.key || '').toLowerCase();
+                const labelLower = (n.label || '').toLowerCase();
+                if (wNorm === normTarget ||
+                    n.widget === type ||
+                    n.widget?.toUpperCase() === normTarget ||
+                    keyLower === lowerType ||
+                    labelLower === lowerType) {
+                    matched = {
+                        design: n.design,
+                        partStyles: n.partStyles,
+                        layout: n.layout,
+                        rootStyle: n.style,
+                        rootHidden: n.hidden,
+                    };
+                }
             }
         });
-        if (matches.length)
-            return matches[0];
+        if (matched)
+            return matched;
     }
     return null;
 }
@@ -29,6 +47,10 @@ function resolveBlockDesign(def, type) {
     const normType = (type || '').toUpperCase();
     const aliasMap = {
         MAPS: 'MAP',
+        LOCATION: 'MAP',
+        MAP: 'MAP',
+        ABOUT_US: 'DESCRIPTION',
+        ABOUT: 'DESCRIPTION',
         HOURS: 'BUSINESS_HOURS',
         REVIEWS: 'TESTIMONIALS',
         BUTTON: 'CTA_BUTTON',
@@ -42,8 +64,20 @@ function resolveBlockDesign(def, type) {
     const targetType = aliasMap[normType] || normType;
     const inst = templateInstance(def, targetType) ?? templateInstance(def, type);
     const meta = (0, registry_1.getWidgetMeta)(targetType) ?? (0, registry_1.getWidgetMeta)(type);
-    // Deep-merge partStyles so parts omitted in template instances retain their widget defaults
-    const partStyles = { ...(meta?.defaultPartStyles ?? {}) };
+    // Part styles: start with meta defaults, but NEVER inject automatic padding/margin onto root
+    const partStyles = {};
+    if (meta?.defaultPartStyles) {
+        for (const [part, set] of Object.entries(meta.defaultPartStyles)) {
+            const cloned = structuredClone(set);
+            // Strip automatic root padding/margin so admin design rules supreme
+            if (part === 'root' && cloned.base) {
+                delete cloned.base.padding;
+                delete cloned.base.margin;
+            }
+            partStyles[part] = cloned;
+        }
+    }
+    // If a template instance exists from Admin, its authored partStyles take priority
     if (inst?.partStyles) {
         for (const [part, set] of Object.entries(inst.partStyles)) {
             partStyles[part] = {
@@ -55,11 +89,14 @@ function resolveBlockDesign(def, type) {
             };
         }
     }
-    // Merge inst.layout with meta.defaultLayout so custom element styles (fonts, margins) are preserved
-    const rawLayout = inst?.layout && meta?.defaultLayout
-        ? (0, NodeRenderer_1.mergeLayoutTrees)(inst.layout, meta.defaultLayout)
-        : (inst?.layout ?? meta?.defaultLayout);
-    let layout = rawLayout ? structuredClone(rawLayout) : undefined;
+    // Layout: If the admin authored a custom layout in the template, USE IT DIRECTLY!
+    // Do NOT merge defaultLayout over it, which re-injects unwanted default padding/margin/structure.
+    const rawLayout = inst?.layout
+        ? structuredClone(inst.layout)
+        : meta?.defaultLayout
+            ? structuredClone(meta.defaultLayout)
+            : undefined;
+    let layout = rawLayout;
     if (layout) {
         const rootStyle = inst?.rootStyle;
         const rootPartStyle = inst?.partStyles?.root;
