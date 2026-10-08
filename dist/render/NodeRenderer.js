@@ -637,11 +637,17 @@ function mergeLayoutTrees(instance, defaultLayout) {
         const listNode = instChildren[0];
         instChildren = listNode.children || [];
     }
+    const structural = instance.id === defaultLayout.id ? structuralFrom(defaultLayout) : {};
+    // "Hide when empty" IS edited in the builder: an explicit stored value
+    // (true or false) is the admin's choice and must win over the default —
+    // otherwise turning it off on Profile's cover never took effect.
+    if (instance.hideIfEmpty !== undefined)
+        delete structural.hideIfEmpty;
     const merged = {
         ...instance,
         // Same id ⇒ same node; a different id (e.g. the admin wrapped the layout
         // in a new frame) is the admin's own structure and is left alone.
-        ...(instance.id === defaultLayout.id ? structuralFrom(defaultLayout) : {}),
+        ...structural,
         children: instChildren,
     };
     const defaultChildrenMap = new Map();
