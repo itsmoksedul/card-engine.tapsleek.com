@@ -266,17 +266,13 @@ function resolveCardField(field, card) {
         case "avatar": {
             return (card.profileImage ||
                 card.avatar ||
-                (showPlaceholders && !hasUserIdentity
-                    ? sample_preview_1.DEMO_PREVIEW_ASSETS.avatar
-                    : undefined));
+                sample_preview_1.DEMO_PREVIEW_ASSETS.avatar);
         }
         case "coverPhoto":
         case "cover": {
             return (card.coverPhoto ||
                 card.cover ||
-                (showPlaceholders && !hasUserIdentity
-                    ? sample_preview_1.DEMO_PREVIEW_ASSETS.cover
-                    : undefined));
+                sample_preview_1.DEMO_PREVIEW_ASSETS.cover);
         }
         // Derived from the slug / share key.
         case "publicUrl":
