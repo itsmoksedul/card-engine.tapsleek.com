@@ -1,6 +1,6 @@
 {
   "name": "@tapsleek/card-engine",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Core layout compiler, renderer and validator for Tapsleek cards and templates",
   "author": "Moksedul Islam <hello@moksedul.com>",
   "license": "MIT",
