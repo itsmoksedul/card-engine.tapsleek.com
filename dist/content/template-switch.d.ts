@@ -54,3 +54,21 @@ export declare function switchTemplateContent(content: CardContent | null | unde
  * template's demo content, so the card opens looking populated.
  */
 export declare function seedContentFromTemplate(def: TemplateDefinition): CardContent;
+export interface SeededBlock {
+    id: string;
+    type: string;
+    widget: string;
+    title: string;
+    content: Record<string, unknown>;
+    isVisible: boolean;
+    hidden: boolean;
+    position: number;
+    order: number;
+    config: Record<string, unknown> | null;
+}
+/**
+ * Seed candidate blocks from a template definition:
+ * Extracts customBlocks and content widgets from definition.root with their
+ * default contents, ready to be attached to Card.blocks upon card creation.
+ */
+export declare function seedBlocksFromTemplate(def: TemplateDefinition): SeededBlock[];

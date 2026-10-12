@@ -230,3 +230,133 @@ export function seedContentFromTemplate(def: TemplateDefinition): CardContent {
   }
   return out;
 }
+
+export interface SeededBlock {
+  id: string;
+  type: string;
+  widget: string;
+  title: string;
+  content: Record<string, unknown>;
+  isVisible: boolean;
+  hidden: boolean;
+  position: number;
+  order: number;
+  config: Record<string, unknown> | null;
+}
+
+const CORE_WIDGETS = new Set([
+  'PROFILE',
+  'CONNECT_BUTTONS',
+  'HEADER',
+  'NAV',
+  'CONTACT_LINKS',
+  'CONTACT_BUTTONS',
+  'LINK_BUTTONS',
+  'CUSTOM_LINKS',
+  'LINKS',
+  'SOCIAL_ICONS',
+  'SOCIAL_LINKS',
+  'SOCIAL',
+  'COPYRIGHT',
+  'VCARD_BUTTON',
+  'SHARE_BUTTON',
+  'LEAD_FORM',
+]);
+
+const EXCLUDED_BLOCKS = new Set([
+  'LEAD_FORM',
+  'PROFILE',
+  'CONNECT_BUTTONS',
+  'CONTACT_LINKS',
+]);
+
+function formatWidgetTitle(type: string): string {
+  const clean = type.replace(/[-_]/g, ' ').toLowerCase();
+  return clean.charAt(0).toUpperCase() + clean.slice(1);
+}
+
+/**
+ * Seed candidate blocks from a template definition:
+ * Extracts customBlocks and content widgets from definition.root with their
+ * default contents, ready to be attached to Card.blocks upon card creation.
+ */
+export function seedBlocksFromTemplate(def: TemplateDefinition): SeededBlock[] {
+  if (!def) return [];
+  const candidateBlocks: Array<{
+    type: string;
+    title: string;
+    content: Record<string, unknown>;
+  }> = [];
+  const seenTypes = new Set<string>();
+
+  // a) Custom blocks defined on the template
+  if (Array.isArray(def.customBlocks)) {
+    for (const cb of def.customBlocks) {
+      if (cb.hidden) continue;
+      const typeKey = (cb.id || '').toUpperCase();
+      if (typeKey && !seenTypes.has(typeKey)) {
+        seenTypes.add(typeKey);
+        candidateBlocks.push({
+          type: cb.id,
+          title: cb.label || 'Custom Block',
+          content: JSON.parse(JSON.stringify(cb.defaultContent ?? {})),
+        });
+      }
+    }
+  }
+
+  // b) Content widgets in def.root (walk in tree order)
+  const walkWidgets = (node: any) => {
+    if (!node) return;
+    if (node.kind === 'widget' && node.widget) {
+      const wUpper = String(node.widget).toUpperCase();
+      if (
+        !CORE_WIDGETS.has(wUpper) &&
+        !EXCLUDED_BLOCKS.has(wUpper) &&
+        !seenTypes.has(wUpper)
+      ) {
+        seenTypes.add(wUpper);
+        const widgetMeta = getWidget(node.widget);
+        const widgetContent =
+          node.defaultContent && Object.keys(node.defaultContent).length > 0
+            ? node.defaultContent
+            : (widgetMeta?.meta.defaultContent ?? {});
+        candidateBlocks.push({
+          type: wUpper,
+          title:
+            node.label ||
+            node.title ||
+            (node.defaultContent?.title as string | undefined) ||
+            (node.defaultContent?.label as string | undefined) ||
+            widgetMeta?.meta.label ||
+            formatWidgetTitle(node.widget),
+          content: JSON.parse(JSON.stringify(widgetContent ?? {})),
+        });
+      }
+    }
+    if (Array.isArray(node.children)) {
+      for (const child of node.children) walkWidgets(child);
+    }
+    if (node.layout) {
+      walkWidgets(node.layout);
+    }
+  };
+
+  if (def.root) {
+    walkWidgets(def.root);
+  }
+
+  return candidateBlocks.map((cand, idx) => ({
+    id: `b_${Math.random().toString(36).substring(2, 10)}`,
+    type: cand.type,
+    widget: cand.type,
+    title: cand.title,
+    content: cand.content,
+    isVisible: true,
+    hidden: false,
+    position: idx,
+    order: idx,
+    config: null,
+  }));
+}
+

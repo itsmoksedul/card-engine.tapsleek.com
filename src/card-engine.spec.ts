@@ -34,6 +34,7 @@ import {
   VERSION_KEY,
 } from "./content/migrate";
 import {
+  seedBlocksFromTemplate,
   seedContentFromTemplate,
   switchTemplateContent,
   widgetTypeMap,
@@ -795,6 +796,44 @@ describe("seedContentFromTemplate", () => {
     const seeded = seedContentFromTemplate(def);
     expect(seeded.services_main).toBeDefined();
     expect(seeded.links_main).toBeUndefined();
+  });
+});
+
+describe("seedBlocksFromTemplate", () => {
+  it("extracts non-core widgets and customBlocks as blocks with defaultContent", () => {
+    const def = blankDefinition("Test");
+    (def.root as ElementNode).children!.push({
+      id: "prof",
+      kind: "widget",
+      widget: "PROFILE",
+      key: "profile",
+    } as WidgetNode);
+    (def.root as ElementNode).children!.push({
+      id: "srv",
+      kind: "widget",
+      widget: "SERVICE_LIST",
+      key: "services_main",
+      label: "Our Services",
+      defaultContent: { title: "Our Services", items: [{ name: "Design" }] },
+    } as WidgetNode);
+    def.customBlocks = [
+      {
+        id: "cb_specials",
+        label: "Weekly Specials",
+        defaultContent: { headline: "50% off" },
+      },
+    ];
+
+    const blocks = seedBlocksFromTemplate(def);
+    expect(blocks.length).toBe(2);
+    expect(blocks[0].type).toBe("cb_specials");
+    expect(blocks[0].title).toBe("Weekly Specials");
+    expect(blocks[0].content).toEqual({ headline: "50% off" });
+    expect(blocks[1].type).toBe("SERVICE_LIST");
+    expect(blocks[1].title).toBe("Our Services");
+    expect(blocks[1].content).toEqual({ title: "Our Services", items: [{ name: "Design" }] });
+    expect(blocks[1].isVisible).toBe(true);
+    expect(blocks[1].position).toBe(1);
   });
 });
 

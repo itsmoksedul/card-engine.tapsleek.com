@@ -28,6 +28,8 @@ export interface RenderCtx {
      * widgets, on a user card they only render through the user's blocks.
      */
     customBlockSourceIds?: Set<string>;
+    isCarouselSlide?: boolean;
+    carouselPerView?: number;
 }
 export interface NodeRendererProps {
     node: Node;
@@ -39,6 +41,11 @@ export declare const CarouselContext: React.Context<{
     emblaApi?: any;
     emblaRef?: any;
     selectedIndex?: number;
+    canScrollPrev?: boolean;
+    canScrollNext?: boolean;
+    loop?: boolean;
+    perView?: number;
+    originalSlideCount?: number;
 } | null>;
 /**
  * Structure comes from the widget's code, not the stored copy: the builder

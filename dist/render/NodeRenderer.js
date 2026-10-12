@@ -41,49 +41,96 @@ function NodeRenderer({ node, content, ctx }) {
 }
 exports.CarouselContext = react_1.default.createContext(null);
 function CarouselProvider({ node, content, ctx, dom }) {
-    const align = content?._design?.carouselAlign ?? "start";
-    const loop = content?._design?.carouselLoop === true;
-    const autoplay = content?._design?.carouselAutoplay === true;
-    const autoplayDelay = Number(content?._design?.carouselAutoplayDelay) || 3000;
+    const align = content?._design?.carouselAlign ??
+        node.props?.carouselAlign ??
+        node.props?.align ??
+        "start";
+    const perView = Number(content?._design?.carouselSlidesPerView ??
+        node.props?.carouselSlidesPerView ??
+        node.props?.slidesPerView ??
+        node.props?.perView) || 1.25;
+    const loop = content?._design?.carouselLoop !== undefined
+        ? Boolean(content._design.carouselLoop)
+        : node.props?.carouselLoop !== undefined
+            ? Boolean(node.props.carouselLoop)
+            : false;
+    const autoplay = content?._design?.carouselAutoplay !== undefined
+        ? Boolean(content._design.carouselAutoplay)
+        : node.props?.carouselAutoplay !== undefined
+            ? Boolean(node.props.carouselAutoplay)
+            : false;
+    const autoplayDelay = Number(content?._design?.carouselAutoplayDelay ??
+        node.props?.carouselAutoplayDelay ??
+        node.props?.autoplayDelay) || 3000;
+    const rawItems = (Array.isArray(content?.items) && content.items) ||
+        (Array.isArray(content?.images) && content.images) ||
+        (Array.isArray(content?.videos) && content.videos) ||
+        (Array.isArray(content?.testimonials) && content.testimonials) ||
+        [];
+    const originalSlideCount = rawItems.length;
+    // Looping requires at least 2 distinct items
+    const effectiveLoop = loop && originalSlideCount > 1;
     const plugins = react_1.default.useMemo(() => {
         return [
             (0, embla_carousel_autoplay_1.default)({
                 delay: autoplayDelay,
                 stopOnInteraction: true,
-                active: autoplay,
+                stopOnMouseEnter: true,
+                playOnInit: autoplay,
             }),
         ];
     }, [autoplay, autoplayDelay]);
-    const [emblaRef, emblaApi] = (0, embla_carousel_react_1.default)({ loop, align, containScroll: false }, plugins);
+    const [emblaRef, emblaApi] = (0, embla_carousel_react_1.default)({
+        loop: effectiveLoop,
+        align,
+        slidesToScroll: 1,
+        containScroll: effectiveLoop ? false : "trimSnaps",
+        duration: 35,
+        dragFree: false,
+    }, plugins);
     const [selectedIndex, setSelectedIndex] = react_1.default.useState(0);
+    const [canScrollPrev, setCanScrollPrev] = react_1.default.useState(false);
+    const [canScrollNext, setCanScrollNext] = react_1.default.useState(true);
     react_1.default.useEffect(() => {
         if (!emblaApi)
             return;
-        const onSelect = () => {
+        const updateState = () => {
             setSelectedIndex(emblaApi.selectedScrollSnap());
+            setCanScrollPrev(emblaApi.canScrollPrev());
+            setCanScrollNext(emblaApi.canScrollNext());
         };
-        emblaApi.on("select", onSelect);
-        onSelect();
+        emblaApi.on("select", updateState);
+        emblaApi.on("reInit", updateState);
+        updateState();
         return () => {
-            emblaApi.off("select", onSelect);
+            emblaApi.off("select", updateState);
+            emblaApi.off("reInit", updateState);
         };
     }, [emblaApi]);
     react_1.default.useEffect(() => {
-        if (emblaApi) {
-            emblaApi.reInit({ loop, align, containScroll: false }, plugins);
-            const autoplayPlugin = emblaApi.plugins().autoplay;
-            if (autoplayPlugin) {
-                if (autoplay) {
-                    autoplayPlugin.play();
-                }
-                else {
-                    autoplayPlugin.stop();
-                }
-            }
+        if (!emblaApi)
+            return;
+        const ap = emblaApi.plugins().autoplay;
+        if (!ap)
+            return;
+        if (autoplay) {
+            ap.play();
         }
-    }, [emblaApi, align, loop, plugins, autoplay]);
+        else {
+            ap.stop();
+        }
+    }, [emblaApi, autoplay]);
     const kids = (node.children ?? []).map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)));
-    return ((0, jsx_runtime_1.jsx)(exports.CarouselContext.Provider, { value: { emblaApi, emblaRef, selectedIndex }, children: (0, jsx_runtime_1.jsx)("div", { ...dom, children: kids }) }));
+    return ((0, jsx_runtime_1.jsx)(exports.CarouselContext.Provider, { value: {
+            emblaApi,
+            emblaRef,
+            selectedIndex,
+            canScrollPrev,
+            canScrollNext,
+            loop: effectiveLoop,
+            perView,
+            originalSlideCount: originalSlideCount || 1,
+        }, children: (0, jsx_runtime_1.jsx)("div", { ...dom, children: kids }) }));
 }
 // ─── Elements ────────────────────────────────────────────────────────────────
 const TAG_MAP = {
@@ -183,7 +230,10 @@ function ElementRenderer({ node, content, ctx, }) {
     const ctxEmbla = react_1.default.useContext(exports.CarouselContext);
     if (node.visibleIf) {
         const { key, equals } = node.visibleIf;
-        const val = content?._design?.[key] ?? ctx.selfData?.[key];
+        let val = content?._design?.[key] ?? ctx.selfData?.[key];
+        if (val === undefined && key === "useCarousel" && node.props?.useCarousel !== undefined) {
+            val = node.props.useCarousel;
+        }
         const isVisible = val === equals || (equals === false && !val);
         if (!isVisible)
             return null;
@@ -192,11 +242,43 @@ function ElementRenderer({ node, content, ctx, }) {
         const items = (0, resolveBinding_1.resolveBinding)(node.repeat, ctx.card, content, ctx.selfData);
         if (!Array.isArray(items))
             return null;
+        if (ctx.isCarouselSlide && ctxEmbla?.loop && items.length >= 2) {
+            const perView = ctx.carouselPerView || ctxEmbla.perView || 1.25;
+            const minSlides = Math.max(5, Math.ceil(perView * 2) + 2);
+            if (items.length < minSlides) {
+                const repeatCount = Math.ceil(minSlides / items.length);
+                const expanded = [];
+                for (let r = 0; r < repeatCount; r++) {
+                    for (let i = 0; i < items.length; i++) {
+                        expanded.push({
+                            item: items[i],
+                            origIndex: i,
+                            repeatSet: r,
+                        });
+                    }
+                }
+                return ((0, jsx_runtime_1.jsx)(react_1.default.Fragment, { children: expanded.map(({ item, origIndex, repeatSet }) => ((0, jsx_runtime_1.jsx)(ElementRenderer, { node: {
+                            ...node,
+                            repeat: undefined,
+                            ...(node.repeat?.source === "self" &&
+                                node.repeat.path === "links" &&
+                                typeof item?.id === "string"
+                                ? {
+                                    props: {
+                                        ...(node.props ?? {}),
+                                        "data-link-id": item.id,
+                                        ...(typeof item.type === "string"
+                                            ? { "data-link-type": item.type }
+                                            : {}),
+                                    },
+                                }
+                                : {}),
+                        }, content: content, ctx: { ...ctx, selfData: item, repeatIndex: origIndex } }, `${item?.id ?? origIndex}-set${repeatSet}`))) }));
+            }
+        }
         return ((0, jsx_runtime_1.jsx)(react_1.default.Fragment, { children: items.map((item, index) => ((0, jsx_runtime_1.jsx)(ElementRenderer, { node: {
                     ...node,
                     repeat: undefined,
-                    // A repeater over the card's links stamps each row's id so the
-                    // card page's click beacon can attribute LINK_CLICKs per link.
                     ...(node.repeat?.source === "self" &&
                         node.repeat.path === "links" &&
                         typeof item?.id === "string"
@@ -252,8 +334,10 @@ function ElementRenderer({ node, content, ctx, }) {
             : TAG_MAP[node.tag] || "div";
     let isCarouselDotActive = false;
     if (props.action === "carousel-dot" &&
-        ctxEmbla?.selectedIndex === ctx.repeatIndex) {
-        isCarouselDotActive = true;
+        ctxEmbla?.selectedIndex !== undefined &&
+        ctx.repeatIndex !== undefined) {
+        const origCount = ctxEmbla.originalSlideCount || 1;
+        isCarouselDotActive = (ctxEmbla.selectedIndex % origCount) === ctx.repeatIndex;
     }
     const customClass = typeof props.className === "string" && props.className.trim()
         ? ` ${props.className}`
@@ -282,32 +366,52 @@ function ElementRenderer({ node, content, ctx, }) {
             return ((0, jsx_runtime_1.jsx)(CarouselProvider, { node: node, content: content, ctx: ctx, dom: dom }));
         }
         case "carousel": {
-            const perView = Number(content?._design?.carouselSlidesPerView) || 1.25;
+            const perView = Number(content?._design?.carouselSlidesPerView ??
+                node.props?.carouselSlidesPerView ??
+                node.props?.slidesPerView ??
+                node.props?.perView) || 1.25;
             const widthPct = 100 / perView;
             const trackId = `track-${node.id}`;
-            const kids = (node.children ?? []).map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)));
+            const gapVal = "0.75rem";
+            const slideWidthCss = perView <= 1
+                ? "100%"
+                : `calc(${widthPct}% - ${gapVal})`;
+            const kids = (node.children ?? []).map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: { ...ctx, isCarouselSlide: true, carouselPerView: perView } }, child.id)));
             return ((0, jsx_runtime_1.jsxs)(react_1.default.Fragment, { children: [(0, jsx_runtime_1.jsx)("style", { dangerouslySetInnerHTML: {
                             __html: `
             .${trackId} {
-              gap: 0 !important;
-              margin-left: calc(-1 * var(--space-3, 0.75rem)) !important;
+              display: flex !important;
+              flex-direction: row !important;
+              gap: ${gapVal} !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              overflow: visible !important;
+              touch-action: pan-y pinch-zoom !important;
+              user-select: none !important;
+              -webkit-user-select: none !important;
             }
-            .${trackId} > div {
-              flex: 0 0 ${widthPct}% !important;
+            .${trackId} > * {
+              flex: 0 0 ${slideWidthCss} !important;
               min-width: 0 !important;
-              padding-left: var(--space-3, 0.75rem) !important;
+              max-width: ${slideWidthCss} !important;
               box-sizing: border-box !important;
+              padding: 0 !important;
+            }
+            .${trackId} > *:last-child {
+              margin-right: ${gapVal} !important;
             }
           `,
-                        } }), (0, jsx_runtime_1.jsx)("div", { className: "embla", ref: ctxEmbla?.emblaRef, style: { overflow: "hidden" }, children: (0, jsx_runtime_1.jsx)("div", { ...dom, className: `${dom.className} ${trackId}`, children: kids }) })] }));
+                        } }), (0, jsx_runtime_1.jsx)("div", { className: "embla", ref: ctxEmbla?.emblaRef, style: {
+                            overflow: "hidden",
+                            width: "100%",
+                            touchAction: "pan-y pinch-zoom",
+                        }, children: (0, jsx_runtime_1.jsx)("div", { ...dom, className: `${dom.className} ${trackId}`, children: kids }) })] }));
             break;
         }
         case "image": {
-            // A card-bound image the user left empty normally disappears. With
-            // "Hide when empty" turned off, the template's own image stands in
-            // (e.g. a default cover photo) instead.
+            // Priority: user's custom bound image -> template's default image (props.src) -> empty
             const src = (!isEmpty(bound) ? bound : undefined) ??
-                (isCardBound && ctx.card && node.hideIfEmpty ? undefined : props.src) ??
+                props.src ??
                 "";
             if (!src) {
                 if (ctx.isEditing) {
@@ -425,21 +529,43 @@ function ElementRenderer({ node, content, ctx, }) {
                 break;
             const action = props.action || "link";
             dom["data-action"] = action;
+            if (action === "carousel-prev" && ctxEmbla && !ctxEmbla.canScrollPrev) {
+                dom.style = { ...dom.style, opacity: 0.35, cursor: "not-allowed" };
+            }
+            if (action === "carousel-next" && ctxEmbla && !ctxEmbla.canScrollNext) {
+                dom.style = { ...dom.style, opacity: 0.35, cursor: "not-allowed" };
+            }
             const interceptClick = (e) => {
                 e.preventDefault();
                 if (!ctx.isEditing) {
                     e.stopPropagation();
                 }
                 if (action === "carousel-prev") {
+                    try {
+                        ctxEmbla?.emblaApi?.plugins()?.autoplay?.reset();
+                    }
+                    catch { }
                     ctxEmbla?.emblaApi?.scrollPrev();
                     return;
                 }
                 if (action === "carousel-next") {
+                    try {
+                        ctxEmbla?.emblaApi?.plugins()?.autoplay?.reset();
+                    }
+                    catch { }
                     ctxEmbla?.emblaApi?.scrollNext();
                     return;
                 }
                 if (action === "carousel-dot") {
-                    ctxEmbla?.emblaApi?.scrollTo(ctx.repeatIndex ?? 0);
+                    try {
+                        ctxEmbla?.emblaApi?.plugins()?.autoplay?.reset();
+                    }
+                    catch { }
+                    const target = ctx.repeatIndex ?? 0;
+                    const origCount = ctxEmbla?.originalSlideCount || 1;
+                    const currentSnap = ctxEmbla?.selectedIndex ?? 0;
+                    const currentSet = Math.floor(currentSnap / origCount) * origCount;
+                    ctxEmbla?.emblaApi?.scrollTo(currentSet + target);
                     return;
                 }
                 if (ctx.onActionClick)

@@ -55,8 +55,18 @@ exports.carouselParts = [
 ];
 function getCarouselDesignSchema(dotsKey = "showDots") {
     return [
-        { key: "showArrows", type: "boolean", label: "Show Arrows", visibleIf: { key: "useCarousel", equals: true } },
-        { key: dotsKey, type: "boolean", label: "Show Pagination", visibleIf: { key: "useCarousel", equals: true } },
+        {
+            key: "showArrows",
+            type: "boolean",
+            label: "Show Arrows",
+            visibleIf: { key: "useCarousel", equals: true },
+        },
+        {
+            key: dotsKey,
+            type: "boolean",
+            label: "Show Pagination",
+            visibleIf: { key: "useCarousel", equals: true },
+        },
         {
             key: "carouselSlidesPerView",
             type: "select",
@@ -119,10 +129,9 @@ exports.carouselDefaultPartStyles = {
     carouselTrack: {
         base: {
             display: "flex",
-            overflowX: "auto",
+            overflow: "visible",
             gap: "{space.3}",
             padding: { b: "{space.2}" },
-            /* Hide scrollbar by default in native CSS */
         },
     },
     carouselArrowPrev: {
@@ -210,7 +219,12 @@ function createCarouselLayout(itemNode, options) {
         name: "Carousel Container",
         visibleIf: { key: "useCarousel", equals: true },
         style: {
-            base: { position: "relative", display: "flex", flexDirection: "column", gap: "{space.4}" },
+            base: {
+                position: "relative",
+                display: "flex",
+                flexDirection: "column",
+                gap: "{space.4}",
+            },
         },
         children: [
             {
@@ -219,7 +233,12 @@ function createCarouselLayout(itemNode, options) {
                 tag: "carousel",
                 name: "Carousel Track",
                 style: {
-                    base: { display: "flex", gap: "{space.3}", padding: { b: "{space.2}" } }
+                    base: {
+                        display: "flex",
+                        overflow: "visible",
+                        gap: "{space.3}",
+                        padding: { b: "{space.2}" },
+                    },
                 },
                 children: [
                     {
@@ -232,8 +251,7 @@ function createCarouselLayout(itemNode, options) {
                                 ...(itemNode.style?.base || {}),
                                 flexGrow: 0,
                                 flexShrink: 0,
-                                flexBasis: "auto",
-                                minWidth: "80%",
+                                minWidth: 0,
                             },
                         },
                     },
@@ -272,15 +290,43 @@ function createCarouselLayout(itemNode, options) {
                                 props: { action: "carousel-prev" },
                                 style: {
                                     base: {
-                                        width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center",
-                                        background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "50%" },
-                                        border: { style: "solid", width: "1px", color: "{color.border}" },
-                                        boxShadow: { x: "0", y: "2px", blur: "4px", color: "rgba(0,0,0,0.1)" }, cursor: "pointer",
+                                        width: "32px",
+                                        height: "32px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        background: { kind: "color", color: "{color.surface}" },
+                                        borderRadius: { all: "50%" },
+                                        border: {
+                                            style: "solid",
+                                            width: "1px",
+                                            color: "{color.border}",
+                                        },
+                                        boxShadow: {
+                                            x: "0",
+                                            y: "2px",
+                                            blur: "4px",
+                                            color: "rgba(0,0,0,0.1)",
+                                        },
+                                        cursor: "pointer",
                                     },
                                 },
                                 children: [
-                                    { id: "iconPrev", kind: "element", tag: "icon", name: "Icon", props: { name: "ChevronLeft" }, style: { base: { width: "16px", height: "16px", color: "{color.text}" } } }
-                                ]
+                                    {
+                                        id: "iconPrev",
+                                        kind: "element",
+                                        tag: "icon",
+                                        name: "Icon",
+                                        props: { name: "ChevronLeft" },
+                                        style: {
+                                            base: {
+                                                width: "16px",
+                                                height: "16px",
+                                                color: "{color.text}",
+                                            },
+                                        },
+                                    },
+                                ],
                             },
                             {
                                 id: "arrowNext",
@@ -290,17 +336,45 @@ function createCarouselLayout(itemNode, options) {
                                 props: { action: "carousel-next" },
                                 style: {
                                     base: {
-                                        width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center",
-                                        background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "50%" },
-                                        border: { style: "solid", width: "1px", color: "{color.border}" },
-                                        boxShadow: { x: "0", y: "2px", blur: "4px", color: "rgba(0,0,0,0.1)" }, cursor: "pointer",
+                                        width: "32px",
+                                        height: "32px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        background: { kind: "color", color: "{color.surface}" },
+                                        borderRadius: { all: "50%" },
+                                        border: {
+                                            style: "solid",
+                                            width: "1px",
+                                            color: "{color.border}",
+                                        },
+                                        boxShadow: {
+                                            x: "0",
+                                            y: "2px",
+                                            blur: "4px",
+                                            color: "rgba(0,0,0,0.1)",
+                                        },
+                                        cursor: "pointer",
                                     },
                                 },
                                 children: [
-                                    { id: "iconNext", kind: "element", tag: "icon", name: "Icon", props: { name: "ChevronRight" }, style: { base: { width: "16px", height: "16px", color: "{color.text}" } } }
-                                ]
-                            }
-                        ]
+                                    {
+                                        id: "iconNext",
+                                        kind: "element",
+                                        tag: "icon",
+                                        name: "Icon",
+                                        props: { name: "ChevronRight" },
+                                        style: {
+                                            base: {
+                                                width: "16px",
+                                                height: "16px",
+                                                color: "{color.text}",
+                                            },
+                                        },
+                                    },
+                                ],
+                            },
+                        ],
                     },
                     {
                         id: "carouselDots",
@@ -309,7 +383,12 @@ function createCarouselLayout(itemNode, options) {
                         name: "Pagination",
                         visibleIf: { key: dotsKey, equals: true },
                         style: {
-                            base: { display: "flex", flexDirection: "row", alignItems: "center", gap: "{space.2}" },
+                            base: {
+                                display: "flex",
+                                flexDirection: "row",
+                                alignItems: "center",
+                                gap: "{space.2}",
+                            },
                         },
                         children: [
                             {
@@ -321,10 +400,18 @@ function createCarouselLayout(itemNode, options) {
                                 repeat: { source: "self", path: itemsPath },
                                 style: {
                                     base: {
-                                        width: "8px", height: "8px", borderRadius: { all: "50%" }, cursor: "pointer",
+                                        width: "8px",
+                                        height: "8px",
+                                        borderRadius: { all: "50%" },
+                                        cursor: "pointer",
                                         background: { kind: "color", color: "{color.border}" },
-                                        border: { style: "none" }, padding: { all: "0" },
-                                        transition: { property: ["width", "background-color"], duration: 200, easing: "ease" },
+                                        border: { style: "none" },
+                                        padding: { all: "0" },
+                                        transition: {
+                                            property: ["width", "background-color"],
+                                            duration: 200,
+                                            easing: "ease",
+                                        },
                                     },
                                 },
                                 activeStyle: {
@@ -333,11 +420,11 @@ function createCarouselLayout(itemNode, options) {
                                         background: { kind: "color", color: "{color.primary}" },
                                     },
                                 },
-                            }
-                        ]
-                    }
-                ]
-            }
+                            },
+                        ],
+                    },
+                ],
+            },
         ],
     };
 }

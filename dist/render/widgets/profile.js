@@ -18,8 +18,14 @@ function ProfileRender({ design, cls, ctx }) {
     const name = (0, shared_1.displayName)(card);
     const subtitle = (0, shared_1.subtitleOf)(card);
     const cover = card.coverPhoto ||
+        card.cover ||
+        d.coverPhoto ||
+        d.cover ||
         (showPlaceholders && !hasUserIdentity ? sample_preview_1.DEMO_PREVIEW_ASSETS.cover : undefined);
     const avatar = card.profileImage ||
+        card.avatar ||
+        d.profileImage ||
+        d.avatar ||
         (showPlaceholders && !hasUserIdentity ? sample_preview_1.DEMO_PREVIEW_ASSETS.avatar : undefined);
     const logo = card.companyLogo;
     const location = card.location;

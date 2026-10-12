@@ -291,7 +291,9 @@ function resolveCardField(field: string, card: any): any {
       return (
         card.profileImage ||
         card.avatar ||
-        DEMO_PREVIEW_ASSETS.avatar
+        (showPlaceholders && !hasUserIdentity
+          ? DEMO_PREVIEW_ASSETS.avatar
+          : undefined)
       );
     }
     case "coverPhoto":
@@ -299,7 +301,9 @@ function resolveCardField(field: string, card: any): any {
       return (
         card.coverPhoto ||
         card.cover ||
-        DEMO_PREVIEW_ASSETS.cover
+        (showPlaceholders && !hasUserIdentity
+          ? DEMO_PREVIEW_ASSETS.cover
+          : undefined)
       );
     }
 

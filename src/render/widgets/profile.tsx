@@ -19,9 +19,15 @@ export function ProfileRender({ design, cls, ctx }: WidgetRenderProps) {
   const subtitle = subtitleOf(card);
   const cover =
     card.coverPhoto ||
+    card.cover ||
+    d.coverPhoto ||
+    d.cover ||
     (showPlaceholders && !hasUserIdentity ? DEMO_PREVIEW_ASSETS.cover : undefined);
   const avatar =
     card.profileImage ||
+    card.avatar ||
+    d.profileImage ||
+    d.avatar ||
     (showPlaceholders && !hasUserIdentity ? DEMO_PREVIEW_ASSETS.avatar : undefined);
   const logo = card.companyLogo;
   const location = card.location;
