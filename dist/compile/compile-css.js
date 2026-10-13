@@ -659,6 +659,11 @@ function compileCardTheme(theme, cardScopeClass) {
         if (v !== null)
             decls.push(`${definition_1.TOKEN_PREFIX.color}${name}:${v}`);
     }
+    if (!rawColors.primary && rawColors.primaryAccent) {
+        const v = validateTokenLiteral("color", rawColors.primaryAccent);
+        if (v !== null)
+            decls.push(`${definition_1.TOKEN_PREFIX.color}primary:${v}`);
+    }
     const fontFamily = theme.typography?.fontFamily || theme.fontFamily;
     if (fontFamily) {
         // If it's just a word like "Oswald", make it a valid font family string like "'Oswald', sans-serif"
