@@ -59,6 +59,7 @@ exports.BINDING_FORMATS = [
     'mapAddress',
     'mapEmbed',
     'mapDirectionsUrl',
+    'pad2',
 ];
 // ─── Traversal helpers ───────────────────────────────────────────────────────
 function isElement(n) {

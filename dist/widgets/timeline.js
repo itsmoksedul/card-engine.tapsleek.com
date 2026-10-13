@@ -8,6 +8,28 @@ exports.meta = {
     group: "business",
     description: "A vertical timeline of events, history, or steps.",
     contentVersion: 1,
+    parts: [
+        { key: 'root', label: 'Container', kind: 'container' },
+        { key: 'heading', label: 'Heading', kind: 'text' },
+        { key: 'list', label: 'List', kind: 'list' },
+        { key: 'item', label: 'Item', kind: 'container' },
+        { key: 'bullet', label: 'Bullet', kind: 'container' },
+        { key: 'line', label: 'Line', kind: 'container' },
+        { key: 'content', label: 'Content', kind: 'container' },
+        { key: 'itemIndex', label: 'Step number', kind: 'text' },
+        { key: 'date', label: 'Date', kind: 'text' },
+        { key: 'title', label: 'Title', kind: 'text' },
+        { key: 'description', label: 'Description', kind: 'text' },
+    ],
+    defaultPartStyles: {
+        itemIndex: {
+            base: {
+                fontSize: '{size.xs}',
+                fontWeight: 700,
+                color: '{color.primary}',
+            },
+        },
+    },
     defaultLayout: {
         id: "timeline-root",
         kind: "element",
@@ -104,6 +126,20 @@ exports.meta = {
                                     },
                                 },
                                 children: [
+                                    {
+                                        id: "itemIndex",
+                                        kind: "element",
+                                        tag: "text",
+                                        name: "Step number",
+                                        bind: { source: "self", path: "index" },
+                                        style: {
+                                            base: {
+                                                fontSize: "{size.xs}",
+                                                fontWeight: 700,
+                                                color: "{color.primary}",
+                                            },
+                                        },
+                                    },
                                     {
                                         id: "date",
                                         kind: "element",

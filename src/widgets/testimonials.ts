@@ -16,6 +16,7 @@ export const meta: WidgetModule['meta'] = {
     { key: 'description', label: 'Section description', kind: 'text' },
     { key: 'list', label: 'List', kind: 'list' },
     { key: 'item', label: 'Testimonial card', kind: 'container' },
+    { key: 'itemIndex', label: 'Item number', kind: 'text' },
     { key: 'mark', label: 'Quote mark', kind: 'icon' },
     { key: 'quote', label: 'Quote text', kind: 'text' },
     { key: 'stars', label: 'Rating stars', kind: 'list' },
@@ -87,6 +88,9 @@ export const meta: WidgetModule['meta'] = {
         border: { width: '1px', style: 'solid', color: '{color.border}' },
         borderRadius: { all: '{radius.lg}' },
       },
+    },
+    itemIndex: {
+      base: { fontSize: '{size.xs}', fontWeight: 700, color: '{color.primary}' },
     },
     mark: {
       base: { fontSize: '{size.2xl}', lineHeight: 1, color: '{color.primary}', opacity: 0.35 },
@@ -202,6 +206,16 @@ export const meta: WidgetModule['meta'] = {
             },
             children: [
               {
+                id: 'itemIndex',
+                kind: 'element',
+                tag: 'text',
+                name: 'Item number',
+                bind: { source: 'self', path: 'index' },
+                style: {
+                  base: { fontSize: '{size.xs}', fontWeight: 700, color: '{color.primary}' },
+                },
+              },
+              {
                 id: 'quote',
                 kind: 'element',
                 tag: 'text',
@@ -260,6 +274,7 @@ export const meta: WidgetModule['meta'] = {
           name: 'Testimonial card',
           style: { base: { display: 'flex', flexDirection: 'column', gap: '{space.2}', padding: { all: '{space.4}' }, background: { kind: 'color', color: '{color.surface}' }, border: { width: '1px', style: 'solid', color: '{color.border}' }, borderRadius: { all: '{radius.md}' } } },
           children: [
+            { id: 'c_itemIndex', kind: 'element', tag: 'text', name: 'Item number', bind: { source: 'self', path: 'index' }, style: { base: { fontSize: '{size.xs}', fontWeight: 700, color: '{color.primary}' } } },
             { id: 'c_quote', kind: 'element', tag: 'text', name: 'Quote text', bind: { source: 'self', path: 'quote' }, style: { base: { fontSize: '{size.sm}', lineHeight: 1.6, color: '{color.text}', fontStyle: 'italic' } } },
             {
               id: 'c_caption',

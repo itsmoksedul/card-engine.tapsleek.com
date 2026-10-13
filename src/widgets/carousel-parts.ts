@@ -130,7 +130,6 @@ export const carouselDefaultPartStyles: WidgetModule["meta"]["defaultPartStyles"
       base: {
         display: "flex",
         overflow: "visible",
-        gap: "{space.3}",
         padding: { b: "{space.2}" },
       },
     },
@@ -244,7 +243,6 @@ export function createCarouselLayout(
           base: {
             display: "flex",
             overflow: "visible",
-            gap: "{space.3}",
             padding: { b: "{space.2}" },
           },
         },

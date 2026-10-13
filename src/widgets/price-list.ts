@@ -8,6 +8,25 @@ export const meta: WidgetModule['meta'] = {
   group: 'business',
   description: 'A menu or pricing list with items and costs.',
   contentVersion: 1,
+  parts: [
+    { key: 'root', label: 'Container', kind: 'container' },
+    { key: 'heading', label: 'Heading', kind: 'text' },
+    { key: 'list', label: 'List', kind: 'list' },
+    { key: 'item', label: 'Item', kind: 'container' },
+    { key: 'titleRow', label: 'Title row', kind: 'container' },
+    { key: 'itemIndex', label: 'Item number', kind: 'text' },
+    { key: 'title', label: 'Title', kind: 'text' },
+    { key: 'dots', label: 'Dots', kind: 'container' },
+    { key: 'price', label: 'Price', kind: 'text' },
+    { key: 'description', label: 'Description', kind: 'text' },
+    ...carouselParts,
+  ],
+  defaultPartStyles: {
+    itemIndex: {
+      base: { fontSize: '{size.sm}', fontWeight: 700, color: '{color.primary}', minWidth: '16px' },
+    },
+    ...carouselDefaultPartStyles,
+  },
   defaultLayout: {
     id: 'root',
     kind: 'element',
@@ -65,6 +84,16 @@ export const meta: WidgetModule['meta'] = {
                   base: { display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '{space.2}', width: '100%' },
                 },
                 children: [
+                  {
+                    id: 'itemIndex',
+                    kind: 'element',
+                    tag: 'text',
+                    name: 'Item number',
+                    bind: { source: 'self', path: 'index' },
+                    style: {
+                      base: { fontSize: '{size.sm}', fontWeight: 700, color: '{color.primary}', minWidth: '16px' },
+                    },
+                  },
                   {
                     id: 'title',
                     kind: 'element',
@@ -128,6 +157,7 @@ export const meta: WidgetModule['meta'] = {
               tag: "stack",
               style: { base: { display: "flex", flexDirection: "row", alignItems: "baseline", gap: "{space.2}" } },
               children: [
+                { id: "c_itemIndex", kind: "element", tag: "text", name: "Item number", bind: { source: "self", path: "index" }, style: { base: { fontSize: "{size.base}", fontWeight: 700, color: "{color.primary}", minWidth: "16px" } } },
                 { id: "c_title", kind: "element", tag: "text", name: "Title", bind: { source: "self", path: "title" }, style: { base: { fontSize: "{size.base}", fontWeight: 600, color: "{color.text}" } } },
                 { id: "c_line", kind: "element", tag: "stack", visibleIf: { key: "showDots", equals: true }, style: { base: { flexGrow: 1, border: { sides: { b: { width: "2px", style: "dotted", color: "{color.border}" } } }, opacity: 0.4, margin: { b: "4px" } } } },
                 { id: "c_price", kind: "element", tag: "text", name: "Price", bind: { source: "self", path: "price" }, style: { base: { fontSize: "{size.base}", fontWeight: 700, color: "{color.primary}" } } },

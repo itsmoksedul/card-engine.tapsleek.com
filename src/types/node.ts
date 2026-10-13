@@ -118,7 +118,8 @@ export type BindingFormat =
   | 'appointmentUrl'
   | 'mapAddress'
   | 'mapEmbed'
-  | 'mapDirectionsUrl';
+  | 'mapDirectionsUrl'
+  | 'pad2';
 
 export const BINDING_FORMATS: BindingFormat[] = [
   'weekday',
@@ -127,6 +128,7 @@ export const BINDING_FORMATS: BindingFormat[] = [
   'mapAddress',
   'mapEmbed',
   'mapDirectionsUrl',
+  'pad2',
 ];
 
 export interface NodeA11y {

@@ -38,14 +38,19 @@ export interface NodeRendererProps {
 }
 export declare function NodeRenderer({ node, content, ctx }: NodeRendererProps): React.JSX.Element | null;
 export declare const CarouselContext: React.Context<{
-    emblaApi?: any;
-    emblaRef?: any;
+    viewportRef?: React.RefObject<HTMLDivElement | null>;
+    trackRef?: React.RefObject<HTMLDivElement | null>;
     selectedIndex?: number;
     canScrollPrev?: boolean;
     canScrollNext?: boolean;
     loop?: boolean;
+    isInfinite?: boolean;
     perView?: number;
     originalSlideCount?: number;
+    scrollNext?: () => void;
+    scrollPrev?: () => void;
+    scrollTo?: (idx: number) => void;
+    dragProps?: Record<string, any>;
 } | null>;
 /**
  * Structure comes from the widget's code, not the stored copy: the builder

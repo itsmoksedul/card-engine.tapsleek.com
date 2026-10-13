@@ -130,7 +130,6 @@ exports.carouselDefaultPartStyles = {
         base: {
             display: "flex",
             overflow: "visible",
-            gap: "{space.3}",
             padding: { b: "{space.2}" },
         },
     },
@@ -236,7 +235,6 @@ function createCarouselLayout(itemNode, options) {
                     base: {
                         display: "flex",
                         overflow: "visible",
-                        gap: "{space.3}",
                         padding: { b: "{space.2}" },
                     },
                 },

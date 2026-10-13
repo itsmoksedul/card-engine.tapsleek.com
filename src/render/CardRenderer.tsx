@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import type { BlockInstance, CardTheme } from '../types/block';
 import type { TemplateDefinition } from '../types/definition';

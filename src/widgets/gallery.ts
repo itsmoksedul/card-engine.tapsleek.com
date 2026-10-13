@@ -126,6 +126,8 @@ export const meta: WidgetModule["meta"] = {
     useCarousel: false,
     showArrows: true,
     showDots: true,
+    carouselLoop: true,
+    carouselSlidesPerView: "1.25",
   },
   defaultContent: {
     title: "Gallery",

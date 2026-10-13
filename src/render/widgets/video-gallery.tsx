@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { asArray, EmptyState, navProps, str, type WidgetRenderProps } from './shared';
 import { NativeCarousel } from '../components/NativeCarousel';

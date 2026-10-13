@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useMemo } from 'react';
 import { sanitizeHtml } from '../sanitize';
 import { EmptyState, type WidgetRenderProps } from './shared';

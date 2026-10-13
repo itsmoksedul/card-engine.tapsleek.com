@@ -24,6 +24,7 @@ export const meta: WidgetModule['meta'] = {
     { key: 'description', label: 'Section description', kind: 'text' },
     { key: 'list', label: 'List', kind: 'list' },
     { key: 'item', label: 'Item card', kind: 'container' },
+    { key: 'itemIndex', label: 'Item number', kind: 'text' },
     { key: 'itemMedia', label: 'Item image', kind: 'image', visibleIf: { key: 'showMedia', equals: true } },
     { key: 'itemTitle', label: 'Item title', kind: 'text' },
     { key: 'itemDesc', label: 'Item description', kind: 'text', visibleIf: { key: 'showDesc', equals: true } },
@@ -95,6 +96,9 @@ export const meta: WidgetModule['meta'] = {
         borderRadius: { all: '{radius.md}' },
         transition: { property: ['box-shadow', 'transform'], duration: 150, easing: 'ease' },
       },
+    },
+    itemIndex: {
+      base: { fontSize: '{size.xs}', fontWeight: 700, color: '{color.primary}' },
     },
     itemMedia: {
       base: {
@@ -205,6 +209,16 @@ export const meta: WidgetModule['meta'] = {
             },
             children: [
               {
+                id: 'itemIndex',
+                kind: 'element',
+                tag: 'text',
+                name: 'Item number',
+                bind: { source: 'self', path: 'index' },
+                style: {
+                  base: { fontSize: '{size.xs}', fontWeight: 700, color: '{color.primary}' },
+                },
+              },
+              {
                 id: 'itemMedia',
                 kind: 'element',
                 tag: 'image',
@@ -288,6 +302,7 @@ export const meta: WidgetModule['meta'] = {
                   tag: 'stack',
                   style: { base: { display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: '{space.2}' } },
                   children: [
+                    { id: 'c_itemIndex', kind: 'element', tag: 'text', name: 'Item number', bind: { source: 'self', path: 'index' }, style: { base: { fontSize: '{size.xs}', fontWeight: 700, color: '{color.primary}', margin: { r: '{space.2}' } } } },
                     { id: 'c_itemTitle', kind: 'element', tag: 'heading', props: { level: 4 }, bind: { source: 'self', path: 'name' }, style: { base: { fontSize: '{size.base}', fontWeight: 600, color: '{color.text}' } } },
                     { id: 'c_itemPrice', kind: 'element', tag: 'text', bind: { source: 'self', path: 'price' }, hideIfEmpty: true, style: { base: { fontSize: '{size.base}', fontWeight: 600, color: '{color.primary}' } } },
                   ],

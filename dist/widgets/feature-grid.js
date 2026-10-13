@@ -12,6 +12,24 @@ exports.meta = {
         note: 'Feature Grid has been deprecated. Use Service List or custom blocks instead.',
     },
     contentVersion: 1,
+    parts: [
+        { key: 'root', label: 'Container', kind: 'container' },
+        { key: 'sectionHeader', label: 'Header', kind: 'container' },
+        { key: 'sectionTitle', label: 'Title', kind: 'text' },
+        { key: 'sectionDesc', label: 'Description', kind: 'text' },
+        { key: 'list', label: 'List', kind: 'list' },
+        { key: 'item', label: 'Item', kind: 'container' },
+        { key: 'itemIndex', label: 'Item number', kind: 'text' },
+        { key: 'iconBox', label: 'Icon Box', kind: 'container' },
+        { key: 'icon', label: 'Icon', kind: 'icon' },
+        { key: 'title', label: 'Title', kind: 'text' },
+        { key: 'description', label: 'Description', kind: 'text' },
+    ],
+    defaultPartStyles: {
+        itemIndex: {
+            base: { fontSize: '{size.xs}', fontWeight: 700, color: '{color.primary}' },
+        },
+    },
     defaultLayout: {
         id: 'root',
         kind: 'element',
@@ -73,6 +91,16 @@ exports.meta = {
                             base: { display: 'flex', flexDirection: 'column', gap: '{space.2}', alignItems: 'flex-start' },
                         },
                         children: [
+                            {
+                                id: 'itemIndex',
+                                kind: 'element',
+                                tag: 'text',
+                                name: 'Item number',
+                                bind: { source: 'self', path: 'index' },
+                                style: {
+                                    base: { fontSize: '{size.xs}', fontWeight: 700, color: '{color.primary}' },
+                                },
+                            },
                             {
                                 id: 'iconBox',
                                 kind: 'element',

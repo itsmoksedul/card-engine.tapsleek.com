@@ -8,6 +8,22 @@ exports.meta = {
     group: 'business',
     description: 'A grid of numeric statistics or achievements.',
     contentVersion: 1,
+    parts: [
+        { key: 'root', label: 'Container', kind: 'container' },
+        { key: 'header', label: 'Header', kind: 'container' },
+        { key: 'title', label: 'Title', kind: 'text' },
+        { key: 'description', label: 'Description', kind: 'text' },
+        { key: 'list', label: 'List', kind: 'list' },
+        { key: 'item', label: 'Item', kind: 'container' },
+        { key: 'itemIndex', label: 'Item number', kind: 'text' },
+        { key: 'value', label: 'Value', kind: 'text' },
+        { key: 'label', label: 'Label', kind: 'text' },
+    ],
+    defaultPartStyles: {
+        itemIndex: {
+            base: { fontSize: '{size.xs}', fontWeight: 700, color: '{color.primary}' },
+        },
+    },
     defaultLayout: {
         id: 'root',
         kind: 'element',
@@ -69,6 +85,16 @@ exports.meta = {
                             base: { display: 'flex', flexDirection: 'column', gap: '{space.1}', alignItems: 'center', textAlign: 'center' },
                         },
                         children: [
+                            {
+                                id: 'itemIndex',
+                                kind: 'element',
+                                tag: 'text',
+                                name: 'Item number',
+                                bind: { source: 'self', path: 'index' },
+                                style: {
+                                    base: { fontSize: '{size.xs}', fontWeight: 700, color: '{color.primary}' },
+                                },
+                            },
                             {
                                 id: 'value',
                                 kind: 'element',

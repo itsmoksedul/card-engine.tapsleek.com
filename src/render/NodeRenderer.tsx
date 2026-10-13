@@ -1,6 +1,4 @@
 "use client";
-import Autoplay from "embla-carousel-autoplay";
-import useEmblaCarousel from "embla-carousel-react";
 import React from "react";
 import type { ElementNode, Node, SlotNode, WidgetNode } from "../types/node";
 import { getWidgetMeta } from "../widgets";
@@ -75,110 +73,598 @@ export function NodeRenderer({ node, content, ctx }: NodeRendererProps) {
 }
 
 export const CarouselContext = React.createContext<{
-  emblaApi?: any;
-  emblaRef?: any;
+  viewportRef?: React.RefObject<HTMLDivElement | null>;
+  trackRef?: React.RefObject<HTMLDivElement | null>;
   selectedIndex?: number;
   canScrollPrev?: boolean;
   canScrollNext?: boolean;
   loop?: boolean;
+  isInfinite?: boolean;
   perView?: number;
   originalSlideCount?: number;
+  scrollNext?: () => void;
+  scrollPrev?: () => void;
+  scrollTo?: (idx: number) => void;
+  dragProps?: Record<string, any>;
 } | null>(null);
 
 function CarouselProvider({ node, content, ctx, dom }: any) {
+  const viewportRef = React.useRef<HTMLDivElement>(null);
+  const trackRef = React.useRef<HTMLDivElement>(null);
+  const trackChild = (node.children || []).find(
+    (c: any) => c.tag === "carousel" || c.id === "carouselTrack",
+  );
+
   const align =
     content?._design?.carouselAlign ??
+    ctx.selfData?._design?.carouselAlign ??
+    ctx.selfData?.carouselAlign ??
     node.props?.carouselAlign ??
+    trackChild?.props?.carouselAlign ??
     node.props?.align ??
+    trackChild?.props?.align ??
     "start";
+
   const perView =
     Number(
       content?._design?.carouselSlidesPerView ??
-      node.props?.carouselSlidesPerView ??
-      node.props?.slidesPerView ??
-      node.props?.perView,
+        ctx.selfData?._design?.carouselSlidesPerView ??
+        ctx.selfData?.carouselSlidesPerView ??
+        node.props?.carouselSlidesPerView ??
+        trackChild?.props?.carouselSlidesPerView ??
+        node.props?.slidesPerView ??
+        trackChild?.props?.slidesPerView ??
+        node.props?.perView ??
+        trackChild?.props?.perView,
     ) || 1.25;
-  const loop =
-    content?._design?.carouselLoop !== undefined
-      ? Boolean(content._design.carouselLoop)
-      : node.props?.carouselLoop !== undefined
-        ? Boolean(node.props.carouselLoop)
-        : false;
+
+  const loopCandidate =
+    node.props?.carouselLoop ??
+    trackChild?.props?.carouselLoop ??
+    content?._design?.carouselLoop ??
+    ctx.selfData?._design?.carouselLoop ??
+    ctx.selfData?.carouselLoop;
+  const loop = loopCandidate !== undefined ? Boolean(loopCandidate) : true;
+
+  const autoplayCandidate =
+    node.props?.carouselAutoplay ??
+    trackChild?.props?.carouselAutoplay ??
+    content?._design?.carouselAutoplay ??
+    ctx.selfData?._design?.carouselAutoplay ??
+    ctx.selfData?.carouselAutoplay;
   const autoplay =
-    content?._design?.carouselAutoplay !== undefined
-      ? Boolean(content._design.carouselAutoplay)
-      : node.props?.carouselAutoplay !== undefined
-        ? Boolean(node.props.carouselAutoplay)
-        : false;
+    autoplayCandidate !== undefined ? Boolean(autoplayCandidate) : false;
+
   const autoplayDelay =
     Number(
       content?._design?.carouselAutoplayDelay ??
-      node.props?.carouselAutoplayDelay ??
-      node.props?.autoplayDelay,
+        ctx.selfData?._design?.carouselAutoplayDelay ??
+        ctx.selfData?.carouselAutoplayDelay ??
+        node.props?.carouselAutoplayDelay ??
+        trackChild?.props?.carouselAutoplayDelay ??
+        node.props?.autoplayDelay ??
+        trackChild?.props?.autoplayDelay,
     ) || 3000;
 
-  const rawItems =
-    (Array.isArray(content?.items) && content.items) ||
-    (Array.isArray(content?.images) && content.images) ||
-    (Array.isArray(content?.videos) && content.videos) ||
-    (Array.isArray(content?.testimonials) && content.testimonials) ||
-    [];
-  const originalSlideCount = rawItems.length;
-  // Looping requires at least 2 distinct items
-  const effectiveLoop = loop && originalSlideCount > 1;
-
-  const plugins = React.useMemo(() => {
-    return [
-      Autoplay({
-        delay: autoplayDelay,
-        stopOnInteraction: true,
-        stopOnMouseEnter: true,
-        playOnInit: autoplay,
-      }),
-    ];
-  }, [autoplay, autoplayDelay]);
-
-  const [emblaRef, emblaApi] = useEmblaCarousel(
-    {
-      loop: effectiveLoop,
-      align,
-      slidesToScroll: 1,
-      containScroll: effectiveLoop ? false : "trimSnaps",
-      duration: 35,
-      dragFree: false,
-    },
-    plugins,
-  );
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
-  const [canScrollPrev, setCanScrollPrev] = React.useState(false);
-  const [canScrollNext, setCanScrollNext] = React.useState(true);
-
-  React.useEffect(() => {
-    if (!emblaApi) return;
-    const updateState = () => {
-      setSelectedIndex(emblaApi.selectedScrollSnap());
-      setCanScrollPrev(emblaApi.canScrollPrev());
-      setCanScrollNext(emblaApi.canScrollNext());
-    };
-    emblaApi.on("select", updateState);
-    emblaApi.on("reInit", updateState);
-    updateState();
-    return () => {
-      emblaApi.off("select", updateState);
-      emblaApi.off("reInit", updateState);
-    };
-  }, [emblaApi]);
-
-  React.useEffect(() => {
-    if (!emblaApi) return;
-    const ap = emblaApi.plugins().autoplay;
-    if (!ap) return;
-    if (autoplay) {
-      ap.play();
-    } else {
-      ap.stop();
+  let rawItems: any[] = [];
+  const repeatedNode = (trackChild?.children || []).find((c: any) => c.repeat);
+  if (repeatedNode?.repeat) {
+    const bound = resolveBinding(
+      repeatedNode.repeat,
+      ctx.card,
+      content,
+      ctx.selfData,
+    );
+    if (Array.isArray(bound)) {
+      rawItems = bound;
     }
-  }, [emblaApi, autoplay]);
+  }
+  if (!rawItems.length) {
+    if (Array.isArray(ctx.selfData?.items)) rawItems = ctx.selfData.items;
+    else if (Array.isArray(ctx.selfData?.images))
+      rawItems = ctx.selfData.images;
+    else if (Array.isArray(ctx.selfData?.videos))
+      rawItems = ctx.selfData.videos;
+    else if (Array.isArray(ctx.selfData?.testimonials))
+      rawItems = ctx.selfData.testimonials;
+    else if (Array.isArray(ctx.selfData?.links)) rawItems = ctx.selfData.links;
+    else if (Array.isArray(content?.items)) rawItems = content.items;
+    else if (Array.isArray(content?.images)) rawItems = content.images;
+    else if (Array.isArray(content?.videos)) rawItems = content.videos;
+    else if (Array.isArray(content?.testimonials))
+      rawItems = content.testimonials;
+    else if (node.key && Array.isArray(content?.[node.key]?.items))
+      rawItems = content[node.key].items;
+    else if (node.key && Array.isArray(content?.[node.key]?.images))
+      rawItems = content[node.key].images;
+    else if (trackChild?.children?.length) rawItems = trackChild.children;
+  }
+  const originalSlideCount = rawItems.length || 1;
+  const isInfinite = loop && originalSlideCount >= 2;
+
+  const initialIndex = isInfinite ? originalSlideCount : 0;
+  const indexRef = React.useRef(initialIndex);
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const [canScrollPrev, setCanScrollPrev] = React.useState(true);
+  const [canScrollNext, setCanScrollNext] = React.useState(true);
+  const transitionTimerRef = React.useRef<any>(null);
+  const resetAutoplayTimerRef = React.useRef<() => void>(() => {});
+
+  const getStep = React.useCallback(() => {
+    const track = trackRef.current;
+    if (!track) return 0;
+    const firstSlide = (track.querySelector(".ts-carousel-slide") ||
+      track.firstElementChild) as HTMLElement | null;
+    const gap = 12;
+    if (firstSlide && firstSlide.offsetWidth > 0) {
+      return firstSlide.offsetWidth + gap;
+    }
+    const container = viewportRef.current || track.parentElement || track;
+    const containerWidth = container.clientWidth || 300;
+    const calculatedSlideWidth =
+      perView === 1
+        ? containerWidth
+        : (containerWidth - (perView - 1) * gap) / perView;
+    return Math.max(calculatedSlideWidth + gap, 50);
+  }, [perView]);
+
+  const applyTransform = React.useCallback(
+    (offset: number, withTransition = false, duration = 350) => {
+      const track = trackRef.current;
+      if (!track) return;
+      if (withTransition) {
+        track.style.transition = `transform ${duration}ms cubic-bezier(0.25, 1, 0.5, 1)`;
+      } else {
+        track.style.transition = "none";
+      }
+      track.style.transform = `translate3d(-${offset}px, 0, 0)`;
+    },
+    [],
+  );
+
+  const checkLoopSettle = React.useCallback(() => {
+    if (!isInfinite) return;
+    const track = trackRef.current;
+    if (!track) return;
+    const N = originalSlideCount;
+    const step = getStep();
+    if (step <= 0) return;
+
+    if (indexRef.current >= 2 * N) {
+      indexRef.current -= N;
+      applyTransform(indexRef.current * step, false);
+      void track.offsetHeight;
+    } else if (indexRef.current < N) {
+      indexRef.current += N;
+      applyTransform(indexRef.current * step, false);
+      void track.offsetHeight;
+    }
+  }, [applyTransform, getStep, isInfinite, originalSlideCount]);
+
+  // Initial position and resize handling
+  React.useEffect(() => {
+    const step = getStep();
+    if (step > 0) {
+      applyTransform(indexRef.current * step, false);
+    }
+    const realIdx = isInfinite
+      ? ((indexRef.current % originalSlideCount) + originalSlideCount) %
+        originalSlideCount
+      : indexRef.current;
+    setSelectedIndex(realIdx);
+    if (!isInfinite) {
+      setCanScrollPrev(indexRef.current > 0);
+      setCanScrollNext(indexRef.current < originalSlideCount - 1);
+    }
+  }, [applyTransform, getStep, isInfinite, originalSlideCount]);
+
+  React.useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport || typeof ResizeObserver === "undefined") return;
+
+    let initial = true;
+    const ro = new ResizeObserver(() => {
+      if (initial) {
+        initial = false;
+        return;
+      }
+      const step = getStep();
+      if (step > 0) {
+        applyTransform(indexRef.current * step, false);
+      }
+    });
+    ro.observe(viewport);
+    return () => ro.disconnect();
+  }, [applyTransform, getStep]);
+
+  // Transition end listener on track
+  React.useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    const handleTransitionEnd = (e: TransitionEvent) => {
+      if (e.target !== track || e.propertyName !== "transform") return;
+      clearTimeout(transitionTimerRef.current);
+      checkLoopSettle();
+    };
+
+    track.addEventListener("transitionend", handleTransitionEnd);
+    return () => {
+      track.removeEventListener("transitionend", handleTransitionEnd);
+      clearTimeout(transitionTimerRef.current);
+    };
+  }, [checkLoopSettle]);
+
+  const scrollNext = React.useCallback(() => {
+    resetAutoplayTimerRef.current?.();
+    const track = trackRef.current;
+    if (!track) return;
+    const step = getStep();
+    if (step <= 0) return;
+    const N = originalSlideCount;
+
+    if (isInfinite) {
+      if (indexRef.current >= 3 * N - 1) {
+        indexRef.current -= N;
+        applyTransform(indexRef.current * step, false);
+        void track.offsetHeight;
+      }
+      indexRef.current += 1;
+      applyTransform(indexRef.current * step, true, 350);
+      const realIdx = ((indexRef.current % N) + N) % N;
+      setSelectedIndex(realIdx);
+
+      clearTimeout(transitionTimerRef.current);
+      transitionTimerRef.current = setTimeout(checkLoopSettle, 400);
+    } else {
+      const maxIndex = Math.max(0, N - 1);
+      if (indexRef.current >= maxIndex) return;
+      indexRef.current += 1;
+      applyTransform(indexRef.current * step, true, 350);
+      setSelectedIndex(indexRef.current);
+      setCanScrollPrev(indexRef.current > 0);
+      setCanScrollNext(indexRef.current < maxIndex);
+    }
+  }, [
+    applyTransform,
+    checkLoopSettle,
+    getStep,
+    isInfinite,
+    originalSlideCount,
+  ]);
+
+  const scrollPrev = React.useCallback(() => {
+    resetAutoplayTimerRef.current?.();
+    const track = trackRef.current;
+    if (!track) return;
+    const step = getStep();
+    if (step <= 0) return;
+    const N = originalSlideCount;
+
+    if (isInfinite) {
+      if (indexRef.current <= 0) {
+        indexRef.current += N;
+        applyTransform(indexRef.current * step, false);
+        void track.offsetHeight;
+      }
+      indexRef.current -= 1;
+      applyTransform(indexRef.current * step, true, 350);
+      const realIdx = ((indexRef.current % N) + N) % N;
+      setSelectedIndex(realIdx);
+
+      clearTimeout(transitionTimerRef.current);
+      transitionTimerRef.current = setTimeout(checkLoopSettle, 400);
+    } else {
+      if (indexRef.current <= 0) return;
+      indexRef.current -= 1;
+      applyTransform(indexRef.current * step, true, 350);
+      setSelectedIndex(indexRef.current);
+      setCanScrollPrev(indexRef.current > 0);
+      setCanScrollNext(indexRef.current < Math.max(0, N - 1));
+    }
+  }, [
+    applyTransform,
+    checkLoopSettle,
+    getStep,
+    isInfinite,
+    originalSlideCount,
+  ]);
+
+  const scrollTo = React.useCallback(
+    (target: number) => {
+      resetAutoplayTimerRef.current?.();
+      const track = trackRef.current;
+      if (!track) return;
+      const step = getStep();
+      if (step <= 0) return;
+      const N = originalSlideCount;
+
+      const targetIdx = isInfinite
+        ? N + target
+        : Math.max(0, Math.min(N - 1, target));
+      indexRef.current = targetIdx;
+      applyTransform(targetIdx * step, true, 350);
+      setSelectedIndex(target);
+      if (!isInfinite) {
+        setCanScrollPrev(targetIdx > 0);
+        setCanScrollNext(targetIdx < Math.max(0, N - 1));
+      }
+
+      clearTimeout(transitionTimerRef.current);
+      transitionTimerRef.current = setTimeout(checkLoopSettle, 400);
+    },
+    [applyTransform, checkLoopSettle, getStep, isInfinite, originalSlideCount],
+  );
+
+  // Pointer drag implementation
+  const isPointerDownRef = React.useRef(false);
+  const startXRef = React.useRef(0);
+  const startOffsetRef = React.useRef(0);
+  const isDraggingRef = React.useRef(false);
+  const hasMovedRef = React.useRef(false);
+  const lastXRef = React.useRef(0);
+  const lastTimeRef = React.useRef(0);
+  const velocityRef = React.useRef(0);
+
+  const onPointerDown = React.useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (e.button !== 0) return;
+      const track = trackRef.current;
+      if (!track) return;
+
+      clearTimeout(transitionTimerRef.current);
+
+      const style = window.getComputedStyle(track);
+      const transform = style.transform;
+      let currentX = -indexRef.current * getStep();
+      if (transform && transform !== "none") {
+        try {
+          const matrix = new DOMMatrixReadOnly(transform);
+          currentX = matrix.m41;
+        } catch {}
+      }
+      applyTransform(-currentX, false);
+
+      isPointerDownRef.current = true;
+      isDraggingRef.current = false;
+      hasMovedRef.current = false;
+      startXRef.current = e.clientX;
+      startOffsetRef.current = -currentX;
+      lastXRef.current = e.clientX;
+      lastTimeRef.current = performance.now();
+      velocityRef.current = 0;
+
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {}
+    },
+    [applyTransform, getStep],
+  );
+
+  const onPointerMove = React.useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!isPointerDownRef.current) return;
+      const track = trackRef.current;
+      if (!track) return;
+
+      const deltaX = e.clientX - startXRef.current;
+      if (!isDraggingRef.current && Math.abs(deltaX) > 4) {
+        isDraggingRef.current = true;
+        hasMovedRef.current = true;
+        if (viewportRef.current) {
+          viewportRef.current.style.cursor = "grabbing";
+        }
+      }
+
+      if (isDraggingRef.current) {
+        let currentOffset = startOffsetRef.current - deltaX;
+        const step = getStep();
+        const N = originalSlideCount;
+
+        if (!isInfinite) {
+          const maxOffset = Math.max(0, N - 1) * step;
+          if (currentOffset < 0) {
+            currentOffset = currentOffset * 0.35;
+          } else if (currentOffset > maxOffset) {
+            currentOffset = maxOffset + (currentOffset - maxOffset) * 0.35;
+          }
+        }
+
+        applyTransform(currentOffset, false);
+
+        const now = performance.now();
+        const dt = now - lastTimeRef.current;
+        if (dt > 10) {
+          velocityRef.current = (e.clientX - lastXRef.current) / dt;
+          lastXRef.current = e.clientX;
+          lastTimeRef.current = now;
+        }
+      }
+    },
+    [applyTransform, getStep, isInfinite, originalSlideCount],
+  );
+
+  const endDrag = React.useCallback(
+    (e?: React.PointerEvent<HTMLDivElement>) => {
+      if (!isPointerDownRef.current) return;
+      isPointerDownRef.current = false;
+
+      if (e) {
+        try {
+          e.currentTarget.releasePointerCapture(e.pointerId);
+        } catch {}
+      }
+      if (viewportRef.current) {
+        viewportRef.current.style.cursor = "grab";
+      }
+
+      const track = trackRef.current;
+      if (!track) return;
+
+      if (isDraggingRef.current) {
+        isDraggingRef.current = false;
+        const step = getStep();
+        if (step <= 0) return;
+
+        const style = window.getComputedStyle(track);
+        let currentX = -indexRef.current * step;
+        if (style.transform && style.transform !== "none") {
+          try {
+            const matrix = new DOMMatrixReadOnly(style.transform);
+            currentX = matrix.m41;
+          } catch {}
+        }
+        const currentOffset = -currentX;
+
+        let targetIndex = Math.round(currentOffset / step);
+        const velocity = velocityRef.current;
+        if (velocity < -0.2) {
+          targetIndex = Math.ceil(currentOffset / step);
+        } else if (velocity > 0.2) {
+          targetIndex = Math.floor(currentOffset / step);
+        }
+
+        const N = originalSlideCount;
+        if (!isInfinite) {
+          targetIndex = Math.max(0, Math.min(Math.max(0, N - 1), targetIndex));
+        }
+
+        indexRef.current = targetIndex;
+        applyTransform(targetIndex * step, true, 350);
+
+        const realIdx = isInfinite ? ((targetIndex % N) + N) % N : targetIndex;
+        setSelectedIndex(realIdx);
+        if (!isInfinite) {
+          setCanScrollPrev(targetIndex > 0);
+          setCanScrollNext(targetIndex < Math.max(0, N - 1));
+        }
+
+        clearTimeout(transitionTimerRef.current);
+        transitionTimerRef.current = setTimeout(checkLoopSettle, 400);
+        resetAutoplayTimerRef.current?.();
+      }
+    },
+    [applyTransform, checkLoopSettle, getStep, isInfinite, originalSlideCount],
+  );
+
+  const onPointerUp = React.useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      endDrag(e);
+    },
+    [endDrag],
+  );
+
+  const onPointerCancel = React.useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      endDrag(e);
+    },
+    [endDrag],
+  );
+
+  const onClickCapture = React.useCallback((e: React.MouseEvent) => {
+    if (hasMovedRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      hasMovedRef.current = false;
+    }
+  }, []);
+
+  const dragProps = React.useMemo(
+    () => ({
+      onPointerDown,
+      onPointerMove,
+      onPointerUp,
+      onPointerCancel,
+      onClickCapture,
+    }),
+    [
+      onPointerDown,
+      onPointerMove,
+      onPointerUp,
+      onPointerCancel,
+      onClickCapture,
+    ],
+  );
+
+  // Autoplay handler
+  React.useEffect(() => {
+    // Never auto-slide while an admin/user is editing in the builder canvas
+    if (!autoplay || ctx.isEditing) return;
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let mouseOver = false;
+    let lastTypeTime = 0;
+
+    const onUserType = () => {
+      lastTypeTime = Date.now();
+    };
+
+    const isTypingOrFocused = () => {
+      if (Date.now() - lastTypeTime < 4000) return true;
+      if (typeof document !== "undefined" && document.activeElement) {
+        const el = document.activeElement;
+        const tag = el.tagName?.toLowerCase();
+        if (
+          tag === "input" ||
+          tag === "textarea" ||
+          tag === "select" ||
+          (el as HTMLElement).isContentEditable
+        ) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    const tick = () => {
+      if (
+        !mouseOver &&
+        !isDraggingRef.current &&
+        !isPointerDownRef.current &&
+        !isTypingOrFocused()
+      ) {
+        scrollNext();
+      }
+      timer = setTimeout(tick, autoplayDelay);
+    };
+
+    resetAutoplayTimerRef.current = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(tick, autoplayDelay);
+    };
+
+    const viewport = viewportRef.current;
+    const onEnter = () => {
+      mouseOver = true;
+    };
+    const onLeave = () => {
+      mouseOver = false;
+    };
+
+    if (viewport) {
+      viewport.addEventListener("mouseenter", onEnter);
+      viewport.addEventListener("mouseleave", onLeave);
+    }
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("keydown", onUserType, { passive: true });
+      window.addEventListener("input", onUserType, { passive: true });
+    }
+
+    timer = setTimeout(tick, autoplayDelay);
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      if (viewport) {
+        viewport.removeEventListener("mouseenter", onEnter);
+        viewport.removeEventListener("mouseleave", onLeave);
+      }
+      if (typeof window !== "undefined") {
+        window.removeEventListener("keydown", onUserType);
+        window.removeEventListener("input", onUserType);
+      }
+    };
+  }, [autoplay, autoplayDelay, ctx.isEditing, scrollNext]);
 
   const kids = (node.children ?? []).map((child: any) => (
     <NodeRenderer key={child.id} node={child} content={content} ctx={ctx} />
@@ -186,14 +672,19 @@ function CarouselProvider({ node, content, ctx, dom }: any) {
   return (
     <CarouselContext.Provider
       value={{
-        emblaApi,
-        emblaRef,
+        viewportRef,
+        trackRef,
+        scrollNext,
+        scrollPrev,
+        scrollTo,
         selectedIndex,
         canScrollPrev,
         canScrollNext,
-        loop: effectiveLoop,
+        loop,
+        isInfinite,
         perView,
-        originalSlideCount: originalSlideCount || 1,
+        originalSlideCount,
+        dragProps,
       }}
     >
       <div {...dom}>{kids}</div>
@@ -316,11 +807,15 @@ function ElementRenderer({
   content: any;
   ctx: RenderCtx;
 }) {
-  const ctxEmbla = React.useContext(CarouselContext);
+  const ctxCarousel = React.useContext(CarouselContext);
   if (node.visibleIf) {
     const { key, equals } = node.visibleIf;
     let val = content?._design?.[key] ?? ctx.selfData?.[key];
-    if (val === undefined && key === "useCarousel" && (node.props as Record<string, unknown>)?.useCarousel !== undefined) {
+    if (
+      val === undefined &&
+      key === "useCarousel" &&
+      (node.props as Record<string, unknown>)?.useCarousel !== undefined
+    ) {
       val = (node.props as Record<string, unknown>).useCarousel;
     }
     const isVisible = val === equals || (equals === false && !val);
@@ -331,57 +826,38 @@ function ElementRenderer({
     const items = resolveBinding(node.repeat, ctx.card, content, ctx.selfData);
     if (!Array.isArray(items)) return null;
 
-    if (ctx.isCarouselSlide && ctxEmbla?.loop && items.length >= 2) {
-      const perView = ctx.carouselPerView || ctxEmbla.perView || 1.25;
-      const minSlides = Math.max(5, Math.ceil(perView * 2) + 2);
-      if (items.length < minSlides) {
-        const repeatCount = Math.ceil(minSlides / items.length);
-        const expanded: { item: any; origIndex: number; repeatSet: number }[] = [];
-        for (let r = 0; r < repeatCount; r++) {
-          for (let i = 0; i < items.length; i++) {
-            expanded.push({
-              item: items[i],
-              origIndex: i,
-              repeatSet: r,
-            });
-          }
-        }
-        return (
-          <React.Fragment>
-            {expanded.map(({ item, origIndex, repeatSet }) => (
-              <ElementRenderer
-                key={`${item?.id ?? origIndex}-set${repeatSet}`}
-                node={{
-                  ...node,
-                  repeat: undefined,
-                  ...(node.repeat?.source === "self" &&
-                  node.repeat.path === "links" &&
-                  typeof item?.id === "string"
-                    ? {
-                        props: {
-                          ...(node.props ?? {}),
-                          "data-link-id": item.id,
-                          ...(typeof item.type === "string"
-                            ? { "data-link-type": item.type }
-                            : {}),
-                        },
-                      }
-                    : {}),
-                }}
-                content={content}
-                ctx={{ ...ctx, selfData: item, repeatIndex: origIndex }}
-              />
-            ))}
-          </React.Fragment>
-        );
-      }
-    }
+    const isLoopCarousel =
+      ctx.isCarouselSlide && Boolean(ctxCarousel?.loop) && items.length >= 2;
+
+    const renderItems = isLoopCarousel
+      ? [
+          ...items.map((it, idx) => ({
+            it,
+            origIdx: idx,
+            cloneKey: `clone-prev-${idx}`,
+          })),
+          ...items.map((it, idx) => ({
+            it,
+            origIdx: idx,
+            cloneKey: `real-${idx}`,
+          })),
+          ...items.map((it, idx) => ({
+            it,
+            origIdx: idx,
+            cloneKey: `clone-next-${idx}`,
+          })),
+        ]
+      : items.map((it, idx) => ({ it, origIdx: idx, cloneKey: undefined }));
 
     return (
       <React.Fragment>
-        {items.map((item, index) => (
+        {renderItems.map(({ it: item, origIdx: index, cloneKey }) => (
           <ElementRenderer
-            key={item.id ?? index}
+            key={
+              cloneKey
+                ? `${cloneKey}-${item?.id ?? index}`
+                : (item?.id ?? index)
+            }
             node={{
               ...node,
               repeat: undefined,
@@ -400,14 +876,25 @@ function ElementRenderer({
                 : {}),
             }}
             content={content}
-            ctx={{ ...ctx, selfData: item, repeatIndex: index }}
+            ctx={{
+              ...ctx,
+              selfData: item,
+              repeatIndex: index,
+              isCarouselSlide: ctx.isCarouselSlide,
+            }}
           />
         ))}
       </React.Fragment>
     );
   }
 
-  const bound = resolveBinding(node.bind, ctx.card, content, ctx.selfData);
+  const bound = resolveBinding(
+    node.bind,
+    ctx.card,
+    content,
+    ctx.selfData,
+    ctx.repeatIndex,
+  );
   const props = (node.props ?? {}) as Record<string, any>;
   const isBound = Boolean(node.bind);
   const isCardBound = node.bind?.source === "card";
@@ -416,7 +903,17 @@ function ElementRenderer({
   const fallbackVal =
     (node.id ? content?.[node.id] : undefined) ??
     (node.id ? ctx.selfData?.[node.id] : undefined);
-  const activeVal = !isEmpty(bound) ? bound : fallbackVal;
+  let activeVal = !isEmpty(bound) ? bound : fallbackVal;
+
+  if (
+    isEmpty(activeVal) &&
+    (node.id === "itemIndex" ||
+      node.id === "c_itemIndex" ||
+      node.id === "index" ||
+      node.id === "serial")
+  ) {
+    activeVal = ctx.repeatIndex !== undefined ? ctx.repeatIndex + 1 : 1;
+  }
   const resolvedText =
     typeof activeVal === "object" && activeVal !== null
       ? ((activeVal as any).text ?? (activeVal as any).value ?? "")
@@ -434,12 +931,7 @@ function ElementRenderer({
         return null;
       }
     } else {
-      if (
-        isEmpty(resolvedText) &&
-        !props.src &&
-        !props.text &&
-        !props.html
-      ) {
+      if (isEmpty(resolvedText) && !props.src && !props.text && !props.html) {
         return null;
       }
     }
@@ -457,11 +949,12 @@ function ElementRenderer({
   let isCarouselDotActive = false;
   if (
     props.action === "carousel-dot" &&
-    ctxEmbla?.selectedIndex !== undefined &&
+    ctxCarousel?.selectedIndex !== undefined &&
     ctx.repeatIndex !== undefined
   ) {
-    const origCount = ctxEmbla.originalSlideCount || 1;
-    isCarouselDotActive = (ctxEmbla.selectedIndex % origCount) === ctx.repeatIndex;
+    const origCount = ctxCarousel.originalSlideCount || 1;
+    isCarouselDotActive =
+      ctxCarousel.selectedIndex % origCount === ctx.repeatIndex;
   }
 
   const customClass =
@@ -469,9 +962,14 @@ function ElementRenderer({
       ? ` ${props.className}`
       : "";
   const isTemplateRoot = node.id === ctx.rootId && !ctx.isRenderingUserBlocks;
-  const domNodeClass = isTemplateRoot ? node.id : (node.id === "root" ? "elem-root" : node.id);
+  const domNodeClass = isTemplateRoot
+    ? node.id
+    : node.id === "root"
+      ? "elem-root"
+      : node.id;
+  const isSlideClass = ctx.isCarouselSlide ? " ts-carousel-slide" : "";
   const dom: Record<string, any> = {
-    className: `n${domNodeClass} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}${customClass}`,
+    className: `n${domNodeClass} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}${isSlideClass}${customClass}`,
   };
 
   // Only forward allowlisted, primitive attributes.
@@ -494,23 +992,45 @@ function ElementRenderer({
     }
     case "carousel": {
       const perView =
-        Number(
+        ctxCarousel?.perView ??
+        (Number(
           content?._design?.carouselSlidesPerView ??
-          (node.props as Record<string, unknown>)?.carouselSlidesPerView ??
-          (node.props as Record<string, unknown>)?.slidesPerView ??
-          (node.props as Record<string, unknown>)?.perView,
-        ) || 1.25;
-      const widthPct = 100 / perView;
-      const trackId = `track-${node.id}`;
-      const gapVal = "0.75rem";
-      const slideWidthCss =
-        perView <= 1
-          ? "100%"
-          : `calc(${widthPct}% - ${gapVal})`;
+            ctx.selfData?._design?.carouselSlidesPerView ??
+            ctx.selfData?.carouselSlidesPerView ??
+            (node.props as Record<string, unknown>)?.carouselSlidesPerView ??
+            (node.props as Record<string, unknown>)?.slidesPerView ??
+            (node.props as Record<string, unknown>)?.perView,
+        ) ||
+          1.25);
 
-      const kids = (node.children ?? []).map((child) => (
+      const gapPx = 12;
+      const slideWidthCss =
+        perView === 1
+          ? "100%"
+          : `calc((100% - ${(perView - 1) * gapPx}px) / ${perView})`;
+
+      const trackId = `ts-track-${node.id}`;
+
+      const rawChildren = node.children ?? [];
+      const hasRepeatChild = rawChildren.some(
+        (c) => c.kind === "element" && Boolean((c as any).repeat),
+      );
+      const isStaticLoop =
+        !hasRepeatChild &&
+        Boolean(ctxCarousel?.loop) &&
+        rawChildren.length >= 2;
+
+      const childrenToRender = isStaticLoop
+        ? [
+            ...rawChildren.map((c) => ({ child: c, keyPrefix: "clone-prev" })),
+            ...rawChildren.map((c) => ({ child: c, keyPrefix: "real" })),
+            ...rawChildren.map((c) => ({ child: c, keyPrefix: "clone-next" })),
+          ]
+        : rawChildren.map((c) => ({ child: c, keyPrefix: "" }));
+
+      const kids = childrenToRender.map(({ child, keyPrefix }) => (
         <NodeRenderer
-          key={child.id}
+          key={keyPrefix ? `${keyPrefix}-${child.id}` : child.id}
           node={child}
           content={content}
           ctx={{ ...ctx, isCarouselSlide: true, carouselPerView: perView }}
@@ -522,53 +1042,87 @@ function ElementRenderer({
           <style
             dangerouslySetInnerHTML={{
               __html: `
-            .${trackId} {
+            .${trackId}-viewport {
+              overflow: hidden !important;
+              width: 100% !important;
+              position: relative !important;
+              touch-action: pan-y !important;
+              user-select: none !important;
+              -webkit-user-select: none !important;
+              cursor: grab !important;
+            }
+            .${trackId}-viewport:active {
+              cursor: grabbing !important;
+            }
+            .${trackId}-track {
               display: flex !important;
               flex-direction: row !important;
-              gap: ${gapVal} !important;
+              flex-wrap: nowrap !important;
+              gap: ${gapPx}px !important;
+              column-gap: ${gapPx}px !important;
+              row-gap: 0px !important;
               margin: 0 !important;
               padding: 0 !important;
-              overflow: visible !important;
-              touch-action: pan-y pinch-zoom !important;
+              width: 100% !important;
+              box-sizing: border-box !important;
+              will-change: transform !important;
+            }
+            .${trackId}-track > * {
+              flex: 0 0 ${slideWidthCss} !important;
+              min-width: ${slideWidthCss} !important;
+              max-width: ${slideWidthCss} !important;
+              width: ${slideWidthCss} !important;
+              box-sizing: border-box !important;
               user-select: none !important;
               -webkit-user-select: none !important;
             }
-            .${trackId} > * {
-              flex: 0 0 ${slideWidthCss} !important;
-              min-width: 0 !important;
-              max-width: ${slideWidthCss} !important;
-              box-sizing: border-box !important;
-              padding: 0 !important;
-            }
-            .${trackId} > *:last-child {
-              margin-right: ${gapVal} !important;
+            .${trackId}-track img {
+              -webkit-user-drag: none !important;
+              user-select: none !important;
+              pointer-events: none !important;
             }
           `,
             }}
           />
           <div
-            className="embla"
-            ref={ctxEmbla?.emblaRef}
+            {...dom}
+            {...ctxCarousel?.dragProps}
+            ref={ctxCarousel?.viewportRef}
+            className={`${dom.className} ${trackId}-viewport`}
             style={{
+              ...dom.style,
               overflow: "hidden",
               width: "100%",
-              touchAction: "pan-y pinch-zoom",
+              position: "relative",
+              touchAction: "pan-y",
+              userSelect: "none",
+              WebkitUserSelect: "none",
+              cursor: "grab",
             }}
           >
-            <div {...dom} className={`${dom.className} ${trackId}`}>
+            <div
+              ref={ctxCarousel?.trackRef}
+              className={`${trackId}-track`}
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                flexWrap: "nowrap",
+                gap: `${gapPx}px`,
+                columnGap: `${gapPx}px`,
+                width: "100%",
+                boxSizing: "border-box",
+                willChange: "transform",
+              }}
+            >
               {kids}
             </div>
           </div>
         </React.Fragment>
       );
-      break;
     }
     case "image": {
       // Priority: user's custom bound image -> template's default image (props.src) -> empty
-      const src =
-        (!isEmpty(bound) ? bound : undefined) ??
-        props.src ??
-        "";
+      const src = (!isEmpty(bound) ? bound : undefined) ?? props.src ?? "";
       if (!src) {
         if (ctx.isEditing) {
           dom["data-empty"] = "true";
@@ -626,8 +1180,7 @@ function ElementRenderer({
     }
     case "richtext": {
       const rawHtml =
-        bound ??
-        (isCardBound && ctx.card ? "" : props.html ?? "");
+        bound ?? (isCardBound && ctx.card ? "" : (props.html ?? ""));
       dom.dangerouslySetInnerHTML = {
         __html: sanitizeHtml(String(rawHtml), "richtext"),
       };
@@ -635,8 +1188,7 @@ function ElementRenderer({
     }
     case "embed": {
       const rawHtml =
-        bound ??
-        (isCardBound && ctx.card ? "" : props.html ?? "");
+        bound ?? (isCardBound && ctx.card ? "" : (props.html ?? ""));
       dom.dangerouslySetInnerHTML = {
         __html: sanitizeHtml(String(rawHtml), "embed"),
       };
@@ -644,9 +1196,7 @@ function ElementRenderer({
     }
     case "video": {
       const url =
-        bound ??
-        (isCardBound && ctx.card ? undefined : props.url) ??
-        "";
+        bound ?? (isCardBound && ctx.card ? undefined : props.url) ?? "";
       if (!url) break;
       // Very basic YouTube detection for embed mapping
       if (
@@ -707,44 +1257,38 @@ function ElementRenderer({
       const action = (props.action as string) || "link";
       dom["data-action"] = action;
 
-      if (action === "carousel-prev" && ctxEmbla && !ctxEmbla.canScrollPrev) {
+      if (
+        action === "carousel-prev" &&
+        ctxCarousel &&
+        !ctxCarousel.canScrollPrev
+      ) {
         dom.style = { ...dom.style, opacity: 0.35, cursor: "not-allowed" };
       }
-      if (action === "carousel-next" && ctxEmbla && !ctxEmbla.canScrollNext) {
+      if (
+        action === "carousel-next" &&
+        ctxCarousel &&
+        !ctxCarousel.canScrollNext
+      ) {
         dom.style = { ...dom.style, opacity: 0.35, cursor: "not-allowed" };
       }
 
       const interceptClick = (e: React.MouseEvent) => {
         e.preventDefault();
-        if (!ctx.isEditing) {
-          e.stopPropagation();
-        }
+        e.stopPropagation();
 
         if (action === "carousel-prev") {
-          try {
-            ctxEmbla?.emblaApi?.plugins()?.autoplay?.reset();
-          } catch {}
-          ctxEmbla?.emblaApi?.scrollPrev();
+          ctxCarousel?.scrollPrev?.();
           return;
         }
 
         if (action === "carousel-next") {
-          try {
-            ctxEmbla?.emblaApi?.plugins()?.autoplay?.reset();
-          } catch {}
-          ctxEmbla?.emblaApi?.scrollNext();
+          ctxCarousel?.scrollNext?.();
           return;
         }
 
         if (action === "carousel-dot") {
-          try {
-            ctxEmbla?.emblaApi?.plugins()?.autoplay?.reset();
-          } catch {}
           const target = ctx.repeatIndex ?? 0;
-          const origCount = ctxEmbla?.originalSlideCount || 1;
-          const currentSnap = ctxEmbla?.selectedIndex ?? 0;
-          const currentSet = Math.floor(currentSnap / origCount) * origCount;
-          ctxEmbla?.emblaApi?.scrollTo(currentSet + target);
+          ctxCarousel?.scrollTo?.(target);
           return;
         }
 
@@ -849,7 +1393,10 @@ function ElementRenderer({
         }
       }
       if (node.tag === "button") dom.type = "button";
-      if ((node.tag === "link" || node.tag === "frame") && props.target === "_blank") {
+      if (
+        (node.tag === "link" || node.tag === "frame") &&
+        props.target === "_blank"
+      ) {
         dom.target = "_blank";
         dom.rel = "noopener noreferrer";
       }
@@ -886,7 +1433,12 @@ function ElementRenderer({
             child.id === ctx.placeholderId &&
             ctx.renderUserBlocks &&
             ctx.renderUserBlocks()}
-          <NodeRenderer key={child.id} node={child} content={content} ctx={ctx} />
+          <NodeRenderer
+            key={child.id}
+            node={child}
+            content={content}
+            ctx={{ ...ctx, isCarouselSlide: false }}
+          />
         </React.Fragment>
       ))}
       {node.id === ctx.rootId &&
@@ -1011,6 +1563,25 @@ export function mergeLayoutTrees(
       }
       return child;
     });
+
+    if (defaultLayout.children && defaultLayout.children.length > 0) {
+      const existingIds = new Set(merged.children.map((c) => c.id));
+      for (let i = 0; i < defaultLayout.children.length; i++) {
+        const defChild = defaultLayout.children[i];
+        if (defChild.id && !existingIds.has(defChild.id)) {
+          if (
+            defChild.id === "itemIndex" ||
+            defChild.id === "c_itemIndex" ||
+            defChild.id === "index" ||
+            defChild.id === "serial"
+          ) {
+            const targetPos = Math.min(i, merged.children.length);
+            merged.children.splice(targetPos, 0, structuredClone(defChild));
+            existingIds.add(defChild.id);
+          }
+        }
+      }
+    }
   } else if (
     merged.children === undefined &&
     defaultLayout.children &&
@@ -1100,20 +1671,19 @@ function WidgetRenderer({
         ctx.selfData.text_1;
     } else if (wType === "VIDEO") {
       rawWidgetContent =
-        ctx.selfData.videoUrl ??
-        ctx.selfData.videoUrl_1 ??
-        ctx.selfData.url;
+        ctx.selfData.videoUrl ?? ctx.selfData.videoUrl_1 ?? ctx.selfData.url;
     } else if (wType === "IMAGE") {
       rawWidgetContent =
-        ctx.selfData.imageUrl ??
-        ctx.selfData.imageUrl_1 ??
-        ctx.selfData.src;
+        ctx.selfData.imageUrl ?? ctx.selfData.imageUrl_1 ?? ctx.selfData.src;
     }
   }
 
   // Normalize into standard widget data structure
   let widgetContent: Record<string, any>;
-  if (typeof rawWidgetContent === "string" || typeof rawWidgetContent === "number") {
+  if (
+    typeof rawWidgetContent === "string" ||
+    typeof rawWidgetContent === "number"
+  ) {
     if (
       wType === "TITLE" ||
       wType === "HEADING" ||
@@ -1145,19 +1715,9 @@ function WidgetRenderer({
     widgetContent = { ...(node.defaultContent ?? {}), ...rawWidgetContent };
   } else {
     widgetContent =
-      (node.key ? content?.[node.key] : undefined) ??
-      node.defaultContent ??
-      {};
+      (node.key ? content?.[node.key] : undefined) ?? node.defaultContent ?? {};
   }
 
-  // For derived widgets that have NO defaultLayout defined in their meta,
-  // skip any stored node.layout and use the React render component directly.
-  // This handles CONTACT_LINKS (and similar) where the old defaultLayout was
-  // removed from meta — without this, a stale node.layout from the DB would
-  // keep rendering an element tree with broken self-bindings, invisible labels,
-  // and confusing link icons in the editor layers panel.
-  // Derived widgets that DO have a defaultLayout (e.g. PROFILE) are unaffected.
-  // Also applies to deprecated widgets: if they have a defaultLayout, render it.
   const hasMetaLayout = widgetMeta?.defaultLayout != null;
   const skipStoredLayout = widgetMeta?.derived === true && !hasMetaLayout;
   const layout = skipStoredLayout

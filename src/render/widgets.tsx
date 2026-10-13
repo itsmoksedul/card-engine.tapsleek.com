@@ -1,3 +1,5 @@
+"use client";
+
 import { AppointmentRender } from './widgets/appointment';
 import { BusinessHoursRender } from './widgets/business-hours';
 import { ConnectButtonsRender } from './widgets/connect-buttons';

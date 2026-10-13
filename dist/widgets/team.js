@@ -9,6 +9,26 @@ exports.meta = {
     group: "business",
     description: "A grid of team members with photos and roles.",
     contentVersion: 1,
+    parts: [
+        { key: 'root', label: 'Container', kind: 'container' },
+        { key: 'header', label: 'Header', kind: 'container' },
+        { key: 'heading', label: 'Heading', kind: 'text' },
+        { key: 'description', label: 'Description', kind: 'text' },
+        { key: 'list', label: 'List', kind: 'list' },
+        { key: 'item', label: 'Item', kind: 'container' },
+        { key: 'itemIndex', label: 'Item number', kind: 'text' },
+        { key: 'avatar', label: 'Photo', kind: 'image' },
+        { key: 'name', label: 'Name', kind: 'text' },
+        { key: 'role', label: 'Role', kind: 'text' },
+        { key: 'bio', label: 'Bio', kind: 'text' },
+        ...carousel_parts_1.carouselParts,
+    ],
+    defaultPartStyles: {
+        itemIndex: {
+            base: { fontSize: '{size.xs}', fontWeight: 700, color: '{color.primary}' },
+        },
+        ...carousel_parts_1.carouselDefaultPartStyles,
+    },
     defaultLayout: {
         id: "team-root",
         kind: "element",
@@ -88,6 +108,16 @@ exports.meta = {
                             },
                         },
                         children: [
+                            {
+                                id: "itemIndex",
+                                kind: "element",
+                                tag: "text",
+                                name: "Item number",
+                                bind: { source: "self", path: "index" },
+                                style: {
+                                    base: { fontSize: "{size.xs}", fontWeight: 700, color: "{color.primary}" },
+                                },
+                            },
                             {
                                 id: "avatar",
                                 kind: "element",
@@ -173,6 +203,16 @@ exports.meta = {
                     base: { display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: "{space.3}", padding: { all: "{space.3}" }, background: { kind: "color", color: "{color.surface}" }, borderRadius: { all: "{radius.lg}" }, border: { style: "solid", width: "1px", color: "{color.border}" } },
                 },
                 children: [
+                    {
+                        id: "c_itemIndex",
+                        kind: "element",
+                        tag: "text",
+                        name: "Item number",
+                        bind: { source: "self", path: "index" },
+                        style: {
+                            base: { fontSize: "{size.xs}", fontWeight: 700, color: "{color.primary}" },
+                        },
+                    },
                     {
                         id: "image",
                         kind: "element",

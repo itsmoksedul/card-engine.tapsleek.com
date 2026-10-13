@@ -17,6 +17,7 @@ exports.meta = {
         { key: 'description', label: 'Description', kind: 'text' },
         { key: 'list', label: 'List', kind: 'list' },
         { key: 'item', label: 'Item', kind: 'container' },
+        { key: 'itemIndex', label: 'Item number', kind: 'text' },
         { key: 'question', label: 'Question', kind: 'button' },
         { key: 'chevron', label: 'Chevron', kind: 'icon' },
         { key: 'answer', label: 'Answer', kind: 'text' },
@@ -75,6 +76,14 @@ exports.meta = {
                 border: { width: '1px', style: 'solid', color: '{color.border}' },
                 borderRadius: { all: '{radius.md}' },
                 overflow: 'hidden',
+            },
+        },
+        itemIndex: {
+            base: {
+                fontSize: '{size.xs}',
+                fontWeight: 700,
+                color: '{color.primary}',
+                padding: { t: '{space.3}', l: '{space.4}' },
             },
         },
         question: {
@@ -188,6 +197,21 @@ exports.meta = {
                             },
                         },
                         children: [
+                            {
+                                id: 'itemIndex',
+                                kind: 'element',
+                                tag: 'text',
+                                name: 'Item number',
+                                bind: { source: 'self', path: 'index' },
+                                style: {
+                                    base: {
+                                        fontSize: '{size.xs}',
+                                        fontWeight: 700,
+                                        color: '{color.primary}',
+                                        padding: { t: '{space.3}', l: '{space.4}' },
+                                    },
+                                },
+                            },
                             {
                                 id: 'question',
                                 kind: 'element',

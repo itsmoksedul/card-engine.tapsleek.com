@@ -1,4 +1,5 @@
 "use strict";
+"use client";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WIDGET_RENDERERS = void 0;
 const appointment_1 = require("./widgets/appointment");

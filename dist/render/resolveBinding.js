@@ -25,7 +25,7 @@ function formatLinkUrl(type, value) {
     }
     return value.startsWith("/") ? value : `https://${value}`;
 }
-function resolveBinding(binding, card, content, selfData) {
+function resolveBinding(binding, card, content, selfData, repeatIndex) {
     if (!binding)
         return undefined;
     if (binding.source === "card") {
@@ -44,6 +44,26 @@ function resolveBinding(binding, card, content, selfData) {
         return result;
     }
     if (binding.source === "self") {
+        if (binding.path === "index" ||
+            binding.path === "$index" ||
+            binding.path === "serial" ||
+            binding.path === "number" ||
+            binding.path === "itemIndex") {
+            if (selfData !== undefined &&
+                typeof selfData === "object" &&
+                selfData !== null &&
+                selfData[binding.path] !== undefined &&
+                selfData[binding.path] !== "") {
+                const customVal = selfData[binding.path];
+                return binding.format
+                    ? formatValue(binding.format, customVal, selfData, content?._design)
+                    : customVal;
+            }
+            const idx = repeatIndex !== undefined ? repeatIndex + 1 : 1;
+            return binding.format
+                ? formatValue(binding.format, idx, selfData, content?._design)
+                : idx;
+        }
         // When repeating over 'links' for a real card, user's real card.links MUST take priority over demo template links!
         if (binding.path === "links") {
             let activeLinks = [];
@@ -155,6 +175,8 @@ function formatValue(format, value, selfData, design) {
     switch (format) {
         case "weekday":
             return typeof value === "string" ? (WEEKDAYS[value] ?? value) : value;
+        case "pad2":
+            return String(value).padStart(2, "0");
         case "hoursRange": {
             const row = selfData ?? {};
             if (row.closed)

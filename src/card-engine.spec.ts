@@ -47,7 +47,7 @@ import { sanitizeTemplateDefinition, validateDefinition } from "./validate/defin
 import { validateAgainstSchema } from "./validate/schema-to-zod";
 import { manifest, partKeys, WIDGET_TYPES } from "./widgets/registry";
 import { renderToStaticMarkup } from "react-dom/server";
-import { NodeRenderer } from "./render/NodeRenderer";
+import { NodeRenderer, mergeLayoutTrees } from "./render/NodeRenderer";
 import React from "react";
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
@@ -1556,4 +1556,98 @@ describe("sanitizeTemplateDefinition", () => {
     expect(val.ok).toBe(true);
   });
 });
+
+describe("item index system (1-based serial layers)", () => {
+  it("resolves self:index binding starting from 1 (not 0)", () => {
+    expect(
+      resolveBinding({ source: "self", path: "index" }, null, null, {}, 0),
+    ).toBe(1);
+    expect(
+      resolveBinding({ source: "self", path: "index" }, null, null, {}, 1),
+    ).toBe(2);
+    expect(
+      resolveBinding({ source: "self", path: "index" }, null, null, {}, 2),
+    ).toBe(3);
+    expect(
+      resolveBinding({ source: "self", path: "index" }, null, null, {}, undefined),
+    ).toBe(1);
+    expect(
+      resolveBinding({ source: "self", path: "itemIndex" }, null, null, {}, 0),
+    ).toBe(1);
+    expect(
+      resolveBinding({ source: "self", path: "serial" }, null, null, {}, 0),
+    ).toBe(1);
+  });
+
+  it("supports pad2 format for index binding", () => {
+    expect(
+      resolveBinding(
+        { source: "self", path: "index", format: "pad2" },
+        null,
+        null,
+        {},
+        0,
+      ),
+    ).toBe("01");
+    expect(
+      resolveBinding(
+        { source: "self", path: "index", format: "pad2" },
+        null,
+        null,
+        {},
+        8,
+      ),
+    ).toBe("09");
+    expect(
+      resolveBinding(
+        { source: "self", path: "index", format: "pad2" },
+        null,
+        null,
+        {},
+        9,
+      ),
+    ).toBe("10");
+  });
+
+  it("mergeLayoutTrees injects missing itemIndex into existing template instances", () => {
+    const meta = getWidgetMeta("SERVICE_LIST")!;
+    expect(meta).toBeDefined();
+
+    // Simulate an older saved instance that had no itemIndex
+    const oldInstance = {
+      id: "root",
+      kind: "element" as const,
+      tag: "stack" as const,
+      children: [
+        {
+          id: "list",
+          kind: "element" as const,
+          tag: "grid" as const,
+          children: [
+            {
+              id: "item",
+              kind: "element" as const,
+              tag: "frame" as const,
+              repeat: { source: "self" as const, path: "items" },
+              children: [
+                {
+                  id: "itemTitle",
+                  kind: "element" as const,
+                  tag: "heading" as const,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const merged = mergeLayoutTrees(oldInstance, meta.defaultLayout!);
+    const itemNode = (merged.children?.[0] as any)?.children?.[0];
+    expect(itemNode).toBeDefined();
+    const hasIndex = itemNode.children.some((c: any) => c.id === "itemIndex");
+    expect(hasIndex).toBe(true);
+  });
+});
+
 

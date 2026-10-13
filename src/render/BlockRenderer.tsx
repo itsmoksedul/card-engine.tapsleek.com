@@ -1,3 +1,5 @@
+"use client";
+
 import { applyCustomBlockContent } from "../blocks/custom-blocks";
 import { blockClass, resolveBlockDesign } from "../blocks/resolve-design";
 import type { BlockInstance } from "../types/block";
