@@ -289,25 +289,27 @@ export const meta: WidgetModule['meta'] = {
             base: { display: 'flex', flexDirection: 'column', gap: '{space.3}', padding: { all: '{space.4}' }, background: { kind: 'color', color: '{color.surface}' }, borderRadius: { all: '{radius.md}' }, border: { style: 'solid', width: '1px', color: '{color.border}' } },
           },
           children: [
-            { id: 'c_media', kind: 'element', tag: 'image', bind: { source: 'self', path: 'image' }, hideIfEmpty: true, style: { base: { width: '100%', height: '140px', objectFit: 'cover', borderRadius: { all: '{radius.md}' } } } },
+            { id: 'c_media', kind: 'element', tag: 'image', name: 'Item image', bind: { source: 'self', path: 'image' }, hideIfEmpty: true, style: { base: { width: '100%', height: '140px', objectFit: 'cover', borderRadius: { all: '{radius.md}' } } } },
             {
               id: 'c_content',
               kind: 'element',
               tag: 'stack',
+              name: 'Card content',
               style: { base: { display: 'flex', flexDirection: 'column', gap: '{space.2}', flexGrow: 1 } },
               children: [
                 {
                   id: 'c_header',
                   kind: 'element',
                   tag: 'stack',
+                  name: 'Card header',
                   style: { base: { display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: '{space.2}' } },
                   children: [
                     { id: 'c_itemIndex', kind: 'element', tag: 'text', name: 'Item number', bind: { source: 'self', path: 'index' }, style: { base: { fontSize: '{size.xs}', fontWeight: 700, color: '{color.primary}', margin: { r: '{space.2}' } } } },
-                    { id: 'c_itemTitle', kind: 'element', tag: 'heading', props: { level: 4 }, bind: { source: 'self', path: 'name' }, style: { base: { fontSize: '{size.base}', fontWeight: 600, color: '{color.text}' } } },
-                    { id: 'c_itemPrice', kind: 'element', tag: 'text', bind: { source: 'self', path: 'price' }, hideIfEmpty: true, style: { base: { fontSize: '{size.base}', fontWeight: 600, color: '{color.primary}' } } },
+                    { id: 'c_itemTitle', kind: 'element', tag: 'heading', name: 'Item title', props: { level: 4 }, bind: { source: 'self', path: 'name' }, style: { base: { fontSize: '{size.base}', fontWeight: 600, color: '{color.text}' } } },
+                    { id: 'c_itemPrice', kind: 'element', tag: 'text', name: 'Item price', bind: { source: 'self', path: 'price' }, hideIfEmpty: true, style: { base: { fontSize: '{size.base}', fontWeight: 600, color: '{color.primary}' } } },
                   ],
                 },
-                { id: 'c_itemDesc', kind: 'element', tag: 'text', bind: { source: 'self', path: 'description' }, hideIfEmpty: true, style: { base: { fontSize: '{size.sm}', color: '{color.muted}', lineHeight: 1.4 } } },
+                { id: 'c_itemDesc', kind: 'element', tag: 'text', name: 'Item description', bind: { source: 'self', path: 'description' }, hideIfEmpty: true, style: { base: { fontSize: '{size.sm}', color: '{color.muted}', lineHeight: 1.4 } } },
               ],
             },
           ],

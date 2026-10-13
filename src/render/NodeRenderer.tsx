@@ -433,10 +433,6 @@ function CarouselProvider({ node, content, ctx, dom }: any) {
       lastXRef.current = e.clientX;
       lastTimeRef.current = performance.now();
       velocityRef.current = 0;
-
-      try {
-        e.currentTarget.setPointerCapture(e.pointerId);
-      } catch {}
     },
     [applyTransform, getStep],
   );
@@ -451,6 +447,9 @@ function CarouselProvider({ node, content, ctx, dom }: any) {
       if (!isDraggingRef.current && Math.abs(deltaX) > 4) {
         isDraggingRef.current = true;
         hasMovedRef.current = true;
+        try {
+          e.currentTarget.setPointerCapture(e.pointerId);
+        } catch {}
         if (viewportRef.current) {
           viewportRef.current.style.cursor = "grabbing";
         }
