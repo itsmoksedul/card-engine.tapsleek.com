@@ -62,6 +62,17 @@ const COMMON_ICON_MAP = {
     CONNECT_NOW: "Send",
     SHARE: "Share2",
     QR: "QrCode",
+    ARROW: "ArrowRight",
+    CALENDAR: "Calendar",
+    DOWNLOAD: "Download",
+    EXTERNAL: "ExternalLink",
+    EXTERNAL_LINK: "ExternalLink",
+    CART: "ShoppingCart",
+    MAP: "MapPin",
+    STAR: "Star",
+    GLOBE: "Globe",
+    SEND: "Send",
+    PLAY: "Play",
 };
 const fa6_1 = require("react-icons/fa6");
 const FA_MAP = {
@@ -160,9 +171,9 @@ function RenderIcon({ name, className, }) {
             LucideIcons[formatted] ??
                 LucideIcons[mapped] ??
                 LucideIcons[upper] ??
-                LucideIcons.Globe;
+                LucideIcons.Link2;
     }
-    return ((0, jsx_runtime_1.jsx)("span", { className: className, "data-icon": String(iconValue), "aria-hidden": true, style: {
+    return ((0, jsx_runtime_1.jsx)("span", { className: className, "data-icon": formatted, "aria-hidden": true, style: {
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",

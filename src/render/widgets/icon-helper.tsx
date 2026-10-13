@@ -128,6 +128,17 @@ const COMMON_ICON_MAP: Record<string, string> = {
   CONNECT_NOW: "Send",
   SHARE: "Share2",
   QR: "QrCode",
+  ARROW: "ArrowRight",
+  CALENDAR: "Calendar",
+  DOWNLOAD: "Download",
+  EXTERNAL: "ExternalLink",
+  EXTERNAL_LINK: "ExternalLink",
+  CART: "ShoppingCart",
+  MAP: "MapPin",
+  STAR: "Star",
+  GLOBE: "Globe",
+  SEND: "Send",
+  PLAY: "Play",
 };
 import {
   FaPhone, FaEnvelope, FaComment, FaMessage, FaLocationDot, FaVideo,
@@ -286,13 +297,13 @@ export function RenderIcon({
       (LucideIcons as any)[formatted] ??
       (LucideIcons as any)[mapped] ??
       (LucideIcons as any)[upper] ??
-      LucideIcons.Globe;
+      LucideIcons.Link2;
   }
 
   return (
     <span
       className={className}
-      data-icon={String(iconValue)}
+      data-icon={formatted}
       aria-hidden
       style={{
         display: "inline-flex",

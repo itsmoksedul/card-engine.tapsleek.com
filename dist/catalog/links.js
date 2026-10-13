@@ -1215,8 +1215,10 @@ exports.LINK_CATEGORIES = [
     { id: "MUSIC", label: "Music" },
 ];
 const LINK_BY_TYPE = new Map(exports.LINK_CATALOG.map((l) => [l.type, l]));
+const LINK_BY_LABEL = new Map(exports.LINK_CATALOG.map((l) => [l.label.trim().toLowerCase(), l]));
 function linkDef(type) {
-    return LINK_BY_TYPE.get(type.toLowerCase());
+    const normalized = type.trim().toLowerCase();
+    return LINK_BY_TYPE.get(normalized) ?? LINK_BY_LABEL.get(normalized);
 }
 function linkLabel(type) {
     return linkDef(type)?.label ?? type.charAt(0).toUpperCase() + type.slice(1);

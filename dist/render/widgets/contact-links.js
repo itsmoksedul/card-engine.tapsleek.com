@@ -31,5 +31,7 @@ function ContactLinksRender({ design, content, cls, ctx }) {
                         e.preventDefault();
                         ctx.onActionClick('link');
                     }
-                }, children: [d.showIcon !== false && (0, jsx_runtime_1.jsx)(icon_helper_1.RenderIcon, { name: (0, links_1.linkDef)(link.type) ? link.type : (link.icon || link.type), className: cls('icon') }), (0, jsx_runtime_1.jsx)("span", { className: cls('label'), children: link.title || link.label || link.type }), d.showValue && link.value && (0, jsx_runtime_1.jsx)("span", { className: cls('value'), children: link.value })] }, link.id || idx))) }) }));
+                }, children: [d.showIcon !== false && ((0, jsx_runtime_1.jsx)(icon_helper_1.RenderIcon, { name: (0, links_1.linkDef)(link.type)?.type ??
+                            (0, links_1.linkDef)(link.title || link.label || '')?.type ??
+                            (link.icon || link.type), className: cls('icon') })), (0, jsx_runtime_1.jsx)("span", { className: cls('label'), children: link.title || link.label || link.type }), d.showValue && link.value && (0, jsx_runtime_1.jsx)("span", { className: cls('value'), children: link.value })] }, link.id || idx))) }) }));
 }

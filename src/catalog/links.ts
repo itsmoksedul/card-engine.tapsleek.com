@@ -1226,9 +1226,13 @@ export const LINK_CATEGORIES: { id: LinkCategory | "ALL"; label: string }[] = [
 ];
 
 const LINK_BY_TYPE = new Map(LINK_CATALOG.map((l) => [l.type, l]));
+const LINK_BY_LABEL = new Map(
+  LINK_CATALOG.map((l) => [l.label.trim().toLowerCase(), l]),
+);
 
 export function linkDef(type: string): LinkTypeDef | undefined {
-  return LINK_BY_TYPE.get(type.toLowerCase());
+  const normalized = type.trim().toLowerCase();
+  return LINK_BY_TYPE.get(normalized) ?? LINK_BY_LABEL.get(normalized);
 }
 
 export function linkLabel(type: string): string {

@@ -41,7 +41,16 @@ export function ContactLinksRender({ design, content, cls, ctx }: WidgetRenderPr
               }
             }}
           >
-            {d.showIcon !== false && <RenderIcon name={linkDef(link.type) ? link.type : (link.icon || link.type)} className={cls('icon')} />}
+            {d.showIcon !== false && (
+              <RenderIcon
+                name={
+                  linkDef(link.type)?.type ??
+                  linkDef(link.title || link.label || '')?.type ??
+                  (link.icon || link.type)
+                }
+                className={cls('icon')}
+              />
+            )}
             <span className={cls('label')}>{link.title || link.label || link.type}</span>
             {d.showValue && link.value && <span className={cls('value')}>{link.value}</span>}
           </a>
