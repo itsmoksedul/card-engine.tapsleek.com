@@ -313,6 +313,19 @@ function declarationsFor(props) {
     if (!hasExplicitShrink && (isFixedLength(p.width) || isFixedLength(p.height))) {
         out.push(["flex-shrink", "0"]);
     }
+    // Auto text-align for centered or aligned flex columns:
+    // When a flex container is column-oriented and centered (alignItems: center),
+    // block-level text children (<p>, <h3>) wrap by default with text-align: left unless text-align: center
+    // is inherited from the container. Setting text-align ensures multi-line text matches the container's alignment.
+    if ((p.flexDirection === "column" || p.flexDirection === "column-reverse" || !p.flexDirection) &&
+        !p.textAlign) {
+        if (p.alignItems === "center") {
+            out.push(["text-align", "center"]);
+        }
+        else if (p.alignItems === "flex-end" || p.alignItems === "end") {
+            out.push(["text-align", "right"]);
+        }
+    }
     return out;
 }
 /** `[["color","red"]]` → `color:red` */

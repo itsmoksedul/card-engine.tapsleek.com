@@ -202,8 +202,12 @@ function compileCss(def, options = {}) {
                 for (const bp of ["base", "sm", "md"]) {
                     const props = mergeHidden(rootStyle?.[bp], rootHidden?.[bp]);
                     const decls = (0, declarations_1.declarationsFor)(props);
-                    if (decls.length)
-                        bucket[bp].push({ selector: sel, decls });
+                    const hasLayoutDisplay = Boolean(layout?.style?.[bp]?.display && layout.style[bp]?.display !== "block");
+                    const filteredDecls = hasLayoutDisplay
+                        ? decls.filter(([p]) => p !== "display")
+                        : decls;
+                    if (filteredDecls.length)
+                        bucket[bp].push({ selector: sel, decls: filteredDecls });
                 }
                 for (const state of style_1.STATE_KEYS) {
                     const decls = (0, declarations_1.declarationsFor)(rootStyle?.[state]);
@@ -218,7 +222,7 @@ function compileCss(def, options = {}) {
                         return;
                     const layoutPart = layoutCls.replace(/^n/, "");
                     const layoutSel = layoutNode === layout
-                        ? sel
+                        ? `${sel}, ${sel}.${layoutCls}`
                         : `${sel} .p-${layoutPart}, ${sel} .${layoutCls}`;
                     for (const bp of ["base", "sm", "md"]) {
                         const props = mergeHidden(layoutNode.style?.[bp], layoutNode.hidden?.[bp]);

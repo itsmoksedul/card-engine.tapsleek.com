@@ -166,23 +166,71 @@ export function resolveBlockDesign(
     const rootStyle = inst?.rootStyle;
     const rootPartStyle = inst?.partStyles?.root;
     if (rootStyle || rootPartStyle) {
+      const mergeBreakpoint = (
+        layoutBp: any,
+        partBp: any,
+        rootBp: any,
+      ) => {
+        // If the layout container already defines its display (e.g. flex or grid),
+        // preserve its internal layout mechanics (display, flexDirection, alignItems, justifyContent, gap, gridTemplate...)!
+        // rootStyle from the widget wrapper only provides outer styling (background, border, radius, shadow, margin).
+        const hasLayoutDisplay = Boolean(
+          layoutBp?.display && layoutBp.display !== "block",
+        );
+        const cleanRoot: any = { ...(rootBp ?? {}) };
+        const cleanPart: any = { ...(partBp ?? {}) };
+        if (hasLayoutDisplay) {
+          delete cleanRoot.display;
+          delete cleanRoot.flexDirection;
+          delete cleanRoot.alignItems;
+          delete cleanRoot.justifyContent;
+          delete cleanRoot.gap;
+          delete cleanRoot.gridTemplateColumns;
+          delete cleanRoot.gridTemplateRows;
+
+          delete cleanPart.display;
+          delete cleanPart.flexDirection;
+          delete cleanPart.alignItems;
+          delete cleanPart.justifyContent;
+          delete cleanPart.gap;
+          delete cleanPart.gridTemplateColumns;
+          delete cleanPart.gridTemplateRows;
+        }
+        return {
+          ...(layoutBp ?? {}),
+          ...cleanPart,
+          ...cleanRoot,
+          ...(hasLayoutDisplay
+            ? {
+                display: layoutBp.display,
+                ...(layoutBp.flexDirection ? { flexDirection: layoutBp.flexDirection } : {}),
+                ...(layoutBp.alignItems ? { alignItems: layoutBp.alignItems } : {}),
+                ...(layoutBp.justifyContent ? { justifyContent: layoutBp.justifyContent } : {}),
+                ...(layoutBp.gap !== undefined ? { gap: layoutBp.gap } : {}),
+                ...(layoutBp.gridTemplateColumns ? { gridTemplateColumns: layoutBp.gridTemplateColumns } : {}),
+                ...(layoutBp.gridTemplateRows ? { gridTemplateRows: layoutBp.gridTemplateRows } : {}),
+              }
+            : {}),
+        };
+      };
+
       layout.style = {
         ...(layout.style ?? {}),
-        base: {
-          ...(layout.style?.base ?? {}),
-          ...(rootPartStyle?.base ?? {}),
-          ...(rootStyle?.base ?? {}),
-        },
-        sm: {
-          ...(layout.style?.sm ?? {}),
-          ...(rootPartStyle?.sm ?? {}),
-          ...(rootStyle?.sm ?? {}),
-        },
-        md: {
-          ...(layout.style?.md ?? {}),
-          ...(rootPartStyle?.md ?? {}),
-          ...(rootStyle?.md ?? {}),
-        },
+        base: mergeBreakpoint(
+          layout.style?.base,
+          rootPartStyle?.base,
+          rootStyle?.base,
+        ),
+        sm: mergeBreakpoint(
+          layout.style?.sm,
+          rootPartStyle?.sm,
+          rootStyle?.sm,
+        ),
+        md: mergeBreakpoint(
+          layout.style?.md,
+          rootPartStyle?.md,
+          rootStyle?.md,
+        ),
       };
     }
   }

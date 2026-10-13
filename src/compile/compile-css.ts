@@ -317,7 +317,14 @@ export function compileCss(
         for (const bp of ["base", "sm", "md"] as const) {
           const props = mergeHidden(rootStyle?.[bp], rootHidden?.[bp]);
           const decls = declarationsFor(props);
-          if (decls.length) bucket[bp].push({ selector: sel, decls });
+          const hasLayoutDisplay = Boolean(
+            layout?.style?.[bp]?.display && layout.style[bp]?.display !== "block",
+          );
+          const filteredDecls = hasLayoutDisplay
+            ? decls.filter(([p]) => p !== "display")
+            : decls;
+          if (filteredDecls.length)
+            bucket[bp].push({ selector: sel, decls: filteredDecls });
         }
         for (const state of STATE_KEYS) {
           const decls = declarationsFor(rootStyle?.[state]);
@@ -332,7 +339,7 @@ export function compileCss(
           const layoutPart = layoutCls.replace(/^n/, "");
           const layoutSel =
             layoutNode === layout
-              ? sel
+              ? `${sel}, ${sel}.${layoutCls}`
               : `${sel} .p-${layoutPart}, ${sel} .${layoutCls}`;
           for (const bp of ["base", "sm", "md"] as const) {
             const props = mergeHidden(
