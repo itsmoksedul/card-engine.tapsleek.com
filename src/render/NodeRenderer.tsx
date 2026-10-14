@@ -825,6 +825,21 @@ function ElementRenderer({
     if (!isVisible) return null;
   }
 
+  if (
+    node.showIf &&
+    isEmpty(
+      resolveBinding(
+        node.showIf,
+        ctx.card,
+        content,
+        ctx.selfData,
+        ctx.repeatIndex,
+      ),
+    )
+  ) {
+    return null;
+  }
+
   if (node.repeat) {
     const items = resolveBinding(node.repeat, ctx.card, content, ctx.selfData);
     if (!Array.isArray(items)) return null;

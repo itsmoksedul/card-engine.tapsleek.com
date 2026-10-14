@@ -76,6 +76,12 @@ export interface ElementNode extends BaseNode {
     bind?: Binding;
     /** A bound value that resolves empty removes the node entirely (no gap). */
     hideIfEmpty?: boolean;
+    /**
+     * Render this node (and everything inside it) only when this binding has a
+     * value — e.g. a frame holding "at" + the company name, shown only when the
+     * card has a company.
+     */
+    showIf?: Binding;
     /** If set, repeats this element for each item in the bound array. */
     repeat?: Binding;
     children?: Node[];

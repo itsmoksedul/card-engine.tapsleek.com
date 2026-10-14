@@ -470,6 +470,8 @@ function validateElement(node, path, ctx) {
     // binding
     if (node.bind !== undefined)
         validateBinding(node.bind, `${path}.bind`, ctx);
+    if (node.showIf !== undefined)
+        validateBinding(node.showIf, `${path}.showIf`, ctx);
     if (node.hideIfEmpty !== undefined && typeof node.hideIfEmpty !== "boolean") {
         errors.push({ path: `${path}.hideIfEmpty`, message: "must be a boolean" });
     }
