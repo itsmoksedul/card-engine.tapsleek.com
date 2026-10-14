@@ -119,7 +119,7 @@ export declare const DEFINITION_LIMITS: {
     /** Serialized definition size, bytes. */
     readonly maxBytes: 200000;
     readonly maxPopups: 4;
-    readonly maxFonts: 4;
+    readonly maxFonts: 16;
     readonly maxTokensPerGroup: 64;
     /** Compiled stylesheet ceiling — a warning above this, hard fail at 2×. */
     readonly cssWarnBytes: 60000;

@@ -34,6 +34,7 @@ exports.collectNodeIds = collectNodeIds;
 const resolve_design_1 = require("../blocks/resolve-design");
 const definition_1 = require("../types/definition");
 const node_1 = require("../types/node");
+const fonts_1 = require("../catalog/fonts");
 const style_1 = require("../types/style");
 const registry_1 = require("../widgets/registry");
 const color_utils_1 = require("./color-utils");
@@ -533,39 +534,124 @@ function resetCss(scope, pretty) {
     return rules.join(nl);
 }
 function compileFonts(def, options, warnings) {
-    if (options.emitFonts === false || !def.fonts?.length) {
+    if (options.emitFonts === false) {
         return { faces: "", googleHref: null };
     }
     const faces = [];
-    const googleFamilies = [];
-    for (const font of def.fonts) {
-        if (!font?.family || !value_1.VALUE_RE.fontFamily.test(font.family)) {
-            warnings.push(`font "${String(font?.family)}": invalid family, skipped`);
-            continue;
+    const googleFamilies = new Map();
+    const addGoogleFamily = (family, weights = [400, 500, 600, 700]) => {
+        if (!family || typeof family !== "string")
+            return;
+        const clean = family.trim().replace(/^['"]|['"]$/g, "");
+        if (!clean ||
+            (0, fonts_1.isSystemFont)(clean) ||
+            clean.startsWith("{") ||
+            !value_1.VALUE_RE.fontFamily.test(clean)) {
+            return;
         }
-        const weights = (font.weights ?? [400]).filter((w) => Number.isInteger(w) && w >= 100 && w <= 900);
-        if (!weights.length)
-            continue;
-        if (font.source === "google") {
-            googleFamilies.push(`family=${encodeURIComponent(font.family)}:wght@${weights.sort((a, b) => a - b).join(";")}`);
-            continue;
+        const current = googleFamilies.get(clean) ?? new Set();
+        for (const w of weights) {
+            if (Number.isInteger(w) && w >= 100 && w <= 900) {
+                current.add(w);
+            }
         }
-        const display = font.display ?? "swap";
-        for (const weight of weights) {
-            const file = font.files?.[String(weight)];
-            const url = file ? (0, value_1.safeUrl)(joinUrl(options.fontBaseUrl, file)) : null;
-            if (!url) {
-                warnings.push(`font ${font.family}@${weight}: no valid self-hosted file, skipped`);
+        if (current.size === 0) {
+            [400, 500, 600, 700].forEach((w) => current.add(w));
+        }
+        googleFamilies.set(clean, current);
+    };
+    const selfHostedFamilies = new Set();
+    // 1. Process explicit def.fonts
+    if (Array.isArray(def.fonts)) {
+        for (const font of def.fonts) {
+            if (!font?.family || !value_1.VALUE_RE.fontFamily.test(font.family)) {
+                warnings.push(`font "${String(font?.family)}": invalid family, skipped`);
                 continue;
             }
-            faces.push(`@font-face{font-family:"${font.family}";font-style:${font.italic ? "italic" : "normal"};` +
-                `font-weight:${weight};font-display:${display};src:url("${url}") format("woff2")}`);
+            const weights = (font.weights ?? [400]).filter((w) => Number.isInteger(w) && w >= 100 && w <= 900);
+            if (!weights.length)
+                continue;
+            if (font.source === "google") {
+                addGoogleFamily(font.family, weights);
+                continue;
+            }
+            selfHostedFamilies.add(font.family.trim().toLowerCase());
+            const display = font.display ?? "swap";
+            for (const weight of weights) {
+                const file = font.files?.[String(weight)];
+                const url = file ? (0, value_1.safeUrl)(joinUrl(options.fontBaseUrl, file)) : null;
+                if (!url) {
+                    warnings.push(`font ${font.family}@${weight}: no valid self-hosted file, skipped`);
+                    continue;
+                }
+                faces.push(`@font-face{font-family:"${font.family}";font-style:${font.italic ? "italic" : "normal"};` +
+                    `font-weight:${weight};font-display:${display};src:url("${url}") format("woff2")}`);
+            }
         }
+    }
+    // 2. Discover fonts from tokens (e.g. def.tokens.font.body, def.tokens.font.heading)
+    const fontTokens = (def.tokens?.font ?? {});
+    for (const fontVal of Object.values(fontTokens)) {
+        if (typeof fontVal === "string" &&
+            !selfHostedFamilies.has(fontVal.trim().toLowerCase())) {
+            addGoogleFamily(fontVal);
+        }
+    }
+    // 3. Discover fonts from element and widget part styles in the AST
+    const resolveTokenFamily = (val) => {
+        if (val.startsWith("{font.") && val.endsWith("}")) {
+            const tokenName = val.slice(6, -1);
+            return fontTokens[tokenName] || val;
+        }
+        return val;
+    };
+    const checkStyle = (style) => {
+        if (!style)
+            return;
+        if (typeof style.fontFamily === "string") {
+            const resolved = resolveTokenFamily(style.fontFamily);
+            const firstFont = resolved
+                .split(",")[0]
+                .trim()
+                .replace(/^['"]|['"]$/g, "");
+            if (firstFont && !selfHostedFamilies.has(firstFont.toLowerCase())) {
+                const weight = typeof style.fontWeight === "number" ? style.fontWeight : 400;
+                addGoogleFamily(firstFont, [weight, 400, 500, 600, 700]);
+            }
+        }
+    };
+    try {
+        for (const root of (0, definition_1.definitionRoots)(def)) {
+            (0, node_1.walkTreeWithLayouts)(root, (node) => {
+                if (node.style) {
+                    checkStyle(node.style.base);
+                    checkStyle(node.style.md);
+                    checkStyle(node.style.sm);
+                }
+                if (node.kind === "widget" && node.partStyles) {
+                    for (const ps of Object.values(node.partStyles)) {
+                        if (ps) {
+                            checkStyle(ps.base);
+                            checkStyle(ps.md);
+                            checkStyle(ps.sm);
+                        }
+                    }
+                }
+            });
+        }
+    }
+    catch {
+        // Graceful fallback if tree walk fails on partial AST
+    }
+    const googleFamiliesList = [];
+    for (const [family, weightsSet] of googleFamilies.entries()) {
+        const sorted = Array.from(weightsSet).sort((a, b) => a - b);
+        googleFamiliesList.push(`family=${encodeURIComponent(family)}:wght@${sorted.join(";")}`);
     }
     return {
         faces: faces.join(""),
-        googleHref: googleFamilies.length
-            ? `https://fonts.googleapis.com/css2?${googleFamilies.join("&")}&display=swap`
+        googleHref: googleFamiliesList.length
+            ? `https://fonts.googleapis.com/css2?${googleFamiliesList.join("&")}&display=swap`
             : null,
     };
 }

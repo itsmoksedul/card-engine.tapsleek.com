@@ -35,7 +35,7 @@ exports.DEFINITION_LIMITS = {
     /** Serialized definition size, bytes. */
     maxBytes: 200_000,
     maxPopups: 4,
-    maxFonts: 4,
+    maxFonts: 16,
     maxTokensPerGroup: 64,
     /** Compiled stylesheet ceiling — a warning above this, hard fail at 2×. */
     cssWarnBytes: 60_000,
