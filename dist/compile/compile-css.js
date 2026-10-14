@@ -37,6 +37,7 @@ const node_1 = require("../types/node");
 const fonts_1 = require("../catalog/fonts");
 const style_1 = require("../types/style");
 const registry_1 = require("../widgets/registry");
+const carousel_parts_1 = require("../widgets/carousel-parts");
 const color_utils_1 = require("./color-utils");
 const declarations_1 = require("./declarations");
 const value_1 = require("./value");
@@ -101,7 +102,7 @@ function compileCss(def, options = {}) {
             for (const state of style_1.STATE_KEYS) {
                 const decls = (0, declarations_1.declarationsFor)(node.style?.[state]);
                 if (decls.length) {
-                    states.push({ selector: `${sel}:${state}`, decls });
+                    states.push({ selector: (0, style_1.stateSelector)(sel, state), decls });
                     produced += decls.length;
                 }
             }
@@ -142,7 +143,13 @@ function compileCss(def, options = {}) {
                         const layoutCls = nodeClass(layoutNode.id, warnings);
                         if (!layoutCls)
                             return;
-                        const layoutSel = layoutNode === layout ? sel : `${sel} .${layoutCls}`;
+                        const layoutPart = layoutCls.replace(/^n/, "");
+                        const counterparts = carousel_parts_1.CAROUSEL_PART_COUNTERPARTS[layoutPart] || [];
+                        const allSelectors = [
+                            layoutNode === layout ? sel : `${sel} .${layoutCls}`,
+                            ...counterparts.map((cp) => `${sel} .n${cp}`),
+                        ];
+                        const layoutSel = allSelectors.join(", ");
                         for (const bp of ["base", "sm", "md"]) {
                             const props = mergeHidden(layoutNode.style?.[bp], layoutNode.hidden?.[bp]);
                             const decls = (0, declarations_1.declarationsFor)(props);
@@ -154,7 +161,7 @@ function compileCss(def, options = {}) {
                         for (const state of style_1.STATE_KEYS) {
                             const decls = (0, declarations_1.declarationsFor)(layoutNode.style?.[state]);
                             if (decls.length) {
-                                states.push({ selector: `${layoutSel}:${state}`, decls });
+                                states.push({ selector: (0, style_1.stateSelector)(layoutSel, state), decls });
                                 produced += decls.length;
                             }
                         }
@@ -213,7 +220,7 @@ function compileCss(def, options = {}) {
                 for (const state of style_1.STATE_KEYS) {
                     const decls = (0, declarations_1.declarationsFor)(rootStyle?.[state]);
                     if (decls.length)
-                        states.push({ selector: `${sel}:${state}`, decls });
+                        states.push({ selector: (0, style_1.stateSelector)(sel, state), decls });
                 }
             }
             if (layout) {
@@ -222,9 +229,14 @@ function compileCss(def, options = {}) {
                     if (!layoutCls)
                         return;
                     const layoutPart = layoutCls.replace(/^n/, "");
-                    const layoutSel = layoutNode === layout
-                        ? `${sel}, ${sel}.${layoutCls}`
-                        : `${sel} .p-${layoutPart}, ${sel} .${layoutCls}`;
+                    const counterparts = carousel_parts_1.CAROUSEL_PART_COUNTERPARTS[layoutPart] || [];
+                    const allSelectors = [
+                        layoutNode === layout
+                            ? `${sel}, ${sel}.${layoutCls}`
+                            : `${sel} .p-${layoutPart}, ${sel} .${layoutCls}`,
+                        ...counterparts.flatMap((cp) => [`${sel} .p-${cp}`, `${sel} .n${cp}`]),
+                    ];
+                    const layoutSel = allSelectors.join(", ");
                     for (const bp of ["base", "sm", "md"]) {
                         const props = mergeHidden(layoutNode.style?.[bp], layoutNode.hidden?.[bp]);
                         const decls = (0, declarations_1.declarationsFor)(props);
@@ -234,7 +246,7 @@ function compileCss(def, options = {}) {
                     for (const state of style_1.STATE_KEYS) {
                         const decls = (0, declarations_1.declarationsFor)(layoutNode.style?.[state]);
                         if (decls.length)
-                            states.push({ selector: `${layoutSel}:${state}`, decls });
+                            states.push({ selector: (0, style_1.stateSelector)(layoutSel, state), decls });
                     }
                 });
             }
@@ -268,7 +280,7 @@ function compileCss(def, options = {}) {
                     for (const state of style_1.STATE_KEYS) {
                         const decls = (0, declarations_1.declarationsFor)(layoutNode.style?.[state]);
                         if (decls.length)
-                            states.push({ selector: `${layoutSel}:${state}`, decls });
+                            states.push({ selector: (0, style_1.stateSelector)(layoutSel, state), decls });
                     }
                 });
             }
@@ -438,9 +450,12 @@ function compilePartStyles(partStyles, parentSel, bucket, states, warnings, root
             warnings.push(`part "${part}": invalid name, dropped`);
             continue;
         }
-        const partSel = rootPartKey && part === rootPartKey
-            ? `${parentSel}, ${parentSel} .p-${part}`
-            : `${parentSel} .p-${part}`;
+        const counterparts = carousel_parts_1.CAROUSEL_PART_COUNTERPARTS[part] || [];
+        const allParts = [part, ...counterparts];
+        const selectors = allParts.map((p) => rootPartKey && p === rootPartKey
+            ? `${parentSel}, ${parentSel} .p-${p}`
+            : `${parentSel} .p-${p}`);
+        const partSel = selectors.join(", ");
         produced += pushStyleSet(set, partSel, bucket, states);
     }
     return produced;
@@ -459,7 +474,8 @@ function pushStyleSet(set, selector, bucket, states) {
     for (const state of style_1.STATE_KEYS) {
         const decls = (0, declarations_1.declarationsFor)(set[state]);
         if (decls.length) {
-            states.push({ selector: `${selector}:${state}`, decls });
+            const stateSel = (0, style_1.stateSelector)(selector, state);
+            states.push({ selector: stateSel, decls });
             produced += decls.length;
         }
     }

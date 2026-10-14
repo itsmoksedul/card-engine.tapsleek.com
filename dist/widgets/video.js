@@ -39,6 +39,70 @@ exports.meta = {
                         aspectRatio: '16/9',
                     },
                 },
+                // Layers inside the player are its cover: shown until the visitor
+                // taps it, then swapped for the real player. Delete them all to get
+                // the plain embed back.
+                children: [
+                    {
+                        id: 'thumb',
+                        kind: 'element',
+                        tag: 'image',
+                        name: 'Thumbnail',
+                        // Uploaded thumbnail, or YouTube's own when none is set.
+                        bind: { source: 'self', path: 'thumbnail' },
+                        hideIfEmpty: true,
+                        style: {
+                            base: {
+                                position: 'absolute',
+                                top: '0',
+                                left: '0',
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                            },
+                        },
+                    },
+                    {
+                        id: 'playButton',
+                        kind: 'element',
+                        tag: 'frame',
+                        name: 'Play button',
+                        style: {
+                            base: {
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: { translateX: '-50%', translateY: '-50%' },
+                                width: '64px',
+                                height: '64px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: { all: '{radius.full}' },
+                                background: { kind: 'color', color: '{color.primary}' },
+                                boxShadow: '{shadow.md}',
+                            },
+                        },
+                        children: [
+                            {
+                                id: 'playIcon',
+                                kind: 'element',
+                                tag: 'icon',
+                                name: 'Play icon',
+                                props: { name: 'Play' },
+                                style: {
+                                    base: {
+                                        width: '26px',
+                                        height: '26px',
+                                        fontSize: '26px',
+                                        color: '#ffffff',
+                                        margin: { l: '3px' },
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                ],
             },
             {
                 id: 'caption',
@@ -72,7 +136,7 @@ exports.meta = {
     ],
     contentSchema: [
         { key: 'url', type: 'url', label: 'Video URL', hint: 'YouTube, Vimeo, or direct MP4 link.' },
-        { key: 'thumbnail', type: 'image', label: 'Thumbnail Image', ratio: '16/9', hint: 'Only applies to direct MP4 videos. YouTube/Vimeo fetch their own.' },
+        { key: 'thumbnail', type: 'image', label: 'Thumbnail Image', ratio: '16/9', hint: 'Shown until the video is played. Empty uses the YouTube thumbnail.' },
         { key: 'caption', type: 'text', label: 'Caption', max: 120 },
     ],
     defaultDesign: { aspectRatio: '16/9', controls: true, autoplay: false, loop: false },

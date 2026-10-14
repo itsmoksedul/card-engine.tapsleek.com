@@ -31,7 +31,8 @@ export type PrimitiveTag =
   | 'carousel'
   | 'carousel-root';
 
-export const CONTAINER_TAGS: PrimitiveTag[] = ['frame', 'stack', 'grid', 'link', 'carousel', 'carousel-root'];
+// `video` holds its click-to-play cover layers (thumbnail, play button…).
+export const CONTAINER_TAGS: PrimitiveTag[] = ['frame', 'stack', 'grid', 'link', 'carousel', 'carousel-root', 'video'];
 
 export const VOID_TAGS: PrimitiveTag[] = [
   'heading',
@@ -43,7 +44,6 @@ export const VOID_TAGS: PrimitiveTag[] = [
   'divider',
   'spacer',
   'embed',
-  'video',
 ];
 
 /**

@@ -46,11 +46,13 @@ import { isSystemFont } from "../catalog/fonts";
 import {
   BREAKPOINT_MEDIA,
   STATE_KEYS,
+  stateSelector,
   type Breakpoint,
   type StyleProps,
   type StyleSet,
 } from "../types/style";
 import { getWidgetMeta, WIDGET_TYPES } from "../widgets/registry";
+import { CAROUSEL_PART_COUNTERPARTS } from "../widgets/carousel-parts";
 import {
   mix,
   parseColor,
@@ -178,7 +180,7 @@ export function compileCss(
       for (const state of STATE_KEYS) {
         const decls = declarationsFor(node.style?.[state]);
         if (decls.length) {
-          states.push({ selector: `${sel}:${state}`, decls });
+          states.push({ selector: stateSelector(sel, state), decls });
           produced += decls.length;
         }
       }
@@ -234,7 +236,13 @@ export function compileCss(
             }
             const layoutCls = nodeClass(layoutNode.id, warnings);
             if (!layoutCls) return;
-            const layoutSel = layoutNode === layout ? sel : `${sel} .${layoutCls}`;
+            const layoutPart = layoutCls.replace(/^n/, "");
+            const counterparts = CAROUSEL_PART_COUNTERPARTS[layoutPart] || [];
+            const allSelectors = [
+              layoutNode === layout ? sel : `${sel} .${layoutCls}`,
+              ...counterparts.map((cp) => `${sel} .n${cp}`),
+            ];
+            const layoutSel = allSelectors.join(", ");
             for (const bp of ["base", "sm", "md"] as const) {
               const props = mergeHidden(
                 layoutNode.style?.[bp],
@@ -249,7 +257,7 @@ export function compileCss(
             for (const state of STATE_KEYS) {
               const decls = declarationsFor(layoutNode.style?.[state]);
               if (decls.length) {
-                states.push({ selector: `${layoutSel}:${state}`, decls });
+                states.push({ selector: stateSelector(layoutSel, state), decls });
                 produced += decls.length;
               }
             }
@@ -331,7 +339,7 @@ export function compileCss(
         for (const state of STATE_KEYS) {
           const decls = declarationsFor(rootStyle?.[state]);
           if (decls.length)
-            states.push({ selector: `${sel}:${state}`, decls });
+            states.push({ selector: stateSelector(sel, state), decls });
         }
       }
       if (layout) {
@@ -339,10 +347,14 @@ export function compileCss(
           const layoutCls = nodeClass(layoutNode.id, warnings);
           if (!layoutCls) return;
           const layoutPart = layoutCls.replace(/^n/, "");
-          const layoutSel =
+          const counterparts = CAROUSEL_PART_COUNTERPARTS[layoutPart] || [];
+          const allSelectors = [
             layoutNode === layout
               ? `${sel}, ${sel}.${layoutCls}`
-              : `${sel} .p-${layoutPart}, ${sel} .${layoutCls}`;
+              : `${sel} .p-${layoutPart}, ${sel} .${layoutCls}`,
+            ...counterparts.flatMap((cp) => [`${sel} .p-${cp}`, `${sel} .n${cp}`]),
+          ];
+          const layoutSel = allSelectors.join(", ");
           for (const bp of ["base", "sm", "md"] as const) {
             const props = mergeHidden(
               layoutNode.style?.[bp],
@@ -354,7 +366,7 @@ export function compileCss(
           for (const state of STATE_KEYS) {
             const decls = declarationsFor(layoutNode.style?.[state]);
             if (decls.length)
-              states.push({ selector: `${layoutSel}:${state}`, decls });
+              states.push({ selector: stateSelector(layoutSel, state), decls });
           }
         });
       }
@@ -391,7 +403,7 @@ export function compileCss(
           for (const state of STATE_KEYS) {
             const decls = declarationsFor(layoutNode.style?.[state]);
             if (decls.length)
-              states.push({ selector: `${layoutSel}:${state}`, decls });
+              states.push({ selector: stateSelector(layoutSel, state), decls });
           }
         });
       }
@@ -588,10 +600,14 @@ function compilePartStyles(
       warnings.push(`part "${part}": invalid name, dropped`);
       continue;
     }
-    const partSel =
-      rootPartKey && part === rootPartKey
-        ? `${parentSel}, ${parentSel} .p-${part}`
-        : `${parentSel} .p-${part}`;
+    const counterparts = CAROUSEL_PART_COUNTERPARTS[part] || [];
+    const allParts = [part, ...counterparts];
+    const selectors = allParts.map((p) =>
+      rootPartKey && p === rootPartKey
+        ? `${parentSel}, ${parentSel} .p-${p}`
+        : `${parentSel} .p-${p}`,
+    );
+    const partSel = selectors.join(", ");
     produced += pushStyleSet(set, partSel, bucket, states);
   }
   return produced;
@@ -615,7 +631,8 @@ function pushStyleSet(
   for (const state of STATE_KEYS) {
     const decls = declarationsFor(set[state]);
     if (decls.length) {
-      states.push({ selector: `${selector}:${state}`, decls });
+      const stateSel = stateSelector(selector, state);
+      states.push({ selector: stateSel, decls });
       produced += decls.length;
     }
   }

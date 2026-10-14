@@ -230,6 +230,7 @@ exports.meta = {
                         children: [
                             { id: "name_1", kind: "element", tag: "heading", name: "Name", props: { level: 4 }, bind: { source: "self", path: "name" }, style: { base: { fontSize: "{size.base}", fontWeight: 600, color: "{color.text}" } } },
                             { id: "role_1", kind: "element", tag: "text", name: "Role", bind: { source: "self", path: "role" }, style: { base: { fontSize: "{size.sm}", color: "{color.primary}", fontWeight: 500 } } },
+                            { id: "bio_1", kind: "element", tag: "text", name: "Bio", hideIfEmpty: true, bind: { source: "self", path: "bio" }, style: { base: { fontSize: "{size.sm}", color: "{color.muted}", lineHeight: 1.4 } } },
                         ]
                     }
                 ],

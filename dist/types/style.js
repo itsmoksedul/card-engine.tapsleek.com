@@ -14,6 +14,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EMPTY_STYLE_SET = exports.STATE_KEYS = exports.BREAKPOINT_KEYS = exports.BREAKPOINT_MEDIA = exports.BREAKPOINT_ORDER = exports.BREAKPOINTS = void 0;
+exports.stateSelector = stateSelector;
 /** Breakpoint max-widths, in px. `base` (Desktop) is unconditional. */
 exports.BREAKPOINTS = {
     sm: 480, // Mobile   — overrides below 480px (covers all mobile devices)
@@ -31,5 +32,24 @@ exports.BREAKPOINT_MEDIA = {
     sm: `(max-width:${exports.BREAKPOINTS.sm}px)`,
 };
 exports.BREAKPOINT_KEYS = ["base", "sm", "md"];
-exports.STATE_KEYS = ["hover", "active", "focus"];
+// first/last are emitted before the interaction states so hover still wins.
+exports.STATE_KEYS = ["first", "last", "hover", "active", "focus"];
+/**
+ * The selector for a state layer. Handles comma-separated selector lists.
+ * first/last also match the `is-first`/`is-last` classes the renderer puts on
+ * repeated items, which work even when the list shares its parent with other
+ * layers.
+ */
+function stateSelector(selector, state) {
+    return selector
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .flatMap((s) => state === "first"
+        ? [`${s}:first-child`, `${s}.is-first`]
+        : state === "last"
+            ? [`${s}:last-child`, `${s}.is-last`]
+            : [`${s}:${state}`])
+        .join(", ");
+}
 exports.EMPTY_STYLE_SET = Object.freeze({ base: {} });

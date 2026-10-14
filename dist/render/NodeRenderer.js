@@ -6,16 +6,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CarouselContext = void 0;
 exports.NodeRenderer = NodeRenderer;
+exports.videoThumbnailUrl = videoThumbnailUrl;
 exports.structuralFrom = structuralFrom;
 exports.mergeLayoutTrees = mergeLayoutTrees;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = __importDefault(require("react"));
 const widgets_1 = require("../widgets");
+const carousel_parts_1 = require("../widgets/carousel-parts");
 const card_visibility_1 = require("./card-visibility");
 const resolveBinding_1 = require("./resolveBinding");
 const sanitize_1 = require("./sanitize");
 const widgets_2 = require("./widgets");
 const icon_helper_1 = require("./widgets/icon-helper");
+const resolve_design_1 = require("../blocks/resolve-design");
 function NodeRenderer({ node, content, ctx }) {
     // A template spot the user's blocks were assigned to renders them in its
     // place (see CardRenderer's anchoring).
@@ -611,6 +614,8 @@ const ENGINE_PROPS = new Set([
     "controls",
     "autoplay",
     "loop",
+    "prefix",
+    "suffix",
 ]);
 /**
  * The only `node.props` keys that reach the DOM (plus `data-*` / `aria-*`).
@@ -701,6 +706,17 @@ function ElementRenderer({ node, content, ctx, }) {
         return ((0, jsx_runtime_1.jsx)(react_1.default.Fragment, { children: renderItems.map(({ it: item, origIdx: index, cloneKey }) => ((0, jsx_runtime_1.jsx)(ElementRenderer, { node: {
                     ...node,
                     repeat: undefined,
+                    // First/last item hooks for the `first`/`last` style states —
+                    // they still match when the list shares its parent with other
+                    // layers, where :first-child / :last-child would miss.
+                    __edgeClass: isLoopCarousel
+                        ? undefined
+                        : [
+                            index === 0 ? "is-first" : "",
+                            index === items.length - 1 ? "is-last" : "",
+                        ]
+                            .filter(Boolean)
+                            .join(" ") || undefined,
                     ...(node.repeat?.source === "self" &&
                         node.repeat.path === "links" &&
                         typeof item?.id === "string"
@@ -783,8 +799,13 @@ function ElementRenderer({ node, content, ctx, }) {
             ? "elem-root"
             : node.id;
     const isSlideClass = ctx.isCarouselSlide ? " ts-carousel-slide" : "";
+    const counterparts = carousel_parts_1.CAROUSEL_PART_COUNTERPARTS[node.id] || [];
+    const counterpartClasses = counterparts.length > 0
+        ? " " + counterparts.map((cp) => `p-${cp} n${cp}`).join(" ")
+        : "";
+    const edgeClass = node.__edgeClass;
     const dom = {
-        className: `n${domNodeClass} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}${isSlideClass}${customClass}`,
+        className: `n${domNodeClass} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}${isSlideClass}${counterpartClasses}${edgeClass ? ` ${edgeClass}` : ""}${customClass}`,
     };
     // Only forward allowlisted, primitive attributes.
     for (const [key, value] of Object.entries(props)) {
@@ -938,7 +959,12 @@ function ElementRenderer({ node, content, ctx, }) {
         case "text": {
             if (isBound) {
                 if (!isEmpty(resolvedText)) {
-                    children = resolvedText;
+                    // Prefix/suffix (e.g. "at " before a company name) render only
+                    // around a real value, so an empty field never leaves "at" behind.
+                    const prefix = typeof props.prefix === "string" ? props.prefix : "";
+                    const suffix = typeof props.suffix === "string" ? props.suffix : "";
+                    children =
+                        prefix || suffix ? ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [prefix && (0, jsx_runtime_1.jsx)("span", { className: "ts-prefix", children: prefix }), resolvedText, suffix && (0, jsx_runtime_1.jsx)("span", { className: "ts-suffix", children: suffix })] })) : (resolvedText);
                 }
                 else if (isCardBound && ctx.card) {
                     children = "";
@@ -970,35 +996,16 @@ function ElementRenderer({ node, content, ctx, }) {
             break;
         }
         case "video": {
-            const url = bound ?? (isCardBound && ctx.card ? undefined : props.url) ?? "";
+            const url = String(bound ?? (isCardBound && ctx.card ? undefined : props.url) ?? "");
+            const thumbnail = String(ctx.selfData?.thumbnail ?? content?.thumbnail ?? "");
+            // Layers inside the player are a click-to-play cover (thumbnail, play
+            // button…). The real player only loads once the visitor taps it.
+            if (node.children?.length) {
+                return ((0, jsx_runtime_1.jsx)(VideoFacade, { tag: tag, dom: dom, node: node, content: content, ctx: ctx, url: url, thumbnail: thumbnail, props: props }));
+            }
             if (!url)
                 break;
-            // Very basic YouTube detection for embed mapping
-            if (url.includes("youtube.com") ||
-                url.includes("youtube-nocookie.com") ||
-                url.includes("youtu.be/")) {
-                let vid = "";
-                try {
-                    const parsed = new URL(url);
-                    vid =
-                        parsed.searchParams.get("v") ||
-                            parsed.pathname.split("/").filter(Boolean).pop() ||
-                            "";
-                }
-                catch {
-                    vid = url.split("/").pop() || "";
-                }
-                const src = `https://www.youtube-nocookie.com/embed/${vid}`;
-                children = ((0, jsx_runtime_1.jsx)("iframe", { src: src, style: { width: "100%", height: "100%", border: 0 }, allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share", allowFullScreen: true, referrerPolicy: "strict-origin-when-cross-origin" }));
-            }
-            else if (url.includes("vimeo.com/")) {
-                const vid = url.split("/").pop();
-                const src = `https://player.vimeo.com/video/${vid}`;
-                children = ((0, jsx_runtime_1.jsx)("iframe", { src: src, style: { width: "100%", height: "100%", border: 0 }, allow: "autoplay; fullscreen; picture-in-picture", allowFullScreen: true, referrerPolicy: "strict-origin-when-cross-origin" }));
-            }
-            else {
-                children = ((0, jsx_runtime_1.jsx)("video", { src: url, poster: ctx.selfData?.thumbnail || undefined, controls: props.controls, autoPlay: props.autoplay, loop: props.loop, style: { width: "100%", height: "100%", objectFit: "cover" } }));
-            }
+            children = videoPlayer(url, thumbnail, props, false);
             break;
         }
         case "button":
@@ -1173,6 +1180,86 @@ function ElementRenderer({ node, content, ctx, }) {
                 !ctx.placeholderId &&
                 ctx.renderUserBlocks &&
                 ctx.renderUserBlocks()] }));
+}
+function parseVideoUrl(url) {
+    if (url.includes("youtube.com") ||
+        url.includes("youtube-nocookie.com") ||
+        url.includes("youtu.be/")) {
+        let id = "";
+        try {
+            const parsed = new URL(url);
+            id =
+                parsed.searchParams.get("v") ||
+                    parsed.pathname.split("/").filter(Boolean).pop() ||
+                    "";
+        }
+        catch {
+            id = url.split("/").pop() || "";
+        }
+        return { kind: "youtube", id };
+    }
+    if (url.includes("vimeo.com/")) {
+        return { kind: "vimeo", id: url.split("/").filter(Boolean).pop() || "" };
+    }
+    return { kind: "file" };
+}
+/** YouTube's own thumbnail for a video URL, or "" for anything else. */
+function videoThumbnailUrl(url) {
+    const v = parseVideoUrl(url);
+    return v.kind === "youtube" && v.id
+        ? `https://i.ytimg.com/vi/${encodeURIComponent(v.id)}/hqdefault.jpg`
+        : "";
+}
+/** The real player. `start` = the visitor already tapped play. */
+function videoPlayer(url, thumbnail, props, start) {
+    const v = parseVideoUrl(url);
+    const fill = { width: "100%", height: "100%", border: 0 };
+    if (v.kind === "youtube") {
+        return ((0, jsx_runtime_1.jsx)("iframe", { src: `https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.id)}${start ? "?autoplay=1&rel=0" : ""}`, style: fill, allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share", allowFullScreen: true, referrerPolicy: "strict-origin-when-cross-origin" }));
+    }
+    if (v.kind === "vimeo") {
+        return ((0, jsx_runtime_1.jsx)("iframe", { src: `https://player.vimeo.com/video/${encodeURIComponent(v.id)}${start ? "?autoplay=1" : ""}`, style: fill, allow: "autoplay; fullscreen; picture-in-picture", allowFullScreen: true, referrerPolicy: "strict-origin-when-cross-origin" }));
+    }
+    return ((0, jsx_runtime_1.jsx)("video", { src: url, poster: thumbnail || undefined, controls: start || props.controls, autoPlay: start || props.autoplay, loop: props.loop, playsInline: true, style: { width: "100%", height: "100%", objectFit: "cover" } }));
+}
+/**
+ * A `video` node with child layers: those layers are the cover, designed in
+ * the builder like anything else. Tapping it swaps in the real player (with
+ * autoplay), so a card with videos doesn't load YouTube until it's wanted.
+ * Children binding `self.thumbnail` get YouTube's thumbnail when none is set.
+ */
+function VideoFacade({ tag, dom, node, content, ctx, url, thumbnail, props, }) {
+    const [playing, setPlaying] = react_1.default.useState(false);
+    if (playing && url && !ctx.isEditing) {
+        return react_1.default.createElement(tag, dom, videoPlayer(url, thumbnail, props, true));
+    }
+    const thumb = thumbnail || videoThumbnailUrl(url);
+    const coverContent = content && typeof content === "object" ? { ...content, thumbnail: thumb } : { thumbnail: thumb };
+    const coverSelf = ctx.selfData && typeof ctx.selfData === "object"
+        ? { ...ctx.selfData, thumbnail: thumb }
+        : ctx.selfData;
+    const canPlay = Boolean(url) && !ctx.isEditing;
+    const play = () => setPlaying(true);
+    return react_1.default.createElement(tag, canPlay
+        ? {
+            ...dom,
+            role: "button",
+            tabIndex: 0,
+            "aria-label": "Play video",
+            style: { ...dom.style, cursor: "pointer" },
+            onClick: (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                play();
+            },
+            onKeyDown: (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    play();
+                }
+            },
+        }
+        : dom, node.children.map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: coverContent, ctx: { ...ctx, selfData: coverSelf, isCarouselSlide: false } }, child.id))));
 }
 // ─── Widgets ─────────────────────────────────────────────────────────────────
 /**
@@ -1405,6 +1492,7 @@ function WidgetRenderer({ node, content, ctx, }) {
         // The layout root's own style is compiled onto `.n<widgetId>` instead.
         const layoutClasses = [
             layout.id ? `p-${layout.id}` : "",
+            node.widget ? (0, resolve_design_1.blockClass)(node.widget) : "",
             layout.props?.className || "",
         ]
             .filter(Boolean)

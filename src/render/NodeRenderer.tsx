@@ -2,6 +2,7 @@
 import React from "react";
 import type { ElementNode, Node, SlotNode, WidgetNode } from "../types/node";
 import { getWidgetMeta } from "../widgets";
+import { CAROUSEL_PART_COUNTERPARTS } from "../widgets/carousel-parts";
 import {
   isCoreWidget,
   isCustomBlockSourceHidden,
@@ -11,6 +12,7 @@ import { resolveBinding } from "./resolveBinding";
 import { safeHref, sanitizeHtml } from "./sanitize";
 import { WIDGET_RENDERERS } from "./widgets";
 import { RenderIcon } from "./widgets/icon-helper";
+import { blockClass } from "../blocks/resolve-design";
 
 export interface RenderCtx {
   card: any;
@@ -739,6 +741,8 @@ const ENGINE_PROPS = new Set([
   "controls",
   "autoplay",
   "loop",
+  "prefix",
+  "suffix",
 ]);
 
 /**
@@ -860,6 +864,17 @@ function ElementRenderer({
             node={{
               ...node,
               repeat: undefined,
+              // First/last item hooks for the `first`/`last` style states —
+              // they still match when the list shares its parent with other
+              // layers, where :first-child / :last-child would miss.
+              __edgeClass: isLoopCarousel
+                ? undefined
+                : [
+                    index === 0 ? "is-first" : "",
+                    index === items.length - 1 ? "is-last" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ") || undefined,
               ...(node.repeat?.source === "self" &&
               node.repeat.path === "links" &&
               typeof item?.id === "string"
@@ -873,7 +888,7 @@ function ElementRenderer({
                     },
                   }
                 : {}),
-            }}
+            } as ElementNode}
             content={content}
             ctx={{
               ...ctx,
@@ -967,8 +982,14 @@ function ElementRenderer({
       ? "elem-root"
       : node.id;
   const isSlideClass = ctx.isCarouselSlide ? " ts-carousel-slide" : "";
+  const counterparts = CAROUSEL_PART_COUNTERPARTS[node.id] || [];
+  const counterpartClasses =
+    counterparts.length > 0
+      ? " " + counterparts.map((cp) => `p-${cp} n${cp}`).join(" ")
+      : "";
+  const edgeClass = (node as { __edgeClass?: string }).__edgeClass;
   const dom: Record<string, any> = {
-    className: `n${domNodeClass} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}${isSlideClass}${customClass}`,
+    className: `n${domNodeClass} p-${node.id}${isCarouselDotActive ? " p-carouselDotActive" : ""}${isSlideClass}${counterpartClasses}${edgeClass ? ` ${edgeClass}` : ""}${customClass}`,
   };
 
   // Only forward allowlisted, primitive attributes.
@@ -1164,7 +1185,20 @@ function ElementRenderer({
     case "text": {
       if (isBound) {
         if (!isEmpty(resolvedText)) {
-          children = resolvedText;
+          // Prefix/suffix (e.g. "at " before a company name) render only
+          // around a real value, so an empty field never leaves "at" behind.
+          const prefix = typeof props.prefix === "string" ? props.prefix : "";
+          const suffix = typeof props.suffix === "string" ? props.suffix : "";
+          children =
+            prefix || suffix ? (
+              <>
+                {prefix && <span className="ts-prefix">{prefix}</span>}
+                {resolvedText}
+                {suffix && <span className="ts-suffix">{suffix}</span>}
+              </>
+            ) : (
+              resolvedText
+            );
         } else if (isCardBound && ctx.card) {
           children = "";
         } else if (ctx.selfData !== undefined || content !== undefined) {
@@ -1194,59 +1228,30 @@ function ElementRenderer({
       break;
     }
     case "video": {
-      const url =
-        bound ?? (isCardBound && ctx.card ? undefined : props.url) ?? "";
-      if (!url) break;
-      // Very basic YouTube detection for embed mapping
-      if (
-        url.includes("youtube.com") ||
-        url.includes("youtube-nocookie.com") ||
-        url.includes("youtu.be/")
-      ) {
-        let vid = "";
-        try {
-          const parsed = new URL(url);
-          vid =
-            parsed.searchParams.get("v") ||
-            parsed.pathname.split("/").filter(Boolean).pop() ||
-            "";
-        } catch {
-          vid = url.split("/").pop() || "";
-        }
-        const src = `https://www.youtube-nocookie.com/embed/${vid}`;
-        children = (
-          <iframe
-            src={src}
-            style={{ width: "100%", height: "100%", border: 0 }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-            referrerPolicy="strict-origin-when-cross-origin"
-          />
-        );
-      } else if (url.includes("vimeo.com/")) {
-        const vid = url.split("/").pop();
-        const src = `https://player.vimeo.com/video/${vid}`;
-        children = (
-          <iframe
-            src={src}
-            style={{ width: "100%", height: "100%", border: 0 }}
-            allow="autoplay; fullscreen; picture-in-picture"
-            allowFullScreen
-            referrerPolicy="strict-origin-when-cross-origin"
-          />
-        );
-      } else {
-        children = (
-          <video
-            src={url}
-            poster={(ctx.selfData?.thumbnail as string) || undefined}
-            controls={props.controls}
-            autoPlay={props.autoplay}
-            loop={props.loop}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+      const url = String(
+        bound ?? (isCardBound && ctx.card ? undefined : props.url) ?? "",
+      );
+      const thumbnail = String(
+        ctx.selfData?.thumbnail ?? content?.thumbnail ?? "",
+      );
+      // Layers inside the player are a click-to-play cover (thumbnail, play
+      // button…). The real player only loads once the visitor taps it.
+      if (node.children?.length) {
+        return (
+          <VideoFacade
+            tag={tag}
+            dom={dom}
+            node={node}
+            content={content}
+            ctx={ctx}
+            url={url}
+            thumbnail={thumbnail}
+            props={props}
           />
         );
       }
+      if (!url) break;
+      children = videoPlayer(url, thumbnail, props, false);
       break;
     }
     case "button":
@@ -1445,6 +1450,163 @@ function ElementRenderer({
         ctx.renderUserBlocks &&
         ctx.renderUserBlocks()}
     </>,
+  );
+}
+
+// ─── Video ───────────────────────────────────────────────────────────────────
+
+type VideoSource =
+  | { kind: "youtube"; id: string }
+  | { kind: "vimeo"; id: string }
+  | { kind: "file" };
+
+function parseVideoUrl(url: string): VideoSource {
+  if (
+    url.includes("youtube.com") ||
+    url.includes("youtube-nocookie.com") ||
+    url.includes("youtu.be/")
+  ) {
+    let id = "";
+    try {
+      const parsed = new URL(url);
+      id =
+        parsed.searchParams.get("v") ||
+        parsed.pathname.split("/").filter(Boolean).pop() ||
+        "";
+    } catch {
+      id = url.split("/").pop() || "";
+    }
+    return { kind: "youtube", id };
+  }
+  if (url.includes("vimeo.com/")) {
+    return { kind: "vimeo", id: url.split("/").filter(Boolean).pop() || "" };
+  }
+  return { kind: "file" };
+}
+
+/** YouTube's own thumbnail for a video URL, or "" for anything else. */
+export function videoThumbnailUrl(url: string): string {
+  const v = parseVideoUrl(url);
+  return v.kind === "youtube" && v.id
+    ? `https://i.ytimg.com/vi/${encodeURIComponent(v.id)}/hqdefault.jpg`
+    : "";
+}
+
+/** The real player. `start` = the visitor already tapped play. */
+function videoPlayer(
+  url: string,
+  thumbnail: string,
+  props: Record<string, any>,
+  start: boolean,
+): React.ReactNode {
+  const v = parseVideoUrl(url);
+  const fill = { width: "100%", height: "100%", border: 0 };
+  if (v.kind === "youtube") {
+    return (
+      <iframe
+        src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.id)}${start ? "?autoplay=1&rel=0" : ""}`}
+        style={fill}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+        referrerPolicy="strict-origin-when-cross-origin"
+      />
+    );
+  }
+  if (v.kind === "vimeo") {
+    return (
+      <iframe
+        src={`https://player.vimeo.com/video/${encodeURIComponent(v.id)}${start ? "?autoplay=1" : ""}`}
+        style={fill}
+        allow="autoplay; fullscreen; picture-in-picture"
+        allowFullScreen
+        referrerPolicy="strict-origin-when-cross-origin"
+      />
+    );
+  }
+  return (
+    <video
+      src={url}
+      poster={thumbnail || undefined}
+      controls={start || props.controls}
+      autoPlay={start || props.autoplay}
+      loop={props.loop}
+      playsInline
+      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+    />
+  );
+}
+
+/**
+ * A `video` node with child layers: those layers are the cover, designed in
+ * the builder like anything else. Tapping it swaps in the real player (with
+ * autoplay), so a card with videos doesn't load YouTube until it's wanted.
+ * Children binding `self.thumbnail` get YouTube's thumbnail when none is set.
+ */
+function VideoFacade({
+  tag,
+  dom,
+  node,
+  content,
+  ctx,
+  url,
+  thumbnail,
+  props,
+}: {
+  tag: string;
+  dom: Record<string, any>;
+  node: ElementNode;
+  content: any;
+  ctx: RenderCtx;
+  url: string;
+  thumbnail: string;
+  props: Record<string, any>;
+}) {
+  const [playing, setPlaying] = React.useState(false);
+
+  if (playing && url && !ctx.isEditing) {
+    return React.createElement(tag, dom, videoPlayer(url, thumbnail, props, true));
+  }
+
+  const thumb = thumbnail || videoThumbnailUrl(url);
+  const coverContent =
+    content && typeof content === "object" ? { ...content, thumbnail: thumb } : { thumbnail: thumb };
+  const coverSelf =
+    ctx.selfData && typeof ctx.selfData === "object"
+      ? { ...ctx.selfData, thumbnail: thumb }
+      : ctx.selfData;
+  const canPlay = Boolean(url) && !ctx.isEditing;
+  const play = () => setPlaying(true);
+
+  return React.createElement(
+    tag,
+    canPlay
+      ? {
+          ...dom,
+          role: "button",
+          tabIndex: 0,
+          "aria-label": "Play video",
+          style: { ...dom.style, cursor: "pointer" },
+          onClick: (e: React.MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            play();
+          },
+          onKeyDown: (e: React.KeyboardEvent) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              play();
+            }
+          },
+        }
+      : dom,
+    node.children!.map((child) => (
+      <NodeRenderer
+        key={child.id}
+        node={child}
+        content={coverContent}
+        ctx={{ ...ctx, selfData: coverSelf, isCarouselSlide: false }}
+      />
+    )),
   );
 }
 
@@ -1733,6 +1895,7 @@ function WidgetRenderer({
     // The layout root's own style is compiled onto `.n<widgetId>` instead.
     const layoutClasses = [
       layout.id ? `p-${layout.id}` : "",
+      node.widget ? blockClass(node.widget) : "",
       layout.props?.className || "",
     ]
       .filter(Boolean)

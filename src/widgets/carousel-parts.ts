@@ -51,6 +51,87 @@ export const carouselParts: WidgetPart[] = [
   },
 ];
 
+export const CAROUSEL_PART_COUNTERPARTS: Record<string, string[]> = {
+  // Container / Card
+  item: ["c_item", "carouselItem"],
+  c_item: ["item", "carouselItem"],
+  carouselItem: ["item", "c_item"],
+
+  // Index
+  itemIndex: ["c_itemIndex"],
+  c_itemIndex: ["itemIndex"],
+
+  // Title / Heading / Name
+  itemTitle: ["c_itemTitle", "c_title", "title", "title_1"],
+  c_itemTitle: ["itemTitle", "title", "c_title"],
+  title: ["c_title", "itemTitle", "c_itemTitle", "title_1"],
+  c_title: ["title", "itemTitle", "c_itemTitle"],
+  title_1: ["title", "itemTitle"],
+  name: ["name_1", "c_name"],
+  name_1: ["name", "c_name"],
+  c_name: ["name", "name_1"],
+
+  // Description / Caption / Bio
+  itemDesc: ["c_itemDesc", "description", "c_description", "caption", "caption_1"],
+  c_itemDesc: ["itemDesc", "description", "c_description", "caption", "caption_1"],
+  description: ["c_description", "itemDesc", "c_itemDesc"],
+  c_description: ["description", "itemDesc", "c_itemDesc"],
+  caption: ["caption_1", "c_caption", "c_itemDesc", "itemDesc"],
+  caption_1: ["caption", "c_caption", "c_itemDesc", "itemDesc"],
+  c_caption: ["caption", "caption_1", "itemDesc", "c_itemDesc"],
+  bio: ["bio_1", "c_bio"],
+  bio_1: ["bio", "c_bio"],
+  c_bio: ["bio", "bio_1"],
+
+  // Media / Image / Thumbnail / Photo
+  itemMedia: ["c_media", "image", "image_1", "thumbnail", "c_thumbnail"],
+  c_media: ["itemMedia", "image", "image_1", "thumbnail", "c_thumbnail"],
+  image: ["image_1", "c_media", "itemMedia", "thumbnail", "c_thumbnail"],
+  image_1: ["image", "c_media", "itemMedia"],
+  thumbnail: ["c_thumbnail", "image", "itemMedia"],
+  c_thumbnail: ["thumbnail", "image", "itemMedia"],
+
+  // Price
+  itemPrice: ["c_itemPrice", "price", "c_price"],
+  c_itemPrice: ["itemPrice", "price", "c_price"],
+  price: ["c_price", "itemPrice", "c_itemPrice"],
+  c_price: ["price", "itemPrice", "c_itemPrice"],
+
+  // Link
+  itemLink: ["c_itemLink"],
+  c_itemLink: ["itemLink"],
+
+  // Quote
+  quote: ["c_quote"],
+  c_quote: ["quote"],
+
+  // Avatar
+  avatar: ["c_avatar", "image"],
+  c_avatar: ["avatar", "image"],
+
+  // Author
+  author: ["c_author"],
+  c_author: ["author"],
+
+  // Role
+  role: ["role_1", "c_role"],
+  role_1: ["role", "c_role"],
+  c_role: ["role", "role_1"],
+
+  // Video
+  video: ["c_video"],
+  c_video: ["video"],
+
+  // Layout Sub-containers
+  content: ["info", "c_content"],
+  info: ["content", "c_content"],
+  c_content: ["content", "info"],
+  titleRow: ["c_titleRow"],
+  c_titleRow: ["titleRow"],
+  dots: ["c_line"],
+  c_line: ["dots"],
+};
+
 export function getCarouselDesignSchema(dotsKey = "showDots"): any[] {
   return [
     {
@@ -71,10 +152,14 @@ export function getCarouselDesignSchema(dotsKey = "showDots"): any[] {
       label: "Slides Per View",
       visibleIf: { key: "useCarousel", equals: true },
       options: [
-        { value: "1.25", label: "1 (with peek)" },
-        { value: "2.25", label: "2 (with peek)" },
         { value: "1", label: "1 (Full)" },
+        { value: "1.2", label: "1.2 (Peek)" },
+        { value: "1.25", label: "1.25 (with peek)" },
+        { value: "1.5", label: "1.5 (Peek)" },
         { value: "2", label: "2 (Full)" },
+        { value: "2.2", label: "2.2 (Peek)" },
+        { value: "2.25", label: "2.25 (with peek)" },
+        { value: "2.5", label: "2.5 (Peek)" },
         { value: "3", label: "3 (Full)" },
       ],
     },

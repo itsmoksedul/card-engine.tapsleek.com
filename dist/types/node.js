@@ -23,7 +23,8 @@ exports.walkTreeOrder = walkTreeOrder;
 exports.findNode = findNode;
 exports.countNodes = countNodes;
 exports.maxDepth = maxDepth;
-exports.CONTAINER_TAGS = ['frame', 'stack', 'grid', 'link', 'carousel', 'carousel-root'];
+// `video` holds its click-to-play cover layers (thumbnail, play button…).
+exports.CONTAINER_TAGS = ['frame', 'stack', 'grid', 'link', 'carousel', 'carousel-root', 'video'];
 exports.VOID_TAGS = [
     'heading',
     'text',
@@ -34,7 +35,6 @@ exports.VOID_TAGS = [
     'divider',
     'spacer',
     'embed',
-    'video',
 ];
 exports.CARD_FIELDS = [
     'fullName',

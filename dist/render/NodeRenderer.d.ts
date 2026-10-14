@@ -52,6 +52,8 @@ export declare const CarouselContext: React.Context<{
     scrollTo?: (idx: number) => void;
     dragProps?: Record<string, any>;
 } | null>;
+/** YouTube's own thumbnail for a video URL, or "" for anything else. */
+export declare function videoThumbnailUrl(url: string): string;
 /**
  * Structure comes from the widget's code, not the stored copy: the builder
  * never edits a layout node's tag/binding, so a stored layout only diverges

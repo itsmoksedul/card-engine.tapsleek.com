@@ -23,7 +23,11 @@ export type StyleValue = string | number;
  *     *below* its threshold via a `max-width` media query.
  */
 export type Breakpoint = "base" | "sm" | "md";
-export type StyleState = "hover" | "active" | "focus";
+/**
+ * `first` / `last` style the first / last item of a list (a repeated item or
+ * any child) — e.g. drop the top border of the first row.
+ */
+export type StyleState = "first" | "last" | "hover" | "active" | "focus";
 /** Breakpoint max-widths, in px. `base` (Desktop) is unconditional. */
 export declare const BREAKPOINTS: Record<Exclude<Breakpoint, "base">, number>;
 /**
@@ -36,6 +40,13 @@ export declare const BREAKPOINT_ORDER: Breakpoint[];
 export declare const BREAKPOINT_MEDIA: Record<Exclude<Breakpoint, "base">, string>;
 export declare const BREAKPOINT_KEYS: Breakpoint[];
 export declare const STATE_KEYS: StyleState[];
+/**
+ * The selector for a state layer. Handles comma-separated selector lists.
+ * first/last also match the `is-first`/`is-last` classes the renderer puts on
+ * repeated items, which work even when the list shares its parent with other
+ * layers.
+ */
+export declare function stateSelector(selector: string, state: StyleState): string;
 /** Per-side box value. Omitted sides are simply not emitted. */
 export interface Box4 {
     t?: StyleValue;
@@ -189,6 +200,8 @@ export interface StyleSet {
     base?: StyleProps;
     sm?: StyleProps;
     md?: StyleProps;
+    first?: StyleProps;
+    last?: StyleProps;
     hover?: StyleProps;
     active?: StyleProps;
     focus?: StyleProps;

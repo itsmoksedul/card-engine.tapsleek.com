@@ -57,7 +57,7 @@ function validateStyleSet(set, path, issues) {
         if (!STYLE_SET_KEYS.has(key)) {
             issues.push({
                 path: `${path}.${key}`,
-                message: `unknown style layer "${key}" (expected base | sm | md | hover | active | focus)`,
+                message: `unknown style layer "${key}" (expected base | sm | md | first | last | hover | active | focus)`,
             });
             continue;
         }

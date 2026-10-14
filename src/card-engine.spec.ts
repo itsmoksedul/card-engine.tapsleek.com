@@ -228,7 +228,11 @@ describe("compileCss", () => {
   it("emits widget part styles and their hover state", () => {
     const { css } = compileCss(fixture());
     expect(css).toContain(".ts-card .nsvc .p-item");
+    expect(css).toContain(".ts-card .nsvc .p-c_item");
+    expect(css).toContain(".ts-card .nsvc .p-carouselItem");
     expect(css).toContain(".ts-card .nsvc .p-item:hover");
+    expect(css).toContain(".ts-card .nsvc .p-c_item:hover");
+    expect(css).toContain(".ts-card .nsvc .p-carouselItem:hover");
     expect(css).toContain("translate(0, -2px)");
   });
 

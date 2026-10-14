@@ -26,7 +26,11 @@ export type StyleValue = string | number;
  *     *below* its threshold via a `max-width` media query.
  */
 export type Breakpoint = "base" | "sm" | "md";
-export type StyleState = "hover" | "active" | "focus";
+/**
+ * `first` / `last` style the first / last item of a list (a repeated item or
+ * any child) — e.g. drop the top border of the first row.
+ */
+export type StyleState = "first" | "last" | "hover" | "active" | "focus";
 
 /** Breakpoint max-widths, in px. `base` (Desktop) is unconditional. */
 export const BREAKPOINTS: Record<Exclude<Breakpoint, "base">, number> = {
@@ -48,7 +52,29 @@ export const BREAKPOINT_MEDIA: Record<Exclude<Breakpoint, "base">, string> = {
 };
 
 export const BREAKPOINT_KEYS: Breakpoint[] = ["base", "sm", "md"];
-export const STATE_KEYS: StyleState[] = ["hover", "active", "focus"];
+// first/last are emitted before the interaction states so hover still wins.
+export const STATE_KEYS: StyleState[] = ["first", "last", "hover", "active", "focus"];
+
+/**
+ * The selector for a state layer. Handles comma-separated selector lists.
+ * first/last also match the `is-first`/`is-last` classes the renderer puts on
+ * repeated items, which work even when the list shares its parent with other
+ * layers.
+ */
+export function stateSelector(selector: string, state: StyleState): string {
+  return selector
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .flatMap((s) =>
+      state === "first"
+        ? [`${s}:first-child`, `${s}.is-first`]
+        : state === "last"
+          ? [`${s}:last-child`, `${s}.is-last`]
+          : [`${s}:${state}`],
+    )
+    .join(", ");
+}
 
 // ─── Composite value shapes ──────────────────────────────────────────────────
 
@@ -236,6 +262,8 @@ export interface StyleSet {
   base?: StyleProps;
   sm?: StyleProps;
   md?: StyleProps;
+  first?: StyleProps;
+  last?: StyleProps;
   hover?: StyleProps;
   active?: StyleProps;
   focus?: StyleProps;
