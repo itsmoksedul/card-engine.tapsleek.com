@@ -475,7 +475,10 @@ export function compileCss(
 
   out.push(`@layer ts-template{${nl}${body.filter(Boolean).join(nl)}${nl}}`);
 
-  const css = out.filter(Boolean).join(nl);
+  // This text goes inside a <style> element. Ids / values that reach it can
+  // come from card JSON, so a raw `<` could form `</style>` and break out into
+  // the page. `\3C ` is the same character to CSS.
+  const css = out.filter(Boolean).join(nl).replace(/</g, "\\3C ");
 
   return {
     css,

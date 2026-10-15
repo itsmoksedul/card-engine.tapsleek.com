@@ -1104,7 +1104,9 @@ function ElementRenderer({
           ? "100%"
           : `calc((100% - ${(perView - 1) * gapPx}px) / ${perView})`;
 
-      const trackId = `ts-track-${node.id}`;
+      // Goes into <style> text below — keep it to identifier chars so a
+      // crafted id in card JSON can't close the element.
+      const trackId = `ts-track-${String(node.id).replace(/[^A-Za-z0-9_-]/g, "_")}`;
 
       // A carousel slide mirrors the list item's design by default, so a
       // widget looks the same with the carousel on or off. The slide only
