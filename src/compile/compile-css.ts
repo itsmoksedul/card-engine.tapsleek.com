@@ -299,9 +299,12 @@ export function compileCss(
   // ── 3.5 Block presets (v2.1) ───────────────────────────────────────────
   // Per widget TYPE, so any block a user composes is styled by this template.
   if (options.emitBlockPresets) {
+    // "all" = every registry type PLUS every type the template places: a
+    // template can carry a widget this engine build doesn't know yet (newer
+    // admin, older app), and its blocks must still get the template's styles.
     const types =
       options.emitBlockPresets === "all"
-        ? WIDGET_TYPES
+        ? [...new Set([...WIDGET_TYPES, ...templateWidgetTypes(def)])]
         : templateWidgetTypes(def);
     for (const type of types) {
       const { partStyles, layout, rootStyle, rootHidden } = resolveBlockDesign(def, type);
