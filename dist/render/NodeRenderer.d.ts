@@ -30,6 +30,8 @@ export interface RenderCtx {
     customBlockSourceIds?: Set<string>;
     isCarouselSlide?: boolean;
     carouselPerView?: number;
+    /** The layout of the widget being rendered (for carousel ↔ list linking). */
+    widgetLayout?: ElementNode;
 }
 export interface NodeRendererProps {
     node: Node;

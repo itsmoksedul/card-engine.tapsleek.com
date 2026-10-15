@@ -553,7 +553,7 @@ function CarouselProvider({ node, content, ctx, dom }) {
         };
     }, [autoplay, autoplayDelay, ctx.isEditing, scrollNext]);
     const kids = (node.children ?? []).map((child) => ((0, jsx_runtime_1.jsx)(NodeRenderer, { node: child, content: content, ctx: ctx }, child.id)));
-    return ((0, jsx_runtime_1.jsx)(exports.CarouselContext.Provider, { value: {
+    return ((0, jsx_runtime_1.jsxs)(exports.CarouselContext.Provider, { value: {
             viewportRef,
             trackRef,
             scrollNext,
@@ -567,7 +567,9 @@ function CarouselProvider({ node, content, ctx, dom }) {
             perView,
             originalSlideCount,
             dragProps,
-        }, children: (0, jsx_runtime_1.jsx)("div", { ...dom, children: kids }) }));
+        }, children: [(0, jsx_runtime_1.jsx)("style", { dangerouslySetInnerHTML: {
+                    __html: ":where(.ts-carousel-root){width:100%;max-width:100%;min-width:0;box-sizing:border-box}",
+                } }), (0, jsx_runtime_1.jsx)("div", { ...dom, className: `${dom.className ?? ""} ts-carousel-root`, children: kids })] }));
 }
 // ─── Elements ────────────────────────────────────────────────────────────────
 const TAG_MAP = {
@@ -616,7 +618,48 @@ const ENGINE_PROPS = new Set([
     "loop",
     "prefix",
     "suffix",
+    "carouselOwnDesign",
 ]);
+/**
+ * The list (non-carousel) item that repeats over the same data as a carousel
+ * slide — matched by its repeat binding, not by id, because the builder gives
+ * widget layers fresh ids.
+ */
+function findListTwin(layout, slide) {
+    if (!layout || !slide.repeat)
+        return null;
+    const want = JSON.stringify(slide.repeat);
+    let found = null;
+    const walk = (n) => {
+        if (found || n.kind !== "element")
+            return;
+        // Skip the whole carousel side — by tag AND by "only shown with the
+        // carousel on", since a template may build it from plain frames. Its
+        // pagination dots repeat over the same items and must never be picked.
+        if (n.tag === "carousel-root" ||
+            n.tag === "carousel" ||
+            (n.visibleIf?.key === "useCarousel" && n.visibleIf.equals === true))
+            return;
+        const props = (n.props ?? {});
+        if (n !== slide &&
+            n.id !== slide.id &&
+            n.repeat &&
+            JSON.stringify(n.repeat) === want &&
+            // A real item card (has layers), not a dot/button.
+            !props.action &&
+            (n.children?.length ?? 0) > 0) {
+            found = n;
+            return;
+        }
+        n.children?.forEach(walk);
+    };
+    walk(layout);
+    if (!found)
+        return null;
+    const twin = found;
+    // It lives under the list's `visibleIf: useCarousel=false` — not its own.
+    return { ...twin, visibleIf: undefined };
+}
 /**
  * The only `node.props` keys that reach the DOM (plus `data-*` / `aria-*`).
  *
@@ -843,7 +886,15 @@ function ElementRenderer({ node, content, ctx, }) {
                 ? "100%"
                 : `calc((100% - ${(perView - 1) * gapPx}px) / ${perView})`;
             const trackId = `ts-track-${node.id}`;
-            const rawChildren = node.children ?? [];
+            // A carousel slide mirrors the list item's design by default, so a
+            // widget looks the same with the carousel on or off. The slide only
+            // uses its own layers once the admin turns on "own design".
+            const rawChildren = (node.children ?? []).map((c) => c.kind === "element" &&
+                c.repeat &&
+                c.props?.carouselOwnDesign !==
+                    true
+                ? (findListTwin(ctx.widgetLayout, c) ?? c)
+                : c);
             const hasRepeatChild = rawChildren.some((c) => c.kind === "element" && Boolean(c.repeat));
             const isStaticLoop = !hasRepeatChild &&
                 Boolean(ctxCarousel?.loop) &&
@@ -1534,7 +1585,7 @@ function WidgetRenderer({ node, content, ctx, }) {
                 ...(content ?? {}),
                 [node.key]: widgetContent,
                 _design: { ...(node.design || {}), ...(widgetContent || {}) },
-            }, ctx: { ...widgetCtx, selfData: widgetContent } }));
+            }, ctx: { ...widgetCtx, selfData: widgetContent, widgetLayout: layout } }));
         // "Inject before" placeholders are handled by the parent element's child
         // loop; doing it here too rendered every user block twice.
         return renderedLayout;

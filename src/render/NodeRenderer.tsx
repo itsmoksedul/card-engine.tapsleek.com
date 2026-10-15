@@ -44,6 +44,8 @@ export interface RenderCtx {
   customBlockSourceIds?: Set<string>;
   isCarouselSlide?: boolean;
   carouselPerView?: number;
+  /** The layout of the widget being rendered (for carousel ↔ list linking). */
+  widgetLayout?: ElementNode;
 }
 
 export interface NodeRendererProps {
@@ -688,7 +690,19 @@ function CarouselProvider({ node, content, ctx, dom }: any) {
         dragProps,
       }}
     >
-      <div {...dom}>{kids}</div>
+      {/* Keep the carousel inside its parent. In a flex column with
+          `align-items: center` an auto-width container grew to the whole row
+          of slides, spilling out of the widget and breaking slides-per-view.
+          :where() = zero specificity, so a width the admin sets still wins. */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html:
+            ":where(.ts-carousel-root){width:100%;max-width:100%;min-width:0;box-sizing:border-box}",
+        }}
+      />
+      <div {...dom} className={`${dom.className ?? ""} ts-carousel-root`}>
+        {kids}
+      </div>
     </CarouselContext.Provider>
   );
 }
@@ -743,7 +757,53 @@ const ENGINE_PROPS = new Set([
   "loop",
   "prefix",
   "suffix",
+  "carouselOwnDesign",
 ]);
+
+/**
+ * The list (non-carousel) item that repeats over the same data as a carousel
+ * slide — matched by its repeat binding, not by id, because the builder gives
+ * widget layers fresh ids.
+ */
+function findListTwin(
+  layout: ElementNode | undefined,
+  slide: ElementNode,
+): ElementNode | null {
+  if (!layout || !slide.repeat) return null;
+  const want = JSON.stringify(slide.repeat);
+  let found: ElementNode | null = null;
+  const walk = (n: Node) => {
+    if (found || n.kind !== "element") return;
+    // Skip the whole carousel side — by tag AND by "only shown with the
+    // carousel on", since a template may build it from plain frames. Its
+    // pagination dots repeat over the same items and must never be picked.
+    if (
+      n.tag === "carousel-root" ||
+      n.tag === "carousel" ||
+      (n.visibleIf?.key === "useCarousel" && n.visibleIf.equals === true)
+    )
+      return;
+    const props = (n.props ?? {}) as Record<string, unknown>;
+    if (
+      n !== slide &&
+      n.id !== slide.id &&
+      n.repeat &&
+      JSON.stringify(n.repeat) === want &&
+      // A real item card (has layers), not a dot/button.
+      !props.action &&
+      (n.children?.length ?? 0) > 0
+    ) {
+      found = n;
+      return;
+    }
+    n.children?.forEach(walk);
+  };
+  walk(layout);
+  if (!found) return null;
+  const twin = found as ElementNode;
+  // It lives under the list's `visibleIf: useCarousel=false` — not its own.
+  return { ...twin, visibleIf: undefined };
+}
 
 /**
  * The only `node.props` keys that reach the DOM (plus `data-*` / `aria-*`).
@@ -1046,7 +1106,17 @@ function ElementRenderer({
 
       const trackId = `ts-track-${node.id}`;
 
-      const rawChildren = node.children ?? [];
+      // A carousel slide mirrors the list item's design by default, so a
+      // widget looks the same with the carousel on or off. The slide only
+      // uses its own layers once the admin turns on "own design".
+      const rawChildren = (node.children ?? []).map((c) =>
+        c.kind === "element" &&
+        c.repeat &&
+        (c.props as Record<string, unknown> | undefined)?.carouselOwnDesign !==
+          true
+          ? (findListTwin(ctx.widgetLayout, c) ?? c)
+          : c,
+      );
       const hasRepeatChild = rawChildren.some(
         (c) => c.kind === "element" && Boolean((c as any).repeat),
       );
@@ -1954,7 +2024,7 @@ function WidgetRenderer({
           [node.key]: widgetContent,
           _design: { ...(node.design || {}), ...(widgetContent || {}) },
         }}
-        ctx={{ ...widgetCtx, selfData: widgetContent }}
+        ctx={{ ...widgetCtx, selfData: widgetContent, widgetLayout: layout }}
       />
     );
 
