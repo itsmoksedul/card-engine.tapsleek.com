@@ -203,6 +203,68 @@ export function CardRenderer({
     };
   }, [anchoring, placeholder, activeBlocks]);
 
+  /**
+   * The template tree with its block sections in the USER's order. Each block
+   * renders in its designed section (frame, background…), but the sections
+   * holding blocks swap places to follow the order the user set — the card
+   * isn't stuck in the template's order. Sections without blocks (hero,
+   * socials, footer) and any section with a card-data widget (profile,
+   * links…) stay where the admin put them. Applied at every level, so blocks
+   * grouped inside one wrapper frame reorder too.
+   */
+  const orderedRoot = React.useMemo(() => {
+    if (!spots.byNode && !spots.loose.length) return definition.root;
+    const order = new Map(activeBlocks.map((b, i) => [b.id, i]));
+    const rankOf = new Map<string, number>();
+    for (const [nodeId, list] of spots.byNode ?? []) {
+      rankOf.set(
+        nodeId,
+        Math.min(...list.map((b) => order.get(b.id) ?? Infinity)),
+      );
+    }
+    if (spots.placeholder && spots.loose.length) {
+      const loose = Math.min(
+        ...spots.loose.map((b) => order.get(b.id) ?? Infinity),
+      );
+      rankOf.set(
+        spots.placeholder.id,
+        Math.min(rankOf.get(spots.placeholder.id) ?? Infinity, loose),
+      );
+    }
+    if (!rankOf.size) return definition.root;
+
+    const rank = (n: any): number => {
+      if (!n) return Infinity;
+      let r = rankOf.get(n.id) ?? Infinity;
+      if (n.kind === 'element') {
+        for (const c of n.children ?? []) r = Math.min(r, rank(c));
+      }
+      return r;
+    };
+    const hasCoreWidget = (n: any): boolean =>
+      !!n &&
+      ((isWidget(n) &&
+        isCoreWidget(normalizeWidgetType(n.widget || '').toUpperCase())) ||
+        (n.kind === 'element' && (n.children ?? []).some(hasCoreWidget)));
+
+    const reorder = (n: any): any => {
+      if (!n || n.kind !== 'element' || !n.children?.length) return n;
+      const kids = n.children.map(reorder);
+      const movable = kids.map(
+        (c: any) => Number.isFinite(rank(c)) && !hasCoreWidget(c),
+      );
+      const sorted = kids
+        .filter((_: any, i: number) => movable[i])
+        .sort((a: any, b: any) => rank(a) - rank(b));
+      let k = 0;
+      const children = kids.map((c: any, i: number) =>
+        movable[i] ? sorted[k++] : c,
+      );
+      return { ...n, children };
+    };
+    return reorder(definition.root);
+  }, [definition.root, spots, activeBlocks]);
+
   // Section frames left empty once unused widgets are hidden (blank boxes).
   const collapsedIds = React.useMemo(
     () =>
@@ -280,7 +342,7 @@ export function CardRenderer({
   // ── Template design render (admin preview / public page from the tree) ──
   return (
     <div className="ts-card" style={themeRootStyle(theme)}>
-      <NodeRenderer node={definition.root} content={content} ctx={ctx} />
+      <NodeRenderer node={orderedRoot} content={content} ctx={ctx} />
 
       {definition.popups?.map((popup) => (
         <div key={popup.key} className="ts-popup" hidden>

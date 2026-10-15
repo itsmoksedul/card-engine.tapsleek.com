@@ -68,6 +68,7 @@ const Divider = __importStar(require("./divider"));
 const Embed = __importStar(require("./embed"));
 const Faq = __importStar(require("./faq"));
 const FeatureGrid = __importStar(require("./feature-grid"));
+const FileDownload = __importStar(require("./file-download"));
 const Gallery = __importStar(require("./gallery"));
 const Icon = __importStar(require("./icon"));
 const IconBox = __importStar(require("./icon-box"));
@@ -107,6 +108,7 @@ const MODULES = [
     Gallery,
     MapWidget,
     CtaButton,
+    FileDownload,
     Embed,
     Spacer,
 ];

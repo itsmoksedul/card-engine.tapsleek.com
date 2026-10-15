@@ -30,6 +30,7 @@ import * as Divider from "./divider";
 import * as Embed from "./embed";
 import * as Faq from "./faq";
 import * as FeatureGrid from "./feature-grid";
+import * as FileDownload from "./file-download";
 import * as Gallery from "./gallery";
 import * as Icon from "./icon";
 import * as IconBox from "./icon-box";
@@ -77,6 +78,7 @@ const MODULES: RegisteredWidget[] = [
   Gallery,
   MapWidget,
   CtaButton,
+  FileDownload,
   Embed,
   Spacer,
 ] as RegisteredWidget[];
