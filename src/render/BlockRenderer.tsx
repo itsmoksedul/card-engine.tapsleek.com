@@ -136,7 +136,9 @@ export function BlockRenderer({
       <NodeRenderer
         node={blockLayout}
         content={{ [block.id]: content, _design: mergedDesign }}
-        ctx={{ ...ctx, selfData: content }}
+        // widgetLayout lets carousel slides mirror the list item, exactly as
+        // the template widget does in the builder.
+        ctx={{ ...ctx, selfData: content, widgetLayout: layout as ElementNode }}
       />
     );
   }

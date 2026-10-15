@@ -96,7 +96,10 @@ function BlockRenderer({ definition, block, ctx, }) {
                 ...(ctx.isEditing ? { "data-block-id": block.id } : {}),
             },
         };
-        return ((0, jsx_runtime_1.jsx)(NodeRenderer_1.NodeRenderer, { node: blockLayout, content: { [block.id]: content, _design: mergedDesign }, ctx: { ...ctx, selfData: content } }));
+        return ((0, jsx_runtime_1.jsx)(NodeRenderer_1.NodeRenderer, { node: blockLayout, content: { [block.id]: content, _design: mergedDesign }, 
+            // widgetLayout lets carousel slides mirror the list item, exactly as
+            // the template widget does in the builder.
+            ctx: { ...ctx, selfData: content, widgetLayout: layout } }));
     }
     // 2. Specialized Widget renderer fallback ONLY if no layout exists
     const Widget = widgets_1.WIDGET_RENDERERS[widgetType];
