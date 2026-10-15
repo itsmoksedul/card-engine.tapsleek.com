@@ -1,0 +1,12 @@
+{
+  // ES-module build for browser bundlers (the s1 preview runtime). Only
+  // reachable through the custom "tapsleek-esm" export condition, so every
+  // existing consumer keeps resolving the CommonJS build in dist/.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "declaration": false,
+    "outDir": "./dist-esm"
+  }
+}

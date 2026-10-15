@@ -9,6 +9,7 @@
   },
   "files": [
     "dist",
+    "dist-esm",
     "README.md"
   ],
   "main": "dist/index.js",
@@ -16,6 +17,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "tapsleek-esm": "./dist-esm/index.js",
       "default": "./dist/index.js"
     },
     "./dist/*": {
@@ -28,7 +30,7 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc -p tsconfig.esm.json",
     "prepublishOnly": "npm run build",
     "dev": "tsc --watch",
     "test": "npx tsx scripts/run-spec.ts"

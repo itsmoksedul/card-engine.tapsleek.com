@@ -225,27 +225,46 @@ function seedBlocksFromTemplate(def) {
         return [];
     const candidateBlocks = [];
     const seenTypes = new Set();
-    // a) Custom blocks defined on the template
-    if (Array.isArray(def.customBlocks)) {
-        for (const cb of def.customBlocks) {
-            if (cb.hidden)
-                continue;
-            const typeKey = (cb.id || '').toUpperCase();
-            if (typeKey && !seenTypes.has(typeKey)) {
-                seenTypes.add(typeKey);
-                candidateBlocks.push({
-                    type: cb.id,
-                    title: cb.label || 'Custom Block',
-                    content: JSON.parse(JSON.stringify(cb.defaultContent ?? {})),
-                });
-            }
-        }
-    }
-    // b) Content widgets in def.root (walk in tree order)
+    // Only what the template actually PLACES becomes a starter block, in tree
+    // order (so the new card reads like the template):
+    //  - a custom block whose source layer group is in the tree (or a widget
+    //    node of its id). Custom blocks defined on the template but no longer
+    //    placed anywhere used to be seeded too — extra blocks on every new card;
+    //  - a content widget placed directly in the tree. Widgets INSIDE a custom
+    //    block's source (e.g. the Title + Description an "About Me" block is
+    //    built from) are its parts, not blocks — seeding them duplicated it;
+    //  - nothing from inside a widget's own layout (those are its parts too).
+    const customBlocks = (Array.isArray(def.customBlocks) ? def.customBlocks : [])
+        .filter((cb) => !cb.hidden);
+    const customById = new Map(customBlocks.map((cb) => [cb.id, cb]));
+    const customBySource = new Map(customBlocks
+        .filter((cb) => cb.sourceNodeId && !cb.libraryId)
+        .map((cb) => [cb.sourceNodeId, cb]));
+    const pushCustom = (cb) => {
+        const typeKey = (cb.id || '').toUpperCase();
+        if (!typeKey || seenTypes.has(typeKey))
+            return;
+        seenTypes.add(typeKey);
+        candidateBlocks.push({
+            type: cb.id,
+            title: cb.label || 'Custom Block',
+            content: JSON.parse(JSON.stringify(cb.defaultContent ?? {})),
+        });
+    };
     const walkWidgets = (node) => {
         if (!node)
             return;
+        const source = node.id ? customBySource.get(node.id) : undefined;
+        if (source) {
+            pushCustom(source);
+            return; // its widgets are parts of the custom block
+        }
         if (node.kind === 'widget' && node.widget) {
+            const placedCustom = customById.get(node.widget);
+            if (placedCustom) {
+                pushCustom(placedCustom);
+                return;
+            }
             const wUpper = String(node.widget).toUpperCase();
             if (!CORE_WIDGETS.has(wUpper) &&
                 !EXCLUDED_BLOCKS.has(wUpper) &&
@@ -266,13 +285,11 @@ function seedBlocksFromTemplate(def) {
                     content: JSON.parse(JSON.stringify(widgetContent ?? {})),
                 });
             }
+            return; // never descend into a widget's own layout
         }
         if (Array.isArray(node.children)) {
             for (const child of node.children)
                 walkWidgets(child);
-        }
-        if (node.layout) {
-            walkWidgets(node.layout);
         }
     };
     if (def.root) {

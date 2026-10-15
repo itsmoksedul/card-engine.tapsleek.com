@@ -812,6 +812,17 @@ describe("seedBlocksFromTemplate", () => {
       widget: "PROFILE",
       key: "profile",
     } as WidgetNode);
+    // The custom block's source group, placed in the tree, holding widgets
+    // that are its parts (must NOT become blocks of their own).
+    (def.root as ElementNode).children!.push({
+      id: "specials_src",
+      kind: "element",
+      tag: "frame",
+      children: [
+        { id: "t1", kind: "widget", widget: "TITLE", key: "t1" } as WidgetNode,
+        { id: "d1", kind: "widget", widget: "DESCRIPTION", key: "d1" } as WidgetNode,
+      ],
+    } as ElementNode);
     (def.root as ElementNode).children!.push({
       id: "srv",
       kind: "widget",
@@ -824,9 +835,17 @@ describe("seedBlocksFromTemplate", () => {
       {
         id: "cb_specials",
         label: "Weekly Specials",
+        sourceNodeId: "specials_src",
         defaultContent: { headline: "50% off" },
       },
-    ];
+      // Defined on the template but placed nowhere — not a starter block.
+      {
+        id: "cb_orphan",
+        label: "Orphan",
+        sourceNodeId: "gone",
+        defaultContent: {},
+      },
+    ] as any;
 
     const blocks = seedBlocksFromTemplate(def);
     expect(blocks.length).toBe(2);
