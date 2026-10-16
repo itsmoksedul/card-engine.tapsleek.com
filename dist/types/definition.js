@@ -133,7 +133,7 @@ function humanizeToken(name) {
 }
 /**
  * The colours a card owner may change for this template, in the order the
- * template designer listed them, with the designer's labels. Shared by the
+ * template designer arranged them (builder drag order), with their labels. Shared by the
  * web and mobile card editors so both show the same list.
  *
  * Templates that never chose any fall back to the classic four.
@@ -145,7 +145,10 @@ function editableThemeColors(def) {
     const chosen = Array.isArray(d.settings?.allowTokenOverride)
         ? d.settings.allowTokenOverride.filter((n) => typeof table[n] === "string")
         : [];
-    const names = chosen.length ? chosen : LEGACY_THEME_COLORS;
+    // In the order the designer arranged the colours in the builder.
+    const names = chosen.length
+        ? Object.keys(table).filter((n) => chosen.includes(n))
+        : LEGACY_THEME_COLORS;
     return names.map((name) => ({
         name,
         label: (typeof labels[name] === "string" && labels[name].trim()) ||

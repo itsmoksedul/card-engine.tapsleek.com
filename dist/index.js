@@ -40,3 +40,4 @@ __exportStar(require("./render/BlockRenderer"), exports);
 __exportStar(require("./render/resolveBinding"), exports);
 __exportStar(require("./render/widgets/icon-helper"), exports);
 __exportStar(require("./render/svg-colors"), exports);
+__exportStar(require("./render/text-gradient"), exports);

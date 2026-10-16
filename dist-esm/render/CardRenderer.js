@@ -6,6 +6,7 @@ import { normalizeWidgetType } from '../widgets/registry';
 import { BlockRenderer } from './BlockRenderer';
 import { collectCollapsedIds, isCoreWidget } from './card-visibility';
 import { NodeRenderer } from './NodeRenderer';
+import { TextGradientDefs } from './text-gradient';
 export function CardRenderer({ definition, content, card, links, isEditing, gatedWidgetKeys, onTrack, onActionClick, blocks, theme, showPlaceholders, }) {
     const effectiveShowPlaceholders = Boolean(showPlaceholders ?? card?.showPlaceholders ?? isEditing);
     const customBlockSourceIds = React.useMemo(() => {
@@ -266,7 +267,7 @@ export function CardRenderer({ definition, content, card, links, isEditing, gate
         renderUserBlocks: () => renderList(spots.loose),
     };
     // ── Template design render (admin preview / public page from the tree) ──
-    return (_jsxs("div", { className: "ts-card", style: themeRootStyle(theme), children: [_jsx(NodeRenderer, { node: orderedRoot, content: content, ctx: ctx }), definition.popups?.map((popup) => (_jsx("div", { className: "ts-popup", hidden: true, children: _jsx(NodeRenderer, { node: popup.root, content: content, ctx: ctx }) }, popup.key)))] }));
+    return (_jsxs("div", { className: "ts-card", style: themeRootStyle(theme), children: [_jsx(TextGradientDefs, { definition: definition }), _jsx(NodeRenderer, { node: orderedRoot, content: content, ctx: ctx }), definition.popups?.map((popup) => (_jsx("div", { className: "ts-popup", hidden: true, children: _jsx(NodeRenderer, { node: popup.root, content: content, ctx: ctx }) }, popup.key)))] }));
 }
 /**
  * The two Theme knobs that aren't token overrides: font-weight and layout are

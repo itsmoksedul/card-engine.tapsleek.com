@@ -24,3 +24,4 @@ export * from './render/BlockRenderer';
 export * from './render/resolveBinding';
 export * from './render/widgets/icon-helper';
 export * from './render/svg-colors';
+export * from './render/text-gradient';

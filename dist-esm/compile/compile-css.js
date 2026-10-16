@@ -547,6 +547,10 @@ function resetCss(scope, pretty) {
         `.${scope} p,.${scope} h1,.${scope} h2,.${scope} h3,.${scope} h4,.${scope} figure,.${scope} blockquote{margin:0}`,
         `.${scope} ul,.${scope} ol{margin:0;padding:0;list-style:none}`,
         `.${scope} svg{stroke-width:inherit}`,
+        // Gradient colour on icons: a node with a gradient colour sets --ts-paint
+        // (url(#gradient) + solid fallback); everything else keeps currentColor.
+        `.${scope} svg[stroke="currentColor"],.${scope} svg [stroke="currentColor"]{stroke:var(--ts-paint, currentColor)}`,
+        `.${scope} svg[fill="currentColor"],.${scope} svg [fill="currentColor"]{fill:var(--ts-paint, currentColor)}`,
     ];
     return rules.join(nl);
 }

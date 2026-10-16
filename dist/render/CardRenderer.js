@@ -12,6 +12,7 @@ const registry_1 = require("../widgets/registry");
 const BlockRenderer_1 = require("./BlockRenderer");
 const card_visibility_1 = require("./card-visibility");
 const NodeRenderer_1 = require("./NodeRenderer");
+const text_gradient_1 = require("./text-gradient");
 function CardRenderer({ definition, content, card, links, isEditing, gatedWidgetKeys, onTrack, onActionClick, blocks, theme, showPlaceholders, }) {
     const effectiveShowPlaceholders = Boolean(showPlaceholders ?? card?.showPlaceholders ?? isEditing);
     const customBlockSourceIds = react_1.default.useMemo(() => {
@@ -272,7 +273,7 @@ function CardRenderer({ definition, content, card, links, isEditing, gatedWidget
         renderUserBlocks: () => renderList(spots.loose),
     };
     // ── Template design render (admin preview / public page from the tree) ──
-    return ((0, jsx_runtime_1.jsxs)("div", { className: "ts-card", style: themeRootStyle(theme), children: [(0, jsx_runtime_1.jsx)(NodeRenderer_1.NodeRenderer, { node: orderedRoot, content: content, ctx: ctx }), definition.popups?.map((popup) => ((0, jsx_runtime_1.jsx)("div", { className: "ts-popup", hidden: true, children: (0, jsx_runtime_1.jsx)(NodeRenderer_1.NodeRenderer, { node: popup.root, content: content, ctx: ctx }) }, popup.key)))] }));
+    return ((0, jsx_runtime_1.jsxs)("div", { className: "ts-card", style: themeRootStyle(theme), children: [(0, jsx_runtime_1.jsx)(text_gradient_1.TextGradientDefs, { definition: definition }), (0, jsx_runtime_1.jsx)(NodeRenderer_1.NodeRenderer, { node: orderedRoot, content: content, ctx: ctx }), definition.popups?.map((popup) => ((0, jsx_runtime_1.jsx)("div", { className: "ts-popup", hidden: true, children: (0, jsx_runtime_1.jsx)(NodeRenderer_1.NodeRenderer, { node: popup.root, content: content, ctx: ctx }) }, popup.key)))] }));
 }
 /**
  * The two Theme knobs that aren't token overrides: font-weight and layout are

@@ -75,6 +75,14 @@ export interface BorderValue {
         color?: StyleValue;
     }>>;
 }
+export interface TextGradientValue {
+    /** CSS angle in degrees — 90 = left → right, 180 = top → bottom. */
+    angle?: number;
+    stops: {
+        color: StyleValue;
+        at?: StyleValue;
+    }[];
+}
 export type BackgroundValue = {
     kind: "color";
     color: StyleValue;
@@ -172,6 +180,12 @@ export interface StyleProps {
     /** Compiles to the `-webkit-line-clamp` trio. */
     lineClamp?: number;
     color?: StyleValue;
+    /**
+     * Gradient colour for text AND icons: text is painted through
+     * `background-clip:text`, SVG icons (currentColor) through an SVG gradient.
+     * Coexists with `background` (the gradient becomes a text-clipped top layer).
+     */
+    textGradient?: TextGradientValue;
     strokeWidth?: StyleValue;
     background?: BackgroundValue | string;
     border?: BorderValue;

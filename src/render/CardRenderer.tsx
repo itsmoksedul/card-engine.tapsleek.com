@@ -8,6 +8,7 @@ import { normalizeWidgetType } from '../widgets/registry';
 import { BlockRenderer } from './BlockRenderer';
 import { collectCollapsedIds, isCoreWidget } from './card-visibility';
 import { NodeRenderer, type RenderCtx } from './NodeRenderer';
+import { TextGradientDefs } from './text-gradient';
 
 export interface CardRendererProps {
   definition: TemplateDefinition;
@@ -342,6 +343,7 @@ export function CardRenderer({
   // ── Template design render (admin preview / public page from the tree) ──
   return (
     <div className="ts-card" style={themeRootStyle(theme)}>
+      <TextGradientDefs definition={definition} />
       <NodeRenderer node={orderedRoot} content={content} ctx={ctx} />
 
       {definition.popups?.map((popup) => (

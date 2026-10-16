@@ -20,4 +20,19 @@ export declare const ALLOWED_STYLE_PROPS: StylePropKey[];
 export declare function declarationsFor(props: StyleProps | undefined): Decl[];
 /** `[["color","red"]]` → `color:red` */
 export declare function serializeDecls(decls: Decl[], pretty?: boolean): string;
+export interface CompiledTextGradient {
+    /** Stable id of the SVG <linearGradient> that paints icons. */
+    id: string;
+    /** `linear-gradient(...)` for text. */
+    image: string;
+    /** First stop — the solid fallback. */
+    first: string;
+    angle: number;
+    stops: {
+        color: string;
+        offset: string | null;
+    }[];
+}
+/** TextGradientValue → CSS + SVG pieces, or null when it isn't usable. */
+export declare function textGradientCss(v: unknown): CompiledTextGradient | null;
 export {};

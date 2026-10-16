@@ -187,6 +187,9 @@ export const EMITTERS = {
         const c = color(v);
         return c ? [["color", c]] : [];
     },
+    // Emitted together with any background in `declarationsFor` (they share
+    // the background-image property), so nothing is emitted here.
+    textGradient: () => [],
     strokeWidth: (v) => {
         const out = cssValue(v, "length");
         return out ? [["stroke-width", out]] : [];
@@ -281,6 +284,8 @@ export function declarationsFor(props) {
         return [];
     const out = [];
     for (const key of ALLOWED_STYLE_PROPS) {
+        if (key === "textGradient")
+            continue;
         const value = props[key];
         if (value === undefined || value === null || value === "")
             continue;
@@ -300,6 +305,33 @@ export function declarationsFor(props) {
         const onVar = pairedOnColorVar(bg.color);
         if (onVar)
             out.push(["color", `var(${onVar})`]);
+    }
+    // Gradient text / icons. Text: the gradient is a background layer clipped
+    // to the glyphs (an existing background stays underneath as a 2nd layer).
+    // Icons: `--ts-paint` feeds the SVG paint rules in the reset layer.
+    const grad = textGradientCss(p.textGradient);
+    if (grad) {
+        const at = out.findIndex(([k]) => k === "background-image");
+        const layers = [grad.image];
+        const clips = ["text"];
+        if (at >= 0) {
+            layers.push(out[at][1]);
+            clips.push("padding-box");
+            out.splice(at, 1);
+        }
+        else if (out.some(([k]) => k === "background-color")) {
+            // background-color follows the LAST layer's clip — give it a clear
+            // full-box layer so a solid background isn't clipped to the text.
+            layers.push("linear-gradient(transparent, transparent)");
+            clips.push("padding-box");
+        }
+        out.push(["background-image", layers.join(", ")], ["-webkit-background-clip", clips.join(", ")], ["background-clip", clips.join(", ")], ["-webkit-text-fill-color", "transparent"], ["--ts-paint", `url(#${grad.id}) ${grad.first}`]);
+        if (!hasExplicitColor)
+            out.push(["color", grad.first]);
+    }
+    else if (hasExplicitColor && out.some(([k]) => k === "color")) {
+        // A solid colour inside a gradient parent paints solid again.
+        out.push(["-webkit-text-fill-color", "currentColor"], ["--ts-paint", "initial"]);
     }
     // "Fixed" size means fixed: inside a flex row the default flex-shrink:1
     // squeezed a 50×50 frame's width but not its height, breaking its ratio.
@@ -330,4 +362,41 @@ export function serializeDecls(decls, pretty = false) {
     return pretty
         ? decls.map(([p, v]) => `  ${p}: ${v};`).join("\n")
         : decls.map(([p, v]) => `${p}:${v}`).join(";");
+}
+function hashString(s) {
+    let h = 5381;
+    for (let i = 0; i < s.length; i++)
+        h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36);
+}
+/** TextGradientValue → CSS + SVG pieces, or null when it isn't usable. */
+export function textGradientCss(v) {
+    if (!v || typeof v !== "object")
+        return null;
+    const tg = v;
+    if (!Array.isArray(tg.stops))
+        return null;
+    const stops = tg.stops
+        .slice(0, 8)
+        .map((s) => {
+        const c = color(s?.color);
+        if (!c)
+            return null;
+        const at = s?.at !== undefined ? cssValue(s.at, "length") : null;
+        return { color: c, offset: at && /%$/.test(at) ? at : null, at };
+    })
+        .filter((x) => !!x);
+    if (stops.length < 2)
+        return null;
+    const angle = Number.isFinite(tg.angle) ? Math.round(tg.angle) : 90;
+    const image = `linear-gradient(${angle}deg, ${stops
+        .map((s) => (s.at ? `${s.color} ${s.at}` : s.color))
+        .join(", ")})`;
+    return {
+        id: `tsg-${hashString(image)}`,
+        image,
+        first: stops[0].color,
+        angle,
+        stops: stops.map(({ color: c, offset }) => ({ color: c, offset })),
+    };
 }

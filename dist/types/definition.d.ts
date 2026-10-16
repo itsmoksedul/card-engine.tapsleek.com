@@ -143,7 +143,7 @@ export interface EditableThemeColor {
 }
 /**
  * The colours a card owner may change for this template, in the order the
- * template designer listed them, with the designer's labels. Shared by the
+ * template designer arranged them (builder drag order), with their labels. Shared by the
  * web and mobile card editors so both show the same list.
  *
  * Templates that never chose any fall back to the classic four.
