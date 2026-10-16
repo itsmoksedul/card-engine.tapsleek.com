@@ -50,6 +50,15 @@ export function schemaToZod(
   return z.object(shape).strip() as unknown as z.ZodType<Record<string, unknown>>;
 }
 
+/** Free-form values a select may also take, by field key (null: presets only). */
+const RATIO_VALUE_RE = /^(?:\d{1,4}(?:\.\d{1,3})?\/\d{1,4}(?:\.\d{1,3})?|\d{1,2}(?:\.\d{1,3})?)$/;
+const PER_VIEW_VALUE_RE = /^\d{1,2}(?:\.\d{1,2})?$/;
+function customSelectValue(key: string): RegExp | null {
+  if (/ratio/i.test(key)) return RATIO_VALUE_RE;
+  if (/per_?view/i.test(key)) return PER_VIEW_VALUE_RE;
+  return null;
+}
+
 function fieldToZod(field: FieldSchema, options: SchemaToZodOptions): z.ZodTypeAny {
   switch (field.type) {
     case 'text':
@@ -100,9 +109,16 @@ function fieldToZod(field: FieldSchema, options: SchemaToZodOptions): z.ZodTypeA
 
     case 'select': {
       const values = field.options.map((o) => String(o.value));
-      const one = z.coerce.string().refine((v) => values.includes(v), {
-        message: `must be one of: ${values.join(', ')}`,
-      });
+      // The builder lets admins type their own aspect ratio ("5/4", "1.25")
+      // and slides-per-view ("2.5") next to the preset options.
+      const custom = customSelectValue(field.key);
+      const one = z.coerce
+        .string()
+        .refine((v) => values.includes(v) || (custom !== null && custom.test(v)), {
+          message: custom
+            ? `must be one of: ${values.join(', ')} or a custom value`
+            : `must be one of: ${values.join(', ')}`,
+        });
       return field.multiple ? z.array(one).max(values.length) : one;
     }
 
