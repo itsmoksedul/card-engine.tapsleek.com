@@ -2,7 +2,9 @@ import { jsx as _jsx } from "react/jsx-runtime";
 import * as LucideIcons from "lucide-react";
 import { FaLinkedin } from "react-icons/fa";
 import { linkDef } from "../../catalog/links";
+import { useId } from "react";
 import { sanitizeHtml } from "../sanitize";
+import { recolorSvg } from "../svg-colors";
 import { SiAnthropic, SiApplemusic, SiApplepodcasts, SiAppstore, SiArtstation, SiAudiomack, SiBandcamp, SiBehance, SiBinance, SiBitbucket, SiBluesky, SiBox, SiBuymeacoffee, SiCalendly, SiCashapp, SiCoinbase, SiCrunchbase, SiDeezer, SiDevdotto, SiDiscord, SiDocker, SiDribbble, SiDropbox, SiEtsy, SiFacebook, SiFigma, SiFiverr, SiFlickr, SiFramer, SiFreelancer, SiG2, SiGhost, SiGithub, SiGithubsponsors, SiGitlab, SiGofundme, SiGoogle, SiGooglechat, SiGoogledocs, SiGoogledrive, SiGooglemaps, SiGooglemeet, SiGoogleplay, SiGooglesheets, SiGoogleslides, SiGumroad, SiHashnode, SiHuggingface, SiIcloud, SiInstagram, SiKakaotalk, SiKofi, SiLine, SiLinktree, SiMastodon, SiMedium, SiMega, SiMessenger, SiNpm, SiOpencollective, SiPatreon, SiPayoneer, SiPaypal, SiPerplexity, SiPinterest, SiPixiv, SiProducthunt, SiReddit, SiReplit, SiRevolut, SiSellfy, SiShopify, SiSignal, SiSnapchat, SiSoundcloud, SiSpotify, SiStackoverflow, SiStripe, SiSubstack, SiTelegram, SiThreads, SiTidal, SiTiktok, SiTripadvisor, SiTrustpilot, SiTwitch, SiUpwork, SiVenmo, SiViber, SiVimeo, SiWechat, SiWetransfer, SiWhatsapp, SiWise, SiWoocommerce, SiX, SiYelp, SiYoutube, SiYoutubemusic, SiZoom } from "react-icons/si";
 const SI_MAP = {
     SiAnthropic, SiApplemusic, SiApplepodcasts, SiAppstore, SiArtstation, SiAudiomack, SiBandcamp, SiBehance, SiBinance, SiBitbucket, SiBluesky, SiBox, SiBuymeacoffee, SiCalendly, SiCashapp, SiCoinbase, SiCrunchbase, SiDeezer, SiDevdotto, SiDiscord, SiDocker, SiDribbble, SiDropbox, SiEtsy, SiFacebook, SiFigma, SiFiverr, SiFlickr, SiFramer, SiFreelancer, SiG2, SiGhost, SiGithub, SiGithubsponsors, SiGitlab, SiGofundme, SiGoogle, SiGooglechat, SiGoogledocs, SiGoogledrive, SiGooglemaps, SiGooglemeet, SiGoogleplay, SiGooglesheets, SiGoogleslides, SiGumroad, SiHashnode, SiHuggingface, SiIcloud, SiInstagram, SiKakaotalk, SiKofi, SiLine, SiLinktree, SiMastodon, SiMedium, SiMega, SiMessenger, SiNpm, SiOpencollective, SiPatreon, SiPayoneer, SiPaypal, SiPerplexity, SiPinterest, SiPixiv, SiProducthunt, SiReddit, SiReplit, SiRevolut, SiSellfy, SiShopify, SiSignal, SiSnapchat, SiSoundcloud, SiSpotify, SiStackoverflow, SiStripe, SiSubstack, SiTelegram, SiThreads, SiTidal, SiTiktok, SiTripadvisor, SiTrustpilot, SiTwitch, SiUpwork, SiVenmo, SiViber, SiVimeo, SiWechat, SiWetransfer, SiWhatsapp, SiWise, SiWoocommerce, SiX, SiYelp, SiYoutube, SiYoutubemusic, SiZoom
@@ -57,7 +59,9 @@ const FA_MAP = {
     MoveVertical: FaArrowsUpDown, BarChart: FaChartBar, Quote: FaQuoteLeft,
     ListOrdered: FaListOl, Heading: FaHeading, Clapperboard: FaClapperboard
 };
-export function RenderIcon({ name, className, }) {
+export function RenderIcon({ name, className, colors, }) {
+    // Unique per icon instance so gradient ids never collide on one page.
+    const uid = useId();
     if (!name)
         return null;
     let iconValue = name;
@@ -67,7 +71,9 @@ export function RenderIcon({ name, className, }) {
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
-                }, dangerouslySetInnerHTML: { __html: sanitizeHtml(name, "svg") } }));
+                }, dangerouslySetInnerHTML: {
+                    __html: sanitizeHtml(recolorSvg(name, colors, uid), "svg"),
+                } }));
         }
         const def = linkDef(name);
         if (def && def.iconSvg) {
@@ -87,7 +93,9 @@ export function RenderIcon({ name, className, }) {
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
-                }, dangerouslySetInnerHTML: { __html: sanitizeHtml(iconValue.svg, "svg") } }));
+                }, dangerouslySetInnerHTML: {
+                    __html: sanitizeHtml(recolorSvg(iconValue.svg, colors ?? (Array.isArray(iconValue.colors) ? iconValue.colors : null), uid), "svg"),
+                } }));
         }
         if (iconValue.type === "url" && iconValue.url) {
             return (_jsx("span", { className: className, "data-icon": iconValue.name ?? "custom-url", "aria-hidden": true, style: {

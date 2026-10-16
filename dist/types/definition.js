@@ -10,6 +10,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DEFINITION_LIMITS = exports.TOKEN_PREFIX = exports.TOKEN_GROUPS = exports.SCHEMA_VERSION = void 0;
 exports.blankDefinition = blankDefinition;
 exports.definitionRoots = definitionRoots;
+exports.editableThemeColors = editableThemeColors;
 exports.SCHEMA_VERSION = 2;
 exports.TOKEN_GROUPS = [
     "color",
@@ -115,4 +116,41 @@ function blankDefinition(name) {
 /** Convenience: every node in the definition, including popup trees. */
 function definitionRoots(def) {
     return [def.root, ...(def.popups ?? []).map((p) => p.root)];
+}
+const LEGACY_THEME_COLORS = ["bg", "primary", "text", "border"];
+const LEGACY_LABELS = {
+    bg: "Background Color",
+    primary: "Primary Color",
+    text: "Text Color",
+    border: "Border Color",
+};
+function humanizeToken(name) {
+    const words = name
+        .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+        .replace(/[-_]+/g, " ")
+        .trim();
+    return words ? words.charAt(0).toUpperCase() + words.slice(1) : name;
+}
+/**
+ * The colours a card owner may change for this template, in the order the
+ * template designer listed them, with the designer's labels. Shared by the
+ * web and mobile card editors so both show the same list.
+ *
+ * Templates that never chose any fall back to the classic four.
+ */
+function editableThemeColors(def) {
+    const d = (def ?? {});
+    const table = (d.tokens?.color ?? {});
+    const labels = (d.settings?.tokenLabels ?? {});
+    const chosen = Array.isArray(d.settings?.allowTokenOverride)
+        ? d.settings.allowTokenOverride.filter((n) => typeof table[n] === "string")
+        : [];
+    const names = chosen.length ? chosen : LEGACY_THEME_COLORS;
+    return names.map((name) => ({
+        name,
+        label: (typeof labels[name] === "string" && labels[name].trim()) ||
+            LEGACY_LABELS[name] ||
+            humanizeToken(name),
+        defaultValue: table[name] ?? "",
+    }));
 }

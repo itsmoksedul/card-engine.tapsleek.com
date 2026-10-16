@@ -38,7 +38,9 @@ const jsx_runtime_1 = require("react/jsx-runtime");
 const LucideIcons = __importStar(require("lucide-react"));
 const fa_1 = require("react-icons/fa");
 const links_1 = require("../../catalog/links");
+const react_1 = require("react");
 const sanitize_1 = require("../sanitize");
+const svg_colors_1 = require("../svg-colors");
 const si_1 = require("react-icons/si");
 const SI_MAP = {
     SiAnthropic: si_1.SiAnthropic, SiApplemusic: si_1.SiApplemusic, SiApplepodcasts: si_1.SiApplepodcasts, SiAppstore: si_1.SiAppstore, SiArtstation: si_1.SiArtstation, SiAudiomack: si_1.SiAudiomack, SiBandcamp: si_1.SiBandcamp, SiBehance: si_1.SiBehance, SiBinance: si_1.SiBinance, SiBitbucket: si_1.SiBitbucket, SiBluesky: si_1.SiBluesky, SiBox: si_1.SiBox, SiBuymeacoffee: si_1.SiBuymeacoffee, SiCalendly: si_1.SiCalendly, SiCashapp: si_1.SiCashapp, SiCoinbase: si_1.SiCoinbase, SiCrunchbase: si_1.SiCrunchbase, SiDeezer: si_1.SiDeezer, SiDevdotto: si_1.SiDevdotto, SiDiscord: si_1.SiDiscord, SiDocker: si_1.SiDocker, SiDribbble: si_1.SiDribbble, SiDropbox: si_1.SiDropbox, SiEtsy: si_1.SiEtsy, SiFacebook: si_1.SiFacebook, SiFigma: si_1.SiFigma, SiFiverr: si_1.SiFiverr, SiFlickr: si_1.SiFlickr, SiFramer: si_1.SiFramer, SiFreelancer: si_1.SiFreelancer, SiG2: si_1.SiG2, SiGhost: si_1.SiGhost, SiGithub: si_1.SiGithub, SiGithubsponsors: si_1.SiGithubsponsors, SiGitlab: si_1.SiGitlab, SiGofundme: si_1.SiGofundme, SiGoogle: si_1.SiGoogle, SiGooglechat: si_1.SiGooglechat, SiGoogledocs: si_1.SiGoogledocs, SiGoogledrive: si_1.SiGoogledrive, SiGooglemaps: si_1.SiGooglemaps, SiGooglemeet: si_1.SiGooglemeet, SiGoogleplay: si_1.SiGoogleplay, SiGooglesheets: si_1.SiGooglesheets, SiGoogleslides: si_1.SiGoogleslides, SiGumroad: si_1.SiGumroad, SiHashnode: si_1.SiHashnode, SiHuggingface: si_1.SiHuggingface, SiIcloud: si_1.SiIcloud, SiInstagram: si_1.SiInstagram, SiKakaotalk: si_1.SiKakaotalk, SiKofi: si_1.SiKofi, SiLine: si_1.SiLine, SiLinktree: si_1.SiLinktree, SiMastodon: si_1.SiMastodon, SiMedium: si_1.SiMedium, SiMega: si_1.SiMega, SiMessenger: si_1.SiMessenger, SiNpm: si_1.SiNpm, SiOpencollective: si_1.SiOpencollective, SiPatreon: si_1.SiPatreon, SiPayoneer: si_1.SiPayoneer, SiPaypal: si_1.SiPaypal, SiPerplexity: si_1.SiPerplexity, SiPinterest: si_1.SiPinterest, SiPixiv: si_1.SiPixiv, SiProducthunt: si_1.SiProducthunt, SiReddit: si_1.SiReddit, SiReplit: si_1.SiReplit, SiRevolut: si_1.SiRevolut, SiSellfy: si_1.SiSellfy, SiShopify: si_1.SiShopify, SiSignal: si_1.SiSignal, SiSnapchat: si_1.SiSnapchat, SiSoundcloud: si_1.SiSoundcloud, SiSpotify: si_1.SiSpotify, SiStackoverflow: si_1.SiStackoverflow, SiStripe: si_1.SiStripe, SiSubstack: si_1.SiSubstack, SiTelegram: si_1.SiTelegram, SiThreads: si_1.SiThreads, SiTidal: si_1.SiTidal, SiTiktok: si_1.SiTiktok, SiTripadvisor: si_1.SiTripadvisor, SiTrustpilot: si_1.SiTrustpilot, SiTwitch: si_1.SiTwitch, SiUpwork: si_1.SiUpwork, SiVenmo: si_1.SiVenmo, SiViber: si_1.SiViber, SiVimeo: si_1.SiVimeo, SiWechat: si_1.SiWechat, SiWetransfer: si_1.SiWetransfer, SiWhatsapp: si_1.SiWhatsapp, SiWise: si_1.SiWise, SiWoocommerce: si_1.SiWoocommerce, SiX: si_1.SiX, SiYelp: si_1.SiYelp, SiYoutube: si_1.SiYoutube, SiYoutubemusic: si_1.SiYoutubemusic, SiZoom: si_1.SiZoom
@@ -93,7 +95,9 @@ const FA_MAP = {
     MoveVertical: fa6_1.FaArrowsUpDown, BarChart: fa6_1.FaChartBar, Quote: fa6_1.FaQuoteLeft,
     ListOrdered: fa6_1.FaListOl, Heading: fa6_1.FaHeading, Clapperboard: fa6_1.FaClapperboard
 };
-function RenderIcon({ name, className, }) {
+function RenderIcon({ name, className, colors, }) {
+    // Unique per icon instance so gradient ids never collide on one page.
+    const uid = (0, react_1.useId)();
     if (!name)
         return null;
     let iconValue = name;
@@ -103,7 +107,9 @@ function RenderIcon({ name, className, }) {
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
-                }, dangerouslySetInnerHTML: { __html: (0, sanitize_1.sanitizeHtml)(name, "svg") } }));
+                }, dangerouslySetInnerHTML: {
+                    __html: (0, sanitize_1.sanitizeHtml)((0, svg_colors_1.recolorSvg)(name, colors, uid), "svg"),
+                } }));
         }
         const def = (0, links_1.linkDef)(name);
         if (def && def.iconSvg) {
@@ -123,7 +129,9 @@ function RenderIcon({ name, className, }) {
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
-                }, dangerouslySetInnerHTML: { __html: (0, sanitize_1.sanitizeHtml)(iconValue.svg, "svg") } }));
+                }, dangerouslySetInnerHTML: {
+                    __html: (0, sanitize_1.sanitizeHtml)((0, svg_colors_1.recolorSvg)(iconValue.svg, colors ?? (Array.isArray(iconValue.colors) ? iconValue.colors : null), uid), "svg"),
+                } }));
         }
         if (iconValue.type === "url" && iconValue.url) {
             return ((0, jsx_runtime_1.jsx)("span", { className: className, "data-icon": iconValue.name ?? "custom-url", "aria-hidden": true, style: {

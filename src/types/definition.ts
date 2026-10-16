@@ -80,8 +80,13 @@ export interface PopupDef {
 }
 
 export interface DefinitionSettings {
-  /** Token colour keys a Pro user is allowed to override. */
+  /**
+   * Colour tokens the card owner can change — and the ones the card editors
+   * (web + app) show in their Theme section, in this order.
+   */
   allowTokenOverride?: string[];
+  /** Friendly names for colour tokens in the card editors ("Brand colour"). */
+  tokenLabels?: Record<string, string>;
   /** Design keys unlocked to the user on every widget unless overridden. */
   defaultUserOptions?: string[];
   /** Extra `<html>`-level colour scheme hint. */
@@ -230,4 +235,58 @@ export function blankDefinition(name: string): TemplateDefinition {
 /** Convenience: every node in the definition, including popup trees. */
 export function definitionRoots(def: TemplateDefinition): Node[] {
   return [def.root, ...(def.popups ?? []).map((p) => p.root)];
+}
+
+// ─── Card-editor theme colours ───────────────────────────────────────────────
+
+export interface EditableThemeColor {
+  /** Token name — saved as `card.theme.colors[name]`, compiles to `--c-<name>`. */
+  name: string;
+  /** What the card editor shows ("Brand colour"). */
+  label: string;
+  /** The template's own value, shown as the default. */
+  defaultValue: string;
+}
+
+const LEGACY_THEME_COLORS = ["bg", "primary", "text", "border"];
+const LEGACY_LABELS: Record<string, string> = {
+  bg: "Background Color",
+  primary: "Primary Color",
+  text: "Text Color",
+  border: "Border Color",
+};
+
+function humanizeToken(name: string): string {
+  const words = name
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[-_]+/g, " ")
+    .trim();
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : name;
+}
+
+/**
+ * The colours a card owner may change for this template, in the order the
+ * template designer listed them, with the designer's labels. Shared by the
+ * web and mobile card editors so both show the same list.
+ *
+ * Templates that never chose any fall back to the classic four.
+ */
+export function editableThemeColors(
+  def: Partial<TemplateDefinition> | Record<string, unknown> | null | undefined,
+): EditableThemeColor[] {
+  const d = (def ?? {}) as Partial<TemplateDefinition>;
+  const table = (d.tokens?.color ?? {}) as Record<string, string>;
+  const labels = (d.settings?.tokenLabels ?? {}) as Record<string, string>;
+  const chosen = Array.isArray(d.settings?.allowTokenOverride)
+    ? d.settings!.allowTokenOverride!.filter((n) => typeof table[n] === "string")
+    : [];
+  const names = chosen.length ? chosen : LEGACY_THEME_COLORS;
+  return names.map((name) => ({
+    name,
+    label:
+      (typeof labels[name] === "string" && labels[name].trim()) ||
+      LEGACY_LABELS[name] ||
+      humanizeToken(name),
+    defaultValue: table[name] ?? "",
+  }));
 }

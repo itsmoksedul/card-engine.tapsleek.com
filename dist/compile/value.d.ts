@@ -61,6 +61,14 @@ export declare function border(b: BorderValue | undefined): [string, string][];
 export declare function background(bg: BackgroundValue | string | undefined): [string, string][];
 /** Only https/protocol-relative, and no quote or paren injection. */
 export declare function safeUrl(u: unknown): string | null;
+/**
+ * Repairs an image URL so it passes `safeUrl` where it safely can:
+ * trims it, upgrades http:// and protocol-relative to https://, and
+ * percent-encodes the characters `safeUrl` refuses (spaces, quotes,
+ * parentheses — common in uploaded file names). Returns null for anything
+ * that is still not an https URL (empty, data:, blob:, relative paths…).
+ */
+export declare function normalizeImageUrl(u: unknown): string | null;
 /** ShadowValue(s) → one `box-shadow` value. A token ref passes straight through. */
 export declare function shadow(sh: ShadowValue | ShadowValue[] | string | undefined): string | null;
 export declare function transition(t: TransitionValue | undefined): string | null;

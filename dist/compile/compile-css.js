@@ -545,7 +545,11 @@ function resetCss(scope, pretty) {
     const nl = pretty ? "\n" : "";
     const rules = [
         `.${scope} *,.${scope} *::before,.${scope} *::after{box-sizing:border-box}`,
-        `.${scope}{-webkit-font-smoothing:antialiased;text-size-adjust:100%;color:var(--c-text, #0f172a)}`,
+        // The template's own fonts are the default for everything inside it, so a
+        // node without a font set follows the theme (not the host page's Inter).
+        // These sit in the reset layer, so any font set on a node still wins.
+        `.${scope}{-webkit-font-smoothing:antialiased;text-size-adjust:100%;color:var(--c-text, #0f172a);font-family:var(--f-body, inherit)}`,
+        `.${scope} h1,.${scope} h2,.${scope} h3,.${scope} h4,.${scope} h5,.${scope} h6{font-family:var(--f-heading, inherit)}`,
         `.${scope} img,.${scope} video{display:block;max-width:100%;height:auto}`,
         `.${scope} a{color:inherit;text-decoration:none}`,
         `.${scope} button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}`,

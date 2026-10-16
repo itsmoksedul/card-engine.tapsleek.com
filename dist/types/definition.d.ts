@@ -57,8 +57,13 @@ export interface PopupDef {
     root: ElementNode;
 }
 export interface DefinitionSettings {
-    /** Token colour keys a Pro user is allowed to override. */
+    /**
+     * Colour tokens the card owner can change — and the ones the card editors
+     * (web + app) show in their Theme section, in this order.
+     */
     allowTokenOverride?: string[];
+    /** Friendly names for colour tokens in the card editors ("Brand colour"). */
+    tokenLabels?: Record<string, string>;
     /** Design keys unlocked to the user on every widget unless overridden. */
     defaultUserOptions?: string[];
     /** Extra `<html>`-level colour scheme hint. */
@@ -128,3 +133,19 @@ export declare const DEFINITION_LIMITS: {
 export declare function blankDefinition(name: string): TemplateDefinition;
 /** Convenience: every node in the definition, including popup trees. */
 export declare function definitionRoots(def: TemplateDefinition): Node[];
+export interface EditableThemeColor {
+    /** Token name — saved as `card.theme.colors[name]`, compiles to `--c-<name>`. */
+    name: string;
+    /** What the card editor shows ("Brand colour"). */
+    label: string;
+    /** The template's own value, shown as the default. */
+    defaultValue: string;
+}
+/**
+ * The colours a card owner may change for this template, in the order the
+ * template designer listed them, with the designer's labels. Shared by the
+ * web and mobile card editors so both show the same list.
+ *
+ * Templates that never chose any fall back to the classic four.
+ */
+export declare function editableThemeColors(def: Partial<TemplateDefinition> | Record<string, unknown> | null | undefined): EditableThemeColor[];

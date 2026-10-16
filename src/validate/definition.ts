@@ -10,7 +10,13 @@
  * admin can see dead part styles or an unreachable node before publishing.
  */
 
-import { IDENT_RE, safeUrl, utf8Bytes, VALUE_RE } from "../compile/value";
+import {
+  IDENT_RE,
+  normalizeImageUrl,
+  safeUrl,
+  utf8Bytes,
+  VALUE_RE,
+} from "../compile/value";
 import {
   DEFINITION_LIMITS,
   SCHEMA_VERSION,
@@ -196,6 +202,21 @@ export function validateDefinition(
             `settings.allowTokenOverride.${String(key)}`,
             "not a colour token in this template — the override will do nothing",
           );
+        }
+      }
+    }
+  }
+
+  if (def.settings?.tokenLabels !== undefined) {
+    const labels = def.settings.tokenLabels as unknown;
+    if (!labels || typeof labels !== "object" || Array.isArray(labels)) {
+      fail("settings.tokenLabels", "must be an object");
+    } else {
+      for (const [k, v] of Object.entries(labels as Record<string, unknown>)) {
+        if (!IDENT_RE.test(k)) {
+          fail(`settings.tokenLabels.${k}`, "token name must be [A-Za-z0-9_-]");
+        } else if (typeof v !== "string" || v.length > 40) {
+          fail(`settings.tokenLabels.${k}`, "must be a string of at most 40 characters");
         }
       }
     }
@@ -533,16 +554,40 @@ function validateElement(
     }
   }
   if (tag === "image") {
-    if (props.src !== undefined && !node.bind && !safeUrl(props.src)) {
+    // An empty src is "no image", not a bad URL (warned about below).
+    const hasSrc =
+      props.src !== undefined &&
+      !(typeof props.src === "string" && props.src.trim() === "");
+    if (hasSrc && !node.bind && !safeUrl(props.src)) {
       errors.push({
         path: `${path}.props.src`,
-        message: "must be an https URL",
+        message: `must be an https URL (got "${String(props.src).slice(0, 80)}")`,
       });
     }
     if (!props.src && !node.bind) {
       warnings.push({
         path: `${path}.props.src`,
         message: "image has no source and no binding",
+      });
+    }
+  }
+  if (tag === "icon" && props.iconColors !== undefined) {
+    const list = props.iconColors as unknown;
+    const okPaint = (p: unknown): boolean =>
+      p == null ||
+      (typeof p === "string" && p.length <= 80) ||
+      (!!p &&
+        typeof p === "object" &&
+        (p as any).kind === "linear" &&
+        Array.isArray((p as any).stops) &&
+        (p as any).stops.length <= 8 &&
+        (p as any).stops.every(
+          (st: any) => st && typeof st.color === "string" && st.color.length <= 80,
+        ));
+    if (!Array.isArray(list) || list.length > 12 || !list.every(okPaint)) {
+      errors.push({
+        path: `${path}.props.iconColors`,
+        message: "must be up to 12 colours / gradients",
       });
     }
   }
@@ -1125,9 +1170,9 @@ export function sanitizeTemplateDefinition<T = unknown>(input: T): T {
               delete layer.background;
             }
           } else if (layer.background.kind === "image") {
-            if (!layer.background.url || typeof layer.background.url !== "string") {
-              delete layer.background;
-            }
+            const url = normalizeImageUrl(layer.background.url);
+            if (!url) delete layer.background;
+            else layer.background.url = url;
           } else {
             delete layer.background;
           }
@@ -1142,6 +1187,21 @@ export function sanitizeTemplateDefinition<T = unknown>(input: T): T {
 
   function walkNode(node: any): void {
     if (!node || typeof node !== "object") return;
+
+    // Image elements: repair the URL (http → https, encode spaces/brackets);
+    // drop one that can't be repaired so the template still saves/publishes
+    // (the image just shows empty) instead of failing validation.
+    if (
+      node.kind === "element" &&
+      node.tag === "image" &&
+      node.props &&
+      typeof node.props === "object" &&
+      "src" in node.props
+    ) {
+      const fixed = normalizeImageUrl(node.props.src);
+      if (fixed) node.props.src = fixed;
+      else delete node.props.src;
+    }
 
     // 0. Sanitize node style & widget partStyles
     if (node.style) {
@@ -1240,6 +1300,12 @@ export function sanitizeTemplateDefinition<T = unknown>(input: T): T {
       if (cb && cb.node) {
         walkNode(cb.node);
       }
+    });
+  }
+
+  if (Array.isArray(cloned.popups)) {
+    cloned.popups.forEach((p: any) => {
+      if (p && p.root) walkNode(p.root);
     });
   }
 

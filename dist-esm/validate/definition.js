@@ -9,7 +9,7 @@
  * Errors block the write. Warnings don't — they surface in the builder so an
  * admin can see dead part styles or an unreachable node before publishing.
  */
-import { IDENT_RE, safeUrl, utf8Bytes, VALUE_RE } from "../compile/value";
+import { IDENT_RE, normalizeImageUrl, safeUrl, utf8Bytes, VALUE_RE, } from "../compile/value";
 import { DEFINITION_LIMITS, SCHEMA_VERSION, TOKEN_GROUPS, } from "../types/definition";
 import { BINDING_FORMATS, CARD_FIELDS, CONTAINER_TAGS, countNodes, isElement, maxDepth, VOID_TAGS, walkTreeOrder, } from "../types/node";
 import { getWidgetMeta, hasWidget } from "../widgets/registry";
@@ -126,6 +126,22 @@ export function validateDefinition(input, options = {}) {
             for (const key of def.settings.allowTokenOverride) {
                 if (!colours.has(String(key))) {
                     warn(`settings.allowTokenOverride.${String(key)}`, "not a colour token in this template — the override will do nothing");
+                }
+            }
+        }
+    }
+    if (def.settings?.tokenLabels !== undefined) {
+        const labels = def.settings.tokenLabels;
+        if (!labels || typeof labels !== "object" || Array.isArray(labels)) {
+            fail("settings.tokenLabels", "must be an object");
+        }
+        else {
+            for (const [k, v] of Object.entries(labels)) {
+                if (!IDENT_RE.test(k)) {
+                    fail(`settings.tokenLabels.${k}`, "token name must be [A-Za-z0-9_-]");
+                }
+                else if (typeof v !== "string" || v.length > 40) {
+                    fail(`settings.tokenLabels.${k}`, "must be a string of at most 40 characters");
                 }
             }
         }
@@ -406,16 +422,36 @@ function validateElement(node, path, ctx) {
         }
     }
     if (tag === "image") {
-        if (props.src !== undefined && !node.bind && !safeUrl(props.src)) {
+        // An empty src is "no image", not a bad URL (warned about below).
+        const hasSrc = props.src !== undefined &&
+            !(typeof props.src === "string" && props.src.trim() === "");
+        if (hasSrc && !node.bind && !safeUrl(props.src)) {
             errors.push({
                 path: `${path}.props.src`,
-                message: "must be an https URL",
+                message: `must be an https URL (got "${String(props.src).slice(0, 80)}")`,
             });
         }
         if (!props.src && !node.bind) {
             warnings.push({
                 path: `${path}.props.src`,
                 message: "image has no source and no binding",
+            });
+        }
+    }
+    if (tag === "icon" && props.iconColors !== undefined) {
+        const list = props.iconColors;
+        const okPaint = (p) => p == null ||
+            (typeof p === "string" && p.length <= 80) ||
+            (!!p &&
+                typeof p === "object" &&
+                p.kind === "linear" &&
+                Array.isArray(p.stops) &&
+                p.stops.length <= 8 &&
+                p.stops.every((st) => st && typeof st.color === "string" && st.color.length <= 80));
+        if (!Array.isArray(list) || list.length > 12 || !list.every(okPaint)) {
+            errors.push({
+                path: `${path}.props.iconColors`,
+                message: "must be up to 12 colours / gradients",
             });
         }
     }
@@ -958,9 +994,11 @@ export function sanitizeTemplateDefinition(input) {
                         }
                     }
                     else if (layer.background.kind === "image") {
-                        if (!layer.background.url || typeof layer.background.url !== "string") {
+                        const url = normalizeImageUrl(layer.background.url);
+                        if (!url)
                             delete layer.background;
-                        }
+                        else
+                            layer.background.url = url;
                     }
                     else {
                         delete layer.background;
@@ -976,6 +1014,20 @@ export function sanitizeTemplateDefinition(input) {
     function walkNode(node) {
         if (!node || typeof node !== "object")
             return;
+        // Image elements: repair the URL (http → https, encode spaces/brackets);
+        // drop one that can't be repaired so the template still saves/publishes
+        // (the image just shows empty) instead of failing validation.
+        if (node.kind === "element" &&
+            node.tag === "image" &&
+            node.props &&
+            typeof node.props === "object" &&
+            "src" in node.props) {
+            const fixed = normalizeImageUrl(node.props.src);
+            if (fixed)
+                node.props.src = fixed;
+            else
+                delete node.props.src;
+        }
         // 0. Sanitize node style & widget partStyles
         if (node.style) {
             node.style = cleanStyle(node.style) ?? {};
@@ -1063,6 +1115,12 @@ export function sanitizeTemplateDefinition(input) {
             if (cb && cb.node) {
                 walkNode(cb.node);
             }
+        });
+    }
+    if (Array.isArray(cloned.popups)) {
+        cloned.popups.forEach((p) => {
+            if (p && p.root)
+                walkNode(p.root);
         });
     }
     return cloned;

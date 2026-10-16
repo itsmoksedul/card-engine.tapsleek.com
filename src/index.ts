@@ -23,3 +23,4 @@ export * from './render/NodeRenderer';
 export * from './render/BlockRenderer';
 export * from './render/resolveBinding';
 export * from './render/widgets/icon-helper';
+export * from './render/svg-colors';

@@ -1,7 +1,9 @@
 import * as LucideIcons from "lucide-react";
 import { FaLinkedin } from "react-icons/fa";
 import { linkDef } from "../../catalog/links";
+import { useId } from "react";
 import { sanitizeHtml } from "../sanitize";
+import { recolorSvg, type IconPaint } from "../svg-colors";
 import {
   SiAnthropic,
   SiApplemusic,
@@ -175,10 +177,15 @@ const FA_MAP: Record<string, any> = {
 export function RenderIcon({
   name,
   className,
+  colors,
 }: {
   name?: string | Record<string, any> | null;
   className?: string;
+  /** Repaint an uploaded SVG's colours (slot i → colour/token/gradient). */
+  colors?: ReadonlyArray<IconPaint | null | undefined> | null;
 }) {
+  // Unique per icon instance so gradient ids never collide on one page.
+  const uid = useId();
   if (!name) return null;
 
   let iconValue = name;
@@ -195,7 +202,9 @@ export function RenderIcon({
             alignItems: "center",
             justifyContent: "center",
           }}
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(name, "svg") }}
+          dangerouslySetInnerHTML={{
+            __html: sanitizeHtml(recolorSvg(name, colors, uid), "svg"),
+          }}
         />
       );
     }
@@ -234,7 +243,16 @@ export function RenderIcon({
             alignItems: "center",
             justifyContent: "center",
           }}
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(iconValue.svg, "svg") }}
+          dangerouslySetInnerHTML={{
+            __html: sanitizeHtml(
+              recolorSvg(
+                iconValue.svg,
+                colors ?? (Array.isArray(iconValue.colors) ? iconValue.colors : null),
+                uid,
+              ),
+              "svg",
+            ),
+          }}
         />
       );
     }

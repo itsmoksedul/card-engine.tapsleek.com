@@ -1008,8 +1008,10 @@ function ElementRenderer({ node, content, ctx, }) {
             }
             // Render the actual lucide/custom glyph. Colour, size (1em) and
             // stroke-width all inherit from this node's compiled `.n<id>` styles.
+            // Uploaded SVGs can be repainted per colour (props.iconColors), or carry
+            // their own colours in the picked value ({ type: "svg", colors }).
             if (iconName)
-                children = (0, jsx_runtime_1.jsx)(icon_helper_1.RenderIcon, { name: iconName });
+                children = ((0, jsx_runtime_1.jsx)(icon_helper_1.RenderIcon, { name: iconName, colors: Array.isArray(props.iconColors) ? props.iconColors : undefined }));
             break;
         }
         case "heading":

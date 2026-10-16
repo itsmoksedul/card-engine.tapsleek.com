@@ -225,6 +225,26 @@ export function safeUrl(u) {
         return null;
     return s;
 }
+/**
+ * Repairs an image URL so it passes `safeUrl` where it safely can:
+ * trims it, upgrades http:// and protocol-relative to https://, and
+ * percent-encodes the characters `safeUrl` refuses (spaces, quotes,
+ * parentheses — common in uploaded file names). Returns null for anything
+ * that is still not an https URL (empty, data:, blob:, relative paths…).
+ */
+export function normalizeImageUrl(u) {
+    if (typeof u !== "string")
+        return null;
+    let s = u.trim();
+    if (!s)
+        return null;
+    if (s.startsWith("//"))
+        s = `https:${s}`;
+    else if (/^http:\/\//i.test(s))
+        s = `https://${s.slice(7)}`;
+    s = s.replace(/[\s"'()\\<>]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0")}`);
+    return safeUrl(s);
+}
 /** ShadowValue(s) → one `box-shadow` value. A token ref passes straight through. */
 export function shadow(sh) {
     if (sh === undefined)
