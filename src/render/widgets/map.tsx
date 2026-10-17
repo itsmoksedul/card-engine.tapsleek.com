@@ -1,11 +1,7 @@
 import React from 'react';
+import { mapHeightPx } from '../../widgets/map';
 import { EmptyState, navProps, type WidgetRenderProps } from './shared';
 
-const HEIGHT_MAP: Record<string, string> = {
-  sm: '200px',
-  md: '300px',
-  lg: '450px',
-};
 
 export function MapRender({ design, content, cls, ctx }: WidgetRenderProps) {
   const d = (design ?? {}) as Record<string, any>;
@@ -17,7 +13,7 @@ export function MapRender({ design, content, cls, ctx }: WidgetRenderProps) {
     return <EmptyState cls={cls} ctx={ctx} label="No address provided" />;
   }
 
-  const height = HEIGHT_MAP[d.height as string] || '300px';
+  const height = `${mapHeightPx(d)}px`;
   const mapType = d.mapType === 'k' ? 'k' : 'm'; // k=satellite, m=roadmap
 
   // Embed URL for Google Maps (no API key required)

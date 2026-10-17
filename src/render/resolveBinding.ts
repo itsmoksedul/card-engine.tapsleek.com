@@ -1,3 +1,4 @@
+import { mapHeightPx } from '../widgets/map';
 import { LINK_CATALOG } from "../catalog/links";
 import { DEMO_PREVIEW_ASSETS } from "../content/sample-preview";
 import type { Binding, BindingFormat } from "../types/node";
@@ -216,7 +217,7 @@ function formatValue(
     case "mapEmbed": {
       const address = typeof value === "string" ? value.trim() : "";
       if (!address) return "";
-      const height = MAP_HEIGHTS[design?.height as string] ?? MAP_HEIGHTS.md;
+      const height = mapHeightPx(design as Record<string, unknown> | undefined);
       const mapType = design?.mapType === "k" ? "k" : "m"; // k=satellite
       const src = `https://maps.google.com/maps?q=${encodeURIComponent(address)}&t=${mapType}&z=14&ie=UTF8&iwloc=&output=embed`;
       // Goes through the "embed" sanitizer, which re-checks the iframe host.
@@ -234,7 +235,6 @@ function formatValue(
   }
 }
 
-const MAP_HEIGHTS: Record<string, string> = { sm: "200", md: "300", lg: "450" };
 
 function getDynamicBase(slug?: string): string {
   if (slug) {

@@ -1,5 +1,17 @@
 import type { WidgetModule } from '../types/widget';
 
+const MAP_PRESET_PX: Record<string, number> = { sm: 200, md: 300, lg: 450 };
+
+/** Map iframe height in px from the widget design (presets or Custom). */
+export function mapHeightPx(design: Record<string, unknown> | undefined): number {
+  const choice = design?.height;
+  if (choice === 'custom') {
+    const px = Number(design?.customHeight);
+    if (Number.isFinite(px)) return Math.min(1200, Math.max(100, Math.round(px)));
+  }
+  return MAP_PRESET_PX[choice as string] ?? MAP_PRESET_PX.md;
+}
+
 export const meta: WidgetModule['meta'] = {
   type: 'MAP',
   label: 'Map',
@@ -80,7 +92,13 @@ export const meta: WidgetModule['meta'] = {
         { value: 'sm', label: 'Small (200px)' },
         { value: 'md', label: 'Medium (300px)' },
         { value: 'lg', label: 'Large (450px)' },
+        { value: 'custom', label: 'Custom' },
       ],
+    },
+    {
+      key: 'customHeight', type: 'number', label: 'Custom height (px)',
+      hint: '100–1200 px', min: 100, max: 1200, step: 10, default: 300,
+      visibleIf: { key: 'height', equals: 'custom' },
     },
     {
       key: 'mapType', type: 'select', label: 'Map Type',
