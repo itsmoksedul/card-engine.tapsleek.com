@@ -2,12 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MapRender = MapRender;
 const jsx_runtime_1 = require("react/jsx-runtime");
+const map_1 = require("../../widgets/map");
 const shared_1 = require("./shared");
-const HEIGHT_MAP = {
-    sm: '200px',
-    md: '300px',
-    lg: '450px',
-};
 function MapRender({ design, content, cls, ctx }) {
     const d = (design ?? {});
     const c = (content ?? {});
@@ -15,7 +11,7 @@ function MapRender({ design, content, cls, ctx }) {
     if (!address) {
         return (0, jsx_runtime_1.jsx)(shared_1.EmptyState, { cls: cls, ctx: ctx, label: "No address provided" });
     }
-    const height = HEIGHT_MAP[d.height] || '300px';
+    const height = `${(0, map_1.mapHeightPx)(d)}px`;
     const mapType = d.mapType === 'k' ? 'k' : 'm'; // k=satellite, m=roadmap
     // Embed URL for Google Maps (no API key required)
     const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(address)}&t=${mapType}&z=14&ie=UTF8&iwloc=&output=embed`;

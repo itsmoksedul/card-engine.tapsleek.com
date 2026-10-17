@@ -1,3 +1,4 @@
+import { mapHeightPx } from '../widgets/map';
 import { LINK_CATALOG } from "../catalog/links";
 import { DEMO_PREVIEW_ASSETS } from "../content/sample-preview";
 function formatLinkUrl(type, value) {
@@ -200,7 +201,7 @@ function formatValue(format, value, selfData, design) {
             const address = typeof value === "string" ? value.trim() : "";
             if (!address)
                 return "";
-            const height = MAP_HEIGHTS[design?.height] ?? MAP_HEIGHTS.md;
+            const height = mapHeightPx(design);
             const mapType = design?.mapType === "k" ? "k" : "m"; // k=satellite
             const src = `https://maps.google.com/maps?q=${encodeURIComponent(address)}&t=${mapType}&z=14&ie=UTF8&iwloc=&output=embed`;
             // Goes through the "embed" sanitizer, which re-checks the iframe host.
@@ -218,7 +219,6 @@ function formatValue(format, value, selfData, design) {
             return value;
     }
 }
-const MAP_HEIGHTS = { sm: "200", md: "300", lg: "450" };
 function getDynamicBase(slug) {
     if (slug) {
         return `https://${slug}.tapsleek.com`;
