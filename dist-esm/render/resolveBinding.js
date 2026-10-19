@@ -95,9 +95,14 @@ export function resolveBinding(binding, card, content, selfData, repeatIndex) {
             if (binding.path === "icon") {
                 if (content?._design?.showIcon === false)
                     return "";
-                if (selfData.icon)
-                    return selfData.icon;
                 const catalogItem = LINK_CATALOG.find((l) => l.type === selfData.type);
+                // The mobile app stores its own (Ionicons) icon names on links —
+                // lowercase-with-dashes like "logo-whatsapp". The link's type is the
+                // reliable source for those; real engine icons (PascalCase names,
+                // custom SVG/URL objects) still win.
+                const appIconName = typeof selfData.icon === "string" && /^[a-z0-9-]+$/.test(selfData.icon);
+                if (selfData.icon && !(appIconName && catalogItem?.iconName))
+                    return selfData.icon;
                 if (catalogItem?.iconName)
                     return catalogItem.iconName;
                 return selfData.type || "";

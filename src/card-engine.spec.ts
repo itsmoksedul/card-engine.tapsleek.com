@@ -1209,6 +1209,19 @@ describe("composite widgets — layout subtree", () => {
       expect(resolveBinding({ source: "self", path: "icon" }, {}, {}, self)).toBe("Star");
     });
 
+    it("a link's app (Ionicons) icon name gives way to its type's icon", () => {
+      const icon = (type: string, iconName?: string) =>
+        resolveBinding({ source: "self", path: "icon" }, {}, {}, { type, icon: iconName });
+      expect(icon("whatsapp", "logo-whatsapp")).toBe("SiWhatsapp");
+      expect(icon("linkedin", "logo-linkedin")).toBe("FaLinkedin");
+      expect(icon("facebook", "logo-facebook")).toBe("SiFacebook");
+      expect(icon("phone", "call")).toBe("Phone");
+      // Real engine icons the user picked still win.
+      expect(icon("whatsapp", "SiTelegram")).toBe("SiTelegram");
+      // Unknown type: the stored name is kept (RenderIcon maps it).
+      expect(icon("calendar", "calendar")).toBe("calendar");
+    });
+
     it("self binding walks a nested path", () => {
       const self = { cta: { link: { url: "https://a.b" } } };
       expect(

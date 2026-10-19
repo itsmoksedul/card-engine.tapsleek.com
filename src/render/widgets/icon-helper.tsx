@@ -111,6 +111,42 @@ const SI_MAP: Record<string, any> = {
   SiAnthropic, SiApplemusic, SiApplepodcasts, SiAppstore, SiArtstation, SiAudiomack, SiBandcamp, SiBehance, SiBinance, SiBitbucket, SiBluesky, SiBox, SiBuymeacoffee, SiCalendly, SiCashapp, SiCoinbase, SiCrunchbase, SiDeezer, SiDevdotto, SiDiscord, SiDocker, SiDribbble, SiDropbox, SiEtsy, SiFacebook, SiFigma, SiFiverr, SiFlickr, SiFramer, SiFreelancer, SiG2, SiGhost, SiGithub, SiGithubsponsors, SiGitlab, SiGofundme, SiGoogle, SiGooglechat, SiGoogledocs, SiGoogledrive, SiGooglemaps, SiGooglemeet, SiGoogleplay, SiGooglesheets, SiGoogleslides, SiGumroad, SiHashnode, SiHuggingface, SiIcloud, SiInstagram, SiKakaotalk, SiKofi, SiLine, SiLinktree, SiMastodon, SiMedium, SiMega, SiMessenger, SiNpm, SiOpencollective, SiPatreon, SiPayoneer, SiPaypal, SiPerplexity, SiPinterest, SiPixiv, SiProducthunt, SiReddit, SiReplit, SiRevolut, SiSellfy, SiShopify, SiSignal, SiSnapchat, SiSoundcloud, SiSpotify, SiStackoverflow, SiStripe, SiSubstack, SiTelegram, SiThreads, SiTidal, SiTiktok, SiTripadvisor, SiTrustpilot, SiTwitch, SiUpwork, SiVenmo, SiViber, SiVimeo, SiWechat, SiWetransfer, SiWhatsapp, SiWise, SiWoocommerce, SiX, SiYelp, SiYoutube, SiYoutubemusic, SiZoom
 };
 
+/** Ionicons "logo-*" names whose link type is spelled differently. */
+const IONICON_BRAND_ALIASES: Record<string, string> = {
+  twitter: "x",
+  apple: "applemusic",
+  bitcoin: "crypto",
+};
+
+/** Generic Ionicons names the mobile app stores → engine icon names. */
+const IONICON_TO_ENGINE: Record<string, string> = {
+  at: "AtSign",
+  briefcase: "Briefcase",
+  cafe: "Store",
+  calendar: "Calendar",
+  call: "Phone",
+  card: "Wallet",
+  cart: "ShoppingCart",
+  cash: "Banknote",
+  chatbubble: "MessageCircle",
+  "chatbubble-ellipses": "MessageSquare",
+  chatbubbles: "MessageSquare",
+  cloud: "Cloud",
+  "document-text": "FileText",
+  download: "Download",
+  globe: "Globe",
+  heart: "Heart",
+  link: "Link2",
+  location: "MapPin",
+  mail: "Mail",
+  map: "MapPin",
+  "musical-note": "Music",
+  "musical-notes": "Music",
+  "paper-plane": "Send",
+  send: "Send",
+  star: "Star",
+};
+
 const COMMON_ICON_MAP: Record<string, string> = {
   PHONE: "Phone",
   EMAIL: "Mail",
@@ -209,7 +245,16 @@ export function RenderIcon({
       );
     }
 
-    const def = linkDef(name);
+    // App (Ionicons) names: "logo-whatsapp" → the WhatsApp link type, and
+    // generic ones ("call", "chatbubbles") → the matching engine icon.
+    const appName = name.trim();
+    const brand = /^logo-([a-z0-9-]+)$/.exec(appName)?.[1];
+    const def =
+      linkDef(appName) ??
+      (brand ? linkDef(IONICON_BRAND_ALIASES[brand] ?? brand) : undefined);
+    if (!def && IONICON_TO_ENGINE[appName.replace(/-(outline|sharp)$/, "")]) {
+      iconValue = IONICON_TO_ENGINE[appName.replace(/-(outline|sharp)$/, "")];
+    }
     if (def && def.iconSvg) {
       return (
         <span
