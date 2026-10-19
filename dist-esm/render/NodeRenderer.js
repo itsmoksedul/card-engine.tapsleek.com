@@ -1,5 +1,6 @@
 "use client";
 import { Fragment as _Fragment, jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { imgSize } from "./widgets/shared";
 import React from "react";
 import { getWidgetMeta } from "../widgets";
 import { CAROUSEL_PART_COUNTERPARTS } from "../widgets/carousel-parts";
@@ -974,6 +975,8 @@ function ElementRenderer({ node, content, ctx, }) {
             dom.src = src;
             dom.alt = props.alt ?? "";
             dom.loading = props.loading ?? "lazy";
+            // Reserve the image's space before it loads (no layout jump).
+            Object.assign(dom, imgSize(ctx.card, String(src)));
             const ratio = content?._design?.ratio;
             if (ratio && ratio !== "auto") {
                 dom.style = { ...dom.style, aspectRatio: ratio };

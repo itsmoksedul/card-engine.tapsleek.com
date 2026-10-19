@@ -1,5 +1,5 @@
 import { DEMO_PREVIEW_ASSETS } from '../../content/sample-preview';
-import { displayName, subtitleOf, type WidgetRenderProps } from './shared';
+import { displayName, subtitleOf, type WidgetRenderProps, imgSize } from './shared';
 
 export function ProfileRender({ design, cls, ctx }: WidgetRenderProps) {
   const card = ctx.card ?? {};
@@ -36,15 +36,15 @@ export function ProfileRender({ design, cls, ctx }: WidgetRenderProps) {
   return (
     <div className={cls('root')} data-align={d.align ?? 'center'}>
       {d.showCover !== false && cover && (
-        <img className={cls('cover')} src={cover} alt="" loading="lazy" />
+        <img className={cls('cover')} src={cover} {...imgSize(card, cover)} alt="" loading="lazy" />
       )}
 
       {d.showAvatar !== false && avatar && (
-        <img className={cls('avatar')} src={avatar} alt={name || 'Avatar'} loading="lazy" />
+        <img className={cls('avatar')} src={avatar} {...imgSize(card, avatar)} alt={name || 'Avatar'} loading="lazy" />
       )}
 
       {d.showLogo !== false && logo && (
-        <img className={cls('logo')} src={logo} alt={card.companyName ?? ''} loading="lazy" />
+        <img className={cls('logo')} src={logo} {...imgSize(card, logo)} alt={card.companyName ?? ''} loading="lazy" />
       )}
 
       {name && <div className={cls('name')}>{name}</div>}

@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { NativeCarousel } from "../components/NativeCarousel";
-import { asArray, EmptyState, str } from "./shared";
+import { asArray, EmptyState, str, imgSize } from "./shared";
 export function TeamRender({ design, content, cls, ctx }) {
     const d = (design ?? {});
     const c = (content ?? {});
@@ -19,7 +19,7 @@ export function TeamRender({ design, content, cls, ctx }) {
     const renderedItems = items.map((item, i) => (_jsxs("div", { className: cls("item"), style: {
             alignItems: align === "center" ? "center" : "flex-start",
             textAlign: align,
-        }, children: [item.image ? (_jsx("img", { src: str(item.image) || undefined, alt: str(item.name) || "Team member", className: cls("avatar"), style: { borderRadius: avatarShape === "circle" ? "9999px" : "12px" }, loading: "lazy" })) : (_jsx("div", { className: cls("avatar"), style: {
+        }, children: [item.image ? (_jsx("img", { src: str(item.image) || undefined, ...imgSize(ctx.card, str(item.image)), alt: str(item.name) || "Team member", className: cls("avatar"), style: { borderRadius: avatarShape === "circle" ? "9999px" : "12px" }, loading: "lazy" })) : (_jsx("div", { className: cls("avatar"), style: {
                     borderRadius: avatarShape === "circle" ? "9999px" : "12px",
                     backgroundColor: "var(--tw-border-color, #e2e8f0)",
                 } })), _jsxs("div", { className: cls("content"), children: [item.name && _jsx("div", { className: cls("name"), children: item.name }), item.role && _jsx("div", { className: cls("role"), children: item.role }), item.bio && _jsx("div", { className: cls("bio"), children: item.bio })] })] }, i)));

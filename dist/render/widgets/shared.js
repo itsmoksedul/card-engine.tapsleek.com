@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.imgSize = imgSize;
 exports.displayName = displayName;
 exports.subtitleOf = subtitleOf;
 exports.asArray = asArray;
@@ -8,6 +9,18 @@ exports.iconVal = iconVal;
 exports.navProps = navProps;
 exports.EmptyState = EmptyState;
 const jsx_runtime_1 = require("react/jsx-runtime");
+/**
+ * width/height for an <img>, from the card's `imageDims` (url → [w, h], sent
+ * by the server). With them the browser reserves the image's space before it
+ * loads (CSS keeps `height:auto`, so they only set the aspect ratio) — no
+ * collapse to 0 and jump when it arrives.
+ */
+function imgSize(card, src) {
+    if (!src)
+        return {};
+    const d = card?.imageDims?.[src];
+    return Array.isArray(d) && d[0] > 0 && d[1] > 0 ? { width: d[0], height: d[1] } : {};
+}
 /** Card owner's display name, assembled the same way the backend vCard does. */
 function displayName(card) {
     const name = [card?.firstName, card?.lastName].filter(Boolean).join(' ').trim();

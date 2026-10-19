@@ -10,6 +10,7 @@ exports.videoThumbnailUrl = videoThumbnailUrl;
 exports.structuralFrom = structuralFrom;
 exports.mergeLayoutTrees = mergeLayoutTrees;
 const jsx_runtime_1 = require("react/jsx-runtime");
+const shared_1 = require("./widgets/shared");
 const react_1 = __importDefault(require("react"));
 const widgets_1 = require("../widgets");
 const carousel_parts_1 = require("../widgets/carousel-parts");
@@ -984,6 +985,8 @@ function ElementRenderer({ node, content, ctx, }) {
             dom.src = src;
             dom.alt = props.alt ?? "";
             dom.loading = props.loading ?? "lazy";
+            // Reserve the image's space before it loads (no layout jump).
+            Object.assign(dom, (0, shared_1.imgSize)(ctx.card, String(src)));
             const ratio = content?._design?.ratio;
             if (ratio && ratio !== "auto") {
                 dom.style = { ...dom.style, aspectRatio: ratio };

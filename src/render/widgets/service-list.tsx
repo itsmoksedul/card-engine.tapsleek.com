@@ -1,5 +1,5 @@
 import React from 'react';
-import { asArray, EmptyState, str, type WidgetRenderProps } from './shared';
+import { asArray, EmptyState, str, type WidgetRenderProps, imgSize } from './shared';
 import { NativeCarousel } from '../components/NativeCarousel';
 
 /**
@@ -36,6 +36,7 @@ export function ServiceListRender({ content, design, cls, ctx }: WidgetRenderPro
           <img
             className={cls('itemMedia')}
             src={str(item.image) || undefined}
+            {...imgSize(ctx.card, str(item.image))}
             alt=""
             loading="lazy"
             style={{ aspectRatio: d.mediaRatio ?? '4/3' }}

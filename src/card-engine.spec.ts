@@ -1355,6 +1355,23 @@ describe("Render Layer Security", () => {
     expect(html).toContain("path");
   });
 
+  it("gives images their known size so the page doesn't jump while they load", () => {
+    const node = {
+      kind: "element",
+      id: "img1",
+      tag: "image",
+      props: { src: "https://cdn.example.com/a.webp" },
+    } as any;
+    const sized = { isEditing: false, track: () => {}, card: { imageDims: { "https://cdn.example.com/a.webp": [1200, 800] } } } as any;
+    const html = renderToStaticMarkup(React.createElement(NodeRenderer, { node, content: {}, ctx: sized }));
+    expect(html).toContain('width="1200"');
+    expect(html).toContain('height="800"');
+    // Unknown size: no attributes (never a wrong guess).
+    const plain = { isEditing: false, track: () => {}, card: {} } as any;
+    const html2 = renderToStaticMarkup(React.createElement(NodeRenderer, { node, content: {}, ctx: plain }));
+    expect(html2).not.toContain("width=");
+  });
+
   it("sanitizes embed widget iframe and enforces sandbox", () => {
     const node = {
       kind: "element",

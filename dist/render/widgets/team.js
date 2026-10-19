@@ -22,7 +22,7 @@ function TeamRender({ design, content, cls, ctx }) {
     const renderedItems = items.map((item, i) => ((0, jsx_runtime_1.jsxs)("div", { className: cls("item"), style: {
             alignItems: align === "center" ? "center" : "flex-start",
             textAlign: align,
-        }, children: [item.image ? ((0, jsx_runtime_1.jsx)("img", { src: (0, shared_1.str)(item.image) || undefined, alt: (0, shared_1.str)(item.name) || "Team member", className: cls("avatar"), style: { borderRadius: avatarShape === "circle" ? "9999px" : "12px" }, loading: "lazy" })) : ((0, jsx_runtime_1.jsx)("div", { className: cls("avatar"), style: {
+        }, children: [item.image ? ((0, jsx_runtime_1.jsx)("img", { src: (0, shared_1.str)(item.image) || undefined, ...(0, shared_1.imgSize)(ctx.card, (0, shared_1.str)(item.image)), alt: (0, shared_1.str)(item.name) || "Team member", className: cls("avatar"), style: { borderRadius: avatarShape === "circle" ? "9999px" : "12px" }, loading: "lazy" })) : ((0, jsx_runtime_1.jsx)("div", { className: cls("avatar"), style: {
                     borderRadius: avatarShape === "circle" ? "9999px" : "12px",
                     backgroundColor: "var(--tw-border-color, #e2e8f0)",
                 } })), (0, jsx_runtime_1.jsxs)("div", { className: cls("content"), children: [item.name && (0, jsx_runtime_1.jsx)("div", { className: cls("name"), children: item.name }), item.role && (0, jsx_runtime_1.jsx)("div", { className: cls("role"), children: item.role }), item.bio && (0, jsx_runtime_1.jsx)("div", { className: cls("bio"), children: item.bio })] })] }, i)));

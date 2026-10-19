@@ -1,5 +1,5 @@
 import React from 'react';
-import { asArray, EmptyState, str, type WidgetRenderProps } from './shared';
+import { asArray, EmptyState, str, type WidgetRenderProps, imgSize } from './shared';
 import { NativeCarousel } from '../components/NativeCarousel';
 
 export function TestimonialsRender({ content, design, cls, ctx }: WidgetRenderProps) {
@@ -30,7 +30,7 @@ export function TestimonialsRender({ content, design, cls, ctx }: WidgetRenderPr
 
         <figcaption className={cls('caption')}>
           {d.showAvatar !== false && str(item.avatar) && (
-            <img className={cls('avatar')} src={str(item.avatar) || undefined} alt="" loading="lazy" />
+            <img className={cls('avatar')} src={str(item.avatar) || undefined} {...imgSize(ctx.card, str(item.avatar))} alt="" loading="lazy" />
           )}
           <span className={cls('author')}>{str(item.author)}</span>
           {str(item.role) && <span className={cls('role')}>{str(item.role)}</span>}

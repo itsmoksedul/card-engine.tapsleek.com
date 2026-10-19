@@ -21,6 +21,16 @@ export interface WidgetRenderProps<C = any, D = any> {
         onActionClick?: (action: string) => void;
     };
 }
+/**
+ * width/height for an <img>, from the card's `imageDims` (url → [w, h], sent
+ * by the server). With them the browser reserves the image's space before it
+ * loads (CSS keeps `height:auto`, so they only set the aspect ratio) — no
+ * collapse to 0 and jump when it arrives.
+ */
+export declare function imgSize(card: any, src: string | null | undefined): {
+    width?: number;
+    height?: number;
+};
 /** Card owner's display name, assembled the same way the backend vCard does. */
 export declare function displayName(card: any): string;
 /** Job title · Company — skips the separator when either side is missing. */

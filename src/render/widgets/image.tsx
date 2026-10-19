@@ -1,5 +1,5 @@
 import React from 'react';
-import { EmptyState, str, navProps, type WidgetRenderProps } from './shared';
+import { EmptyState, str, navProps, type WidgetRenderProps, imgSize } from './shared';
 
 export function ImageRender({ content, design, cls, ctx }: WidgetRenderProps) {
   const c = (content ?? {}) as Record<string, unknown>;
@@ -12,6 +12,7 @@ export function ImageRender({ content, design, cls, ctx }: WidgetRenderProps) {
     <img
       className={cls('image')}
       src={src}
+      {...imgSize(ctx.card, src)}
       alt={str(c.alt)}
       loading="lazy"
       data-ratio={d.ratio ?? 'auto'}

@@ -1,4 +1,5 @@
 "use client";
+import { imgSize } from "./widgets/shared";
 import React from "react";
 import type { ElementNode, Node, SlotNode, WidgetNode } from "../types/node";
 import { getWidgetMeta } from "../widgets";
@@ -1240,6 +1241,8 @@ function ElementRenderer({
       dom.src = src;
       dom.alt = props.alt ?? "";
       dom.loading = props.loading ?? "lazy";
+      // Reserve the image's space before it loads (no layout jump).
+      Object.assign(dom, imgSize(ctx.card, String(src)));
 
       const ratio = content?._design?.ratio;
       if (ratio && ratio !== "auto") {

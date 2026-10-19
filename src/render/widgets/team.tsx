@@ -1,5 +1,5 @@
 import { NativeCarousel } from "../components/NativeCarousel";
-import { asArray, EmptyState, str, type WidgetRenderProps } from "./shared";
+import { asArray, EmptyState, str, type WidgetRenderProps, imgSize } from "./shared";
 
 export function TeamRender({ design, content, cls, ctx }: WidgetRenderProps) {
   const d = (design ?? {}) as Record<string, any>;
@@ -32,6 +32,7 @@ export function TeamRender({ design, content, cls, ctx }: WidgetRenderProps) {
       {item.image ? (
         <img
           src={str(item.image) || undefined}
+          {...imgSize(ctx.card, str(item.image))}
           alt={str(item.name) || "Team member"}
           className={cls("avatar")}
           style={{ borderRadius: avatarShape === "circle" ? "9999px" : "12px" }}
